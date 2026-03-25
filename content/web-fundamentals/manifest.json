@@ -1,0 +1,23 @@
+{
+  "domain": "web-fundamentals",
+  "version": "1.0.0",
+  "title": "Web Development Fundamentals",
+  "description": "Core web development concepts - HTML, CSS, and vanilla JavaScript",
+  "difficulty": "beginner",
+  "estimatedHours": 20,
+  "chromebookCompatible": true,
+  "offlineCapable": true,
+  "topics": [
+    "HTML structure",
+    "CSS styling",
+    "JavaScript basics",
+    "DOM manipulation",
+    "Event handling"
+  ],
+  "prerequisites": [],
+  "constraints": {
+    "maxFrameworkSize": 0,
+    "requiresOffline": true,
+    "targetDeviceProfile": "chromebook_standard"
+  }
+}
