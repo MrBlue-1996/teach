@@ -1,0 +1,173 @@
+{
+  "id": "pack-networkplus-fundamentals-v1",
+  "name": "Network+ Fundamentals",
+  "version": "1.0.0",
+  "description": "Networking fundamentals covering subnetting, OSI model application, common protocols, and basic troubleshooting methodology.",
+  "tags": ["required"],
+  "roleMappings": ["badge-networking-tech-v1", "badge-helpdesk-tier2-v1"],
+  "difficulty": "intermediate",
+  "minDeviceProfile": {
+    "ramMb": 1024,
+    "networkKbps": 200,
+    "requiresWebGL": false,
+    "requiresWebGPU": false,
+    "requiresWasm": false
+  },
+  "teachingBlocks": [
+    {
+      "id": "tb-net-subnet-001",
+      "concept": "IPv4 Subnetting Fundamentals",
+      "mode": "L0",
+      "canonicalSolution": "```\nGiven: 192.168.1.0/24, divide into 4 equal subnets\n\nStep 1: Calculate bits needed\n  - 4 subnets requires 2 bits (2^2 = 4)\n  - New prefix: /24 + 2 = /26\n\nStep 2: Calculate subnet size\n  - /26 means 32-26 = 6 host bits\n  - Hosts per subnet: 2^6 - 2 = 62 usable\n  - Subnet size: 64 addresses (0-63, 64-127, etc.)\n\nStep 3: List subnets\n  - 192.168.1.0/26   (hosts: .1-.62, broadcast: .63)\n  - 192.168.1.64/26  (hosts: .65-.126, broadcast: .127)\n  - 192.168.1.128/26 (hosts: .129-.190, broadcast: .191)\n  - 192.168.1.192/26 (hosts: .193-.254, broadcast: .255)\n```",
+      "explanation": "Subnetting divides a network into smaller segments. The key insight is that each additional bit borrowed from host bits doubles your subnet count but halves available hosts. The formula 2^n gives you subnets (n = borrowed bits), and 2^h - 2 gives usable hosts (h = remaining host bits, minus network and broadcast addresses). This is fundamental to network design and troubleshooting.",
+      "surfaceVariants": [
+        {
+          "id": "variant-class-b",
+          "description": "Subnet a Class B network for multiple departments",
+          "data": {
+            "network": "172.16.0.0/16",
+            "requirement": "8 subnets with maximum hosts"
+          }
+        },
+        {
+          "id": "variant-vlsm",
+          "description": "Use VLSM for variable-sized subnets",
+          "data": {
+            "network": "10.0.0.0/24",
+            "requirement": "3 subnets: 100 hosts, 50 hosts, 25 hosts"
+          }
+        }
+      ],
+      "timeBudgetSeconds": 480,
+      "difficulty": "intermediate",
+      "prerequisites": [],
+      "successCriteria": {
+        "minCorrectnessScore": 0.8,
+        "maxTimeSeconds": 900,
+        "maxRetries": 3,
+        "requiresExplanation": true
+      },
+      "hints": [
+        "First determine how many bits you need to borrow: 2^n >= required subnets",
+        "The subnet size is always a power of 2 (64, 128, 256)",
+        "Remember: network address is first, broadcast is last, usable hosts are in between"
+      ],
+      "commonErrors": [
+        {
+          "pattern": "forgot to subtract 2",
+          "description": "Counted network and broadcast as usable hosts",
+          "remediation": "Every subnet loses 2 addresses: the network address (all host bits 0) and broadcast (all host bits 1)"
+        },
+        {
+          "pattern": "wrong increment",
+          "description": "Calculated subnet boundaries incorrectly",
+          "remediation": "The increment equals the subnet size: if /26, increment is 64 (0, 64, 128, 192)"
+        }
+      ]
+    },
+    {
+      "id": "tb-net-osi-001",
+      "concept": "OSI Model Practical Application",
+      "mode": "L0",
+      "canonicalSolution": "```\nTroubleshooting a user who can't access a website:\n\nLayer 1 - Physical:\n  Check: Cable connected? Link light on?\n  Tool: Visual inspection, cable tester\n\nLayer 2 - Data Link:\n  Check: Getting MAC address? Switch port errors?\n  Tool: ip link show, switch port stats\n\nLayer 3 - Network:\n  Check: IP address assigned? Can ping gateway?\n  Tool: ip addr, ping 192.168.1.1\n\nLayer 4 - Transport:\n  Check: Port 443 open? Firewall blocking?\n  Tool: ss -tulnp, telnet host 443\n\nLayer 7 - Application:\n  Check: DNS resolving? HTTP response?\n  Tool: host example.com, curl -I https://example.com\n\nDiagnosis: Work bottom-up until you find the failing layer.\n```",
+      "explanation": "The OSI model provides a systematic troubleshooting framework. Start at Layer 1 (physical) and work up. If Layer 3 (ping) works but Layer 4 (port connection) fails, you've localized the problem. This methodology prevents random troubleshooting and ensures you don't miss obvious issues. Most real-world problems occur at Layers 1, 3, or 7.",
+      "surfaceVariants": [
+        {
+          "id": "variant-tcp-handshake",
+          "description": "Analyze a TCP connection failure at Layer 4",
+          "data": {
+            "scenario": "SYN sent but no SYN-ACK received"
+          }
+        },
+        {
+          "id": "variant-dns-failure",
+          "description": "DNS resolution failing at Layer 7",
+          "data": {
+            "scenario": "ping by IP works, ping by hostname fails"
+          }
+        }
+      ],
+      "timeBudgetSeconds": 420,
+      "difficulty": "intermediate",
+      "prerequisites": [],
+      "successCriteria": {
+        "minCorrectnessScore": 0.75,
+        "maxTimeSeconds": 840,
+        "maxRetries": 3,
+        "requiresExplanation": true
+      },
+      "hints": [
+        "Always start at Layer 1 - is it plugged in?",
+        "If ping works, Layers 1-3 are probably fine",
+        "DNS issues are Layer 7 - check with host or nslookup"
+      ],
+      "commonErrors": [
+        {
+          "pattern": "started at wrong layer",
+          "description": "Jumped to application troubleshooting without checking basics",
+          "remediation": "Always verify physical connectivity and IP configuration before checking applications"
+        },
+        {
+          "pattern": "confused layers",
+          "description": "Mixed up what happens at each layer",
+          "remediation": "Remember: IP=L3, TCP/UDP ports=L4, HTTP/DNS=L7"
+        }
+      ]
+    },
+    {
+      "id": "tb-net-protocols-001",
+      "concept": "Common Network Protocols and Ports",
+      "mode": "L0",
+      "canonicalSolution": "```\nEssential protocols and ports:\n\nRemote Access:\n  SSH     - TCP 22  (secure shell)\n  RDP     - TCP 3389 (Windows remote desktop)\n  Telnet  - TCP 23  (insecure, avoid)\n\nWeb Services:\n  HTTP    - TCP 80  (unencrypted web)\n  HTTPS   - TCP 443 (encrypted web)\n\nFile Transfer:\n  FTP     - TCP 21 (control), 20 (data)\n  SFTP    - TCP 22 (via SSH)\n  SMB     - TCP 445 (Windows shares)\n\nDirectory/Name Services:\n  DNS     - TCP/UDP 53\n  LDAP    - TCP 389\n  LDAPS   - TCP 636\n\nMail:\n  SMTP    - TCP 25/587 (sending)\n  IMAP    - TCP 143/993 (receiving)\n  POP3    - TCP 110/995 (receiving)\n\nManagement:\n  SNMP    - UDP 161/162\n  NTP     - UDP 123\n  DHCP    - UDP 67/68\n```",
+      "explanation": "Knowing port numbers lets you quickly identify traffic, write firewall rules, and troubleshoot connectivity. Well-known ports (0-1023) are assigned by IANA. The pattern of secure alternatives (22 vs 23, 443 vs 80, 993 vs 143) reflects the industry's move toward encryption. When troubleshooting, checking if the expected port is open is a quick diagnostic step.",
+      "surfaceVariants": [
+        {
+          "id": "variant-firewall-rules",
+          "description": "Write firewall rules for a web server",
+          "data": {
+            "requirement": "Allow HTTP, HTTPS, SSH; deny all else"
+          }
+        },
+        {
+          "id": "variant-security-audit",
+          "description": "Identify insecure protocols in use",
+          "data": {
+            "requirement": "Flag Telnet, FTP, unencrypted LDAP"
+          }
+        }
+      ],
+      "timeBudgetSeconds": 300,
+      "difficulty": "beginner",
+      "prerequisites": [],
+      "successCriteria": {
+        "minCorrectnessScore": 0.8,
+        "maxTimeSeconds": 600,
+        "maxRetries": 3,
+        "requiresExplanation": false
+      },
+      "hints": [
+        "SSH (22) is the secure alternative to Telnet (23)",
+        "Secure web (HTTPS) is port 443, not 80",
+        "DNS uses both TCP and UDP port 53"
+      ],
+      "commonErrors": [
+        {
+          "pattern": "confused http/https ports",
+          "description": "Swapped 80 and 443",
+          "remediation": "HTTP=80 (plain), HTTPS=443 (secure). The 'S' for secure is the higher number."
+        },
+        {
+          "pattern": "forgot udp protocols",
+          "description": "Assumed all protocols use TCP",
+          "remediation": "DNS, DHCP, SNMP, NTP use UDP for lightweight queries"
+        }
+      ]
+    }
+  ],
+  "author": "TopShelf Teaching Team",
+  "createdAt": "2026-01-15T00:00:00Z",
+  "updatedAt": "2026-01-15T00:00:00Z",
+  "signature": "sig-v1-ECDSA-P256-SHA256-placeholder",
+  "signingKeyId": "key-prod-001",
+  "schemaVersion": "1.0.0"
+}

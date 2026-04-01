@@ -42,6 +42,7 @@ SESSION_TIMEOUT_MS=3600000  # 1 hour session timeout
 ## Docker Deployment
 
 ### Dockerfile
+
 ```dockerfile
 FROM node:18-alpine
 
@@ -58,6 +59,7 @@ CMD ["node", "dist/index.js"]
 ```
 
 ### Build and Run
+
 ```bash
 docker build -t topshelf-teach .
 docker run -p 3000:3000 topshelf-teach
@@ -66,6 +68,7 @@ docker run -p 3000:3000 topshelf-teach
 ## Cloud Deployment
 
 ### AWS EC2
+
 1. Launch Ubuntu instance
 2. Install Node.js 18+
 3. Clone repository
@@ -80,12 +83,14 @@ pm2 startup
 ```
 
 ### Heroku
+
 ```bash
 # Procfile
 web: cd implementations/mcp-server && node dist/index.js
 ```
 
 ### Google Cloud Run
+
 ```bash
 gcloud run deploy teach-mcp \
   --source implementations/mcp-server \
@@ -114,11 +119,13 @@ server {
 ## Monitoring
 
 ### Health Check
+
 ```bash
 curl http://localhost:3000/health
 ```
 
 ### Logs
+
 ```bash
 # PM2 logs
 pm2 logs teach-mcp
@@ -128,6 +135,7 @@ docker logs <container-id>
 ```
 
 ### Metrics to Monitor
+
 - Response time
 - Active sessions
 - Memory usage
@@ -137,11 +145,13 @@ docker logs <container-id>
 ## Scaling Considerations
 
 ### Horizontal Scaling
+
 - Use Redis for session storage
 - Load balancer across multiple instances
 - Stateless server design
 
 ### Session Storage
+
 ```typescript
 // Future: Redis integration
 import Redis from 'ioredis';
@@ -157,25 +167,30 @@ const data = await redis.get(`session:${id}`);
 ## Security
 
 ### HTTPS
+
 - Use Let's Encrypt for SSL
 - Redirect HTTP to HTTPS
 - HSTS headers
 
 ### CORS
+
 ```typescript
-app.use(cors({
-  origin: process.env.ALLOWED_ORIGINS?.split(','),
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: process.env.ALLOWED_ORIGINS?.split(','),
+    credentials: true,
+  })
+);
 ```
 
 ### Rate Limiting
+
 ```typescript
 import rateLimit from 'express-rate-limit';
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100 // limit each IP to 100 requests per windowMs
+  max: 100, // limit each IP to 100 requests per windowMs
 });
 
 app.use('/api/', limiter);
@@ -184,11 +199,13 @@ app.use('/api/', limiter);
 ## Backup and Recovery
 
 ### Session Data
+
 - Export active sessions periodically
 - Store in S3 or similar
 - Restore on server restart
 
 ### Database (Future)
+
 - Automated backups
 - Point-in-time recovery
 - Replication for HA
@@ -196,16 +213,19 @@ app.use('/api/', limiter);
 ## Troubleshooting
 
 ### Server Won't Start
+
 - Check port availability: `lsof -i :3000`
 - Verify Node version: `node --version`
 - Check logs for errors
 
 ### High Memory Usage
+
 - Monitor session count
 - Implement session cleanup
 - Set session timeouts
 
 ### Slow Response Times
+
 - Check database queries (future)
 - Monitor CPU usage
 - Consider caching

@@ -1,0 +1,8 @@
+packages:
+  - 'packages/*'
+  - 'packages/_future/*'
+  - 'apps/*'
+  - 'content-packs'
+  - 'policy'
+  - 'docs'
+  - 'pilot'

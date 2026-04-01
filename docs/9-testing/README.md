@@ -29,21 +29,20 @@ npm test -- --coverage
 ## Test Categories
 
 ### Unit Tests
+
 Test individual components in isolation
 
 ```typescript
 describe('ConstraintEngine', () => {
   it('should reject heavy frameworks for Chromebooks', () => {
-    const result = ConstraintEngine.isSuggestionSuitable(
-      'Use React',
-      DeviceProfile.CHROMEBOOK_LOW
-    );
+    const result = ConstraintEngine.isSuggestionSuitable('Use React', DeviceProfile.CHROMEBOOK_LOW);
     expect(result.suitable).toBe(false);
   });
 });
 ```
 
 ### Integration Tests
+
 Test component interactions
 
 ```typescript
@@ -53,18 +52,16 @@ describe('PedagogyEngine', () => {
       TeachingMode.L2_CONTEXTUAL,
       DeviceProfile.CHROMEBOOK_STANDARD
     );
-    
-    const response = PedagogyEngine.processTeachingRequest(
-      context,
-      'Use React framework'
-    );
-    
+
+    const response = PedagogyEngine.processTeachingRequest(context, 'Use React framework');
+
     expect(response.filtered).toBe(true);
   });
 });
 ```
 
 ### API Tests
+
 Test HTTP endpoints (future)
 
 ```typescript
@@ -72,9 +69,9 @@ describe('API', () => {
   it('should initialize session', async () => {
     const response = await fetch('/api/session/init', {
       method: 'POST',
-      body: JSON.stringify({ sessionId: 'test' })
+      body: JSON.stringify({ sessionId: 'test' }),
     });
-    
+
     expect(response.status).toBe(200);
   });
 });
@@ -83,31 +80,35 @@ describe('API', () => {
 ## Writing Good Tests
 
 ### Follow AAA Pattern
+
 ```typescript
 it('should do something', () => {
   // Arrange - Set up test data
   const context = createTestContext();
-  
+
   // Act - Perform the action
   const result = someFunction(context);
-  
+
   // Assert - Verify the result
   expect(result).toBe(expected);
 });
 ```
 
 ### Test Edge Cases
+
 - Empty inputs
 - Null/undefined values
 - Boundary conditions
 - Error scenarios
 
 ### Keep Tests Fast
+
 - No external dependencies
 - Mock where appropriate
 - Parallel execution
 
 ### One Assertion per Test (Ideally)
+
 ```typescript
 // Good
 it('should reject large responses', () => {
@@ -163,7 +164,7 @@ Validate all device profiles:
 describe('Device Profiles', () => {
   const profiles = Object.values(DeviceProfile);
 
-  profiles.forEach(profile => {
+  profiles.forEach((profile) => {
     describe(profile, () => {
       it('should have valid constraints', () => {
         const constraints = ConstraintEngine.getConstraints(profile);
@@ -173,7 +174,7 @@ describe('Device Profiles', () => {
       it('should enforce framework restrictions', () => {
         const isChromebook = profile.includes('chromebook');
         const constraints = ConstraintEngine.getConstraints(profile);
-        
+
         if (isChromebook) {
           expect(constraints.allowHeavyFrameworks).toBe(false);
         }
@@ -186,6 +187,7 @@ describe('Device Profiles', () => {
 ## Manual Testing Checklist
 
 ### Server Functionality
+
 - [ ] Server starts without errors
 - [ ] Health endpoint responds
 - [ ] All API endpoints work
@@ -193,6 +195,7 @@ describe('Device Profiles', () => {
 - [ ] Invalid requests rejected
 
 ### Teaching Modes
+
 - [ ] L0 never teaches
 - [ ] L1 teaches on help request only
 - [ ] L2 teaches on triggers
@@ -200,12 +203,14 @@ describe('Device Profiles', () => {
 - [ ] L4 always teaches
 
 ### Device Constraints
+
 - [ ] Heavy frameworks blocked for Chromebooks
 - [ ] Large responses truncated
 - [ ] Offline capability enforced
 - [ ] Asset restrictions work
 
 ### Trigger Detection
+
 - [ ] Repeated errors detected
 - [ ] Stuck state identified
 - [ ] Time thresholds work
@@ -214,6 +219,7 @@ describe('Device Profiles', () => {
 ## Performance Testing
 
 ### Load Testing
+
 ```bash
 # Using Apache Bench
 ab -n 1000 -c 10 http://localhost:3000/health
@@ -223,6 +229,7 @@ wrk -t4 -c100 -d30s http://localhost:3000/api/session/init
 ```
 
 ### Memory Testing
+
 ```bash
 # Monitor memory usage
 node --expose-gc dist/index.js
@@ -235,6 +242,7 @@ node --inspect dist/index.js
 ## Continuous Integration
 
 Tests run automatically on:
+
 - Every push to main/develop
 - All pull requests
 - Before deployment

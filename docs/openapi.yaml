@@ -1,0 +1,902 @@
+openapi: 3.1.0
+info:
+  title: TopShelf Teaching API
+  description: |
+    REST API for the TopShelf Teaching educational platform.
+
+    ## Authentication
+    All protected endpoints require a Bearer token in the Authorization header:
+    ```
+    Authorization: Bearer <access_token>
+    ```
+
+    ## Rate Limiting
+    - 100 requests per minute per user
+    - Rate limit headers included in all responses
+
+    ## Errors
+    All errors return a consistent JSON structure with `error`, `message`, and `code` fields.
+  version: 1.0.0
+  contact:
+    name: TopShelf Service LLC
+    email: api@topshelfservice.com
+    url: https://topshelfteaching.com
+  license:
+    name: Proprietary
+    url: https://topshelfteaching.com/license
+  x-logo:
+    url: https://topshelfteaching.com/logo.png
+
+servers:
+  - url: https://api.topshelfteaching.com/api/v1
+    description: Production
+  - url: https://staging-api.topshelfteaching.com/api/v1
+    description: Staging
+  - url: http://localhost:3000/api/v1
+    description: Local Development
+
+tags:
+  - name: Authentication
+    description: User authentication and session management
+  - name: Learner
+    description: Learner state and progress management
+  - name: Content
+    description: Content packs and learning blocks
+  - name: Sessions
+    description: Learning session management
+  - name: Policy
+    description: Policy evaluation and promotion logic
+  - name: Badges
+    description: Badges and credentials
+  - name: Billing
+    description: Subscription and payment management
+  - name: Admin
+    description: Administrative operations
+
+paths:
+  # ===========================================================================
+  # AUTHENTICATION
+  # ===========================================================================
+  /auth/register:
+    post:
+      tags: [Authentication]
+      summary: Register a new user
+      operationId: registerUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: Email already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/login:
+    post:
+      tags: [Authentication]
+      summary: Authenticate user
+      operationId: loginUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/refresh:
+    post:
+      tags: [Authentication]
+      summary: Refresh access token
+      operationId: refreshToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refreshToken]
+              properties:
+                refreshToken:
+                  type: string
+      responses:
+        '200':
+          description: Token refreshed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/logout:
+    post:
+      tags: [Authentication]
+      summary: Logout and revoke session
+      operationId: logoutUser
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Logged out successfully
+
+  # ===========================================================================
+  # LEARNER
+  # ===========================================================================
+  /learner/states:
+    get:
+      tags: [Learner]
+      summary: Get all learner states for current user
+      operationId: getLearnerStates
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of learner states
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  states:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/LearnerStateSummary'
+
+  /learner/state/{contentPackId}:
+    get:
+      tags: [Learner]
+      summary: Get learner state for a content pack
+      operationId: getLearnerState
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: contentPackId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Learner state details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LearnerState'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /learner/session/start:
+    post:
+      tags: [Learner]
+      summary: Start a new learning session
+      operationId: startLearningSession
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [contentPackId]
+              properties:
+                contentPackId:
+                  type: string
+                  format: uuid
+                deviceInfo:
+                  type: object
+      responses:
+        '201':
+          description: Session started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sessionId:
+                    type: string
+                    format: uuid
+                  state:
+                    $ref: '#/components/schemas/LearnerStateSummary'
+
+  /learner/session/{sessionId}/event:
+    post:
+      tags: [Learner]
+      summary: Record a progress event
+      operationId: recordProgressEvent
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProgressEvent'
+      responses:
+        '200':
+          description: Event recorded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  eventId:
+                    type: string
+                    format: uuid
+                  recorded:
+                    type: boolean
+
+  /learner/session/{sessionId}/end:
+    post:
+      tags: [Learner]
+      summary: End a learning session
+      operationId: endLearningSession
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Session ended
+
+  # ===========================================================================
+  # CONTENT
+  # ===========================================================================
+  /content/packs:
+    get:
+      tags: [Content]
+      summary: List available content packs
+      operationId: listContentPacks
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [draft, review, approved, published, archived]
+        - name: certification
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: List of content packs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  packs:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ContentPackSummary'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+
+  /content/packs/{packId}:
+    get:
+      tags: [Content]
+      summary: Get content pack details
+      operationId: getContentPack
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: packId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Content pack details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentPack'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /content/packs/{packId}/blocks/{blockId}:
+    get:
+      tags: [Content]
+      summary: Get specific block content
+      operationId: getContentBlock
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: packId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: blockId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Content block details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentBlock'
+
+  /content/next/{contentPackId}:
+    get:
+      tags: [Content]
+      summary: Get next recommended block
+      operationId: getNextBlock
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: contentPackId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Next block recommendation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  complete:
+                    type: boolean
+                  nextBlock:
+                    $ref: '#/components/schemas/ContentBlockSummary'
+                  progress:
+                    type: object
+
+  # ===========================================================================
+  # BADGES
+  # ===========================================================================
+  /badge:
+    get:
+      tags: [Badges]
+      summary: List user's badges
+      operationId: listBadges
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of badges
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  badges:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Badge'
+
+  /badge/{badgeId}:
+    get:
+      tags: [Badges]
+      summary: Get badge details
+      operationId: getBadge
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: badgeId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Badge details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Badge'
+
+  /badge/verify/{hash}:
+    get:
+      tags: [Badges]
+      summary: Verify badge by hash (public)
+      operationId: verifyBadge
+      parameters:
+        - name: hash
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Verification result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadgeVerification'
+
+  # ===========================================================================
+  # BILLING
+  # ===========================================================================
+  /billing/subscription:
+    get:
+      tags: [Billing]
+      summary: Get current subscription
+      operationId: getSubscription
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Subscription details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+
+  /billing/checkout:
+    post:
+      tags: [Billing]
+      summary: Create checkout session
+      operationId: createCheckout
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [plan, interval]
+              properties:
+                plan:
+                  type: string
+                  enum: [individual, school, district, enterprise]
+                interval:
+                  type: string
+                  enum: [monthly, annual]
+                seats:
+                  type: integer
+      responses:
+        '200':
+          description: Checkout session created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  checkoutUrl:
+                    type: string
+                    format: uri
+
+  /billing/portal:
+    post:
+      tags: [Billing]
+      summary: Create billing portal session
+      operationId: createPortalSession
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Portal session created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  portalUrl:
+                    type: string
+                    format: uri
+
+  /billing/invoices:
+    get:
+      tags: [Billing]
+      summary: List invoices
+      operationId: listInvoices
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: List of invoices
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  invoices:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Invoice'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Forbidden:
+      description: Insufficient permissions
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+  schemas:
+    Error:
+      type: object
+      required: [error, message, code]
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        code:
+          type: string
+        requestId:
+          type: string
+
+    Pagination:
+      type: object
+      properties:
+        limit:
+          type: integer
+        offset:
+          type: integer
+        hasMore:
+          type: boolean
+
+    RegisterRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+        firstName:
+          type: string
+        lastName:
+          type: string
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+
+    AuthResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        user:
+          $ref: '#/components/schemas/User'
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+        expiresIn:
+          type: integer
+        tokenType:
+          type: string
+
+    TokenResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+        expiresIn:
+          type: integer
+        tokenType:
+          type: string
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        firstName:
+          type: string
+        lastName:
+          type: string
+        role:
+          type: string
+          enum: [learner, instructor, content_author, school_admin, district_admin, system_admin]
+
+    LearnerState:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        currentMode:
+          $ref: '#/components/schemas/LearningMode'
+        overallMastery:
+          type: number
+        totalTimeSpentSeconds:
+          type: integer
+        blocksCompleted:
+          type: integer
+        currentBlockId:
+          type: string
+        skillEstimates:
+          type: object
+        inProbation:
+          type: boolean
+        lastActivityAt:
+          type: string
+          format: date-time
+
+    LearnerStateSummary:
+      type: object
+      properties:
+        currentMode:
+          $ref: '#/components/schemas/LearningMode'
+        overallMastery:
+          type: number
+        blocksCompleted:
+          type: integer
+
+    LearningMode:
+      type: string
+      enum: [L1_RECALL, L2_EXPLAIN, L3_APPLY, L4_ANALYZE, L5_EXPERT]
+
+    ProgressEvent:
+      type: object
+      required: [blockId, eventType]
+      properties:
+        blockId:
+          type: string
+        eventType:
+          type: string
+          enum: [started, completed, hint_used, skipped, paused, resumed]
+        responseData:
+          type: object
+        correctness:
+          type: number
+          minimum: 0
+          maximum: 1
+        timeSpentSeconds:
+          type: integer
+
+    ContentPackSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        slug:
+          type: string
+        version:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        certificationTarget:
+          type: string
+        status:
+          type: string
+
+    ContentPack:
+      allOf:
+        - $ref: '#/components/schemas/ContentPackSummary'
+        - type: object
+          properties:
+            totalBlocks:
+              type: integer
+            blocks:
+              type: array
+              items:
+                $ref: '#/components/schemas/ContentBlockSummary'
+
+    ContentBlockSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        blockId:
+          type: string
+        title:
+          type: string
+        objective:
+          type: string
+        targetMode:
+          $ref: '#/components/schemas/LearningMode'
+        sequenceOrder:
+          type: integer
+
+    ContentBlock:
+      allOf:
+        - $ref: '#/components/schemas/ContentBlockSummary'
+        - type: object
+          properties:
+            timeBudgetSeconds:
+              type: integer
+            content:
+              type: object
+            hints:
+              type: array
+            variants:
+              type: array
+
+    Badge:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        badgeType:
+          type: string
+        level:
+          $ref: '#/components/schemas/LearningMode'
+        status:
+          type: string
+          enum: [pending, issued, revoked, expired]
+        masteryScore:
+          type: number
+        issuedAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+
+    BadgeVerification:
+      type: object
+      properties:
+        valid:
+          type: boolean
+        message:
+          type: string
+        badge:
+          type: object
+          properties:
+            holder:
+              type: string
+            achievement:
+              type: string
+            certification:
+              type: string
+            level:
+              type: string
+            masteryScore:
+              type: number
+            issuedAt:
+              type: string
+              format: date-time
+
+    Subscription:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        plan:
+          type: string
+          enum: [individual, school, district, enterprise]
+        interval:
+          type: string
+          enum: [monthly, annual]
+        status:
+          type: string
+          enum: [trialing, active, past_due, canceled, unpaid]
+        seats:
+          type: integer
+        usedSeats:
+          type: integer
+        currentPeriodEnd:
+          type: string
+          format: date-time
+        cancelAtPeriodEnd:
+          type: boolean
+
+    Invoice:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        amount:
+          type: integer
+          description: Amount in cents
+        currency:
+          type: string
+        status:
+          type: string
+        dueDate:
+          type: string
+          format: date-time
+        paidAt:
+          type: string
+          format: date-time
+        invoicePdf:
+          type: string
+          format: uri

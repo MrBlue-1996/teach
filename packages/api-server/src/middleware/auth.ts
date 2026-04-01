@@ -1,0 +1,128 @@
+/**
+ * TopShelf Service LLC - Authentication Middleware
+ * PROPRIETARY AND CONFIDENTIAL
+ * Copyright (c) 2026 TopShelf Service LLC. All Rights Reserved.
+ */
+
+import { createMiddleware } from 'hono/factory';
+import { verifyToken, type TokenPayload } from '@topshelf/auth';
+import { AuthenticationError, AuthorizationError } from './error-handler.js';
+
+// Extend Hono context with user info
+declare module 'hono' {
+  interface ContextVariableMap {
+    requestId: string;
+    userId: string;
+    userRole: string;
+    tokenPayload: TokenPayload;
+  }
+}
+
+/**
+ * Authentication middleware - verifies JWT token
+ */
+export function authMiddleware() {
+  return createMiddleware(async (c, next) => {
+    const authHeader = c.req.header('Authorization');
+
+    if (!authHeader) {
+      throw new AuthenticationError('Authorization header required');
+    }
+
+    const [scheme, token] = authHeader.split(' ');
+
+    if (scheme?.toLowerCase() !== 'bearer' || !token) {
+      throw new AuthenticationError('Invalid authorization format. Use: Bearer <token>');
+    }
+
+    try {
+      const payload = await verifyToken(token);
+
+      // Set user info in context
+      c.set('userId', payload.sub);
+      c.set('userRole', payload.role);
+      c.set('tokenPayload', payload);
+
+      await next();
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new AuthenticationError(error.message);
+      }
+      throw new AuthenticationError('Invalid or expired token');
+    }
+  });
+}
+
+/**
+ * Role-based authorization middleware
+ */
+export function requireRole(...allowedRoles: string[]) {
+  return createMiddleware(async (c, next) => {
+    const userRole = c.get('userRole');
+
+    if (!userRole) {
+      throw new AuthenticationError('Authentication required');
+    }
+
+    if (!allowedRoles.includes(userRole)) {
+      throw new AuthorizationError(
+        `This action requires one of the following roles: ${allowedRoles.join(', ')}`
+      );
+    }
+
+    await next();
+  });
+}
+
+/**
+ * Resource ownership middleware - ensures user can only access their own resources
+ */
+export function requireOwnership(
+  paramName: string = 'id',
+  allowRoles: string[] = ['system_admin', 'district_admin']
+) {
+  return createMiddleware(async (c, next) => {
+    const userId = c.get('userId');
+    const userRole = c.get('userRole');
+    const resourceOwnerId = c.req.param(paramName);
+
+    // Admins can access any resource
+    if (allowRoles.includes(userRole)) {
+      await next();
+      return;
+    }
+
+    // Users can only access their own resources
+    if (resourceOwnerId !== userId) {
+      throw new AuthorizationError('You can only access your own resources');
+    }
+
+    await next();
+  });
+}
+
+/**
+ * Optional authentication - sets user info if token present, but doesn't require it
+ */
+export function optionalAuth() {
+  return createMiddleware(async (c, next) => {
+    const authHeader = c.req.header('Authorization');
+
+    if (authHeader) {
+      const [scheme, token] = authHeader.split(' ');
+
+      if (scheme?.toLowerCase() === 'bearer' && token) {
+        try {
+          const payload = await verifyToken(token);
+          c.set('userId', payload.sub);
+          c.set('userRole', payload.role);
+          c.set('tokenPayload', payload);
+        } catch {
+          // Ignore invalid tokens in optional auth
+        }
+      }
+    }
+
+    await next();
+  });
+}

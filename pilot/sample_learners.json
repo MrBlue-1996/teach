@@ -1,0 +1,111 @@
+{
+  "description": "Sample learner profiles for pilot testing",
+  "version": "1.0.0",
+  "learners": [
+    {
+      "learnerId": "u-pilot-001",
+      "profile": {
+        "name": "Alex Chen",
+        "role": "Junior DevOps Engineer",
+        "experience": "1 year IT support",
+        "goals": ["Linux administration", "Basic networking"]
+      },
+      "initialCalibration": {
+        "recommendedMode": "L2",
+        "confidence": 0.75,
+        "notes": "Some command line experience, needs structured guidance"
+      },
+      "deviceProfile": {
+        "tier": "baseline",
+        "device": "Chromebook"
+      }
+    },
+    {
+      "learnerId": "u-pilot-002",
+      "profile": {
+        "name": "Jordan Smith",
+        "role": "Help Desk Technician",
+        "experience": "2 years help desk",
+        "goals": ["Network+ certification", "Linux basics"]
+      },
+      "initialCalibration": {
+        "recommendedMode": "L1",
+        "confidence": 0.8,
+        "notes": "Familiar with concepts, needs hands-on practice"
+      },
+      "deviceProfile": {
+        "tier": "enhanced",
+        "device": "Windows laptop"
+      }
+    },
+    {
+      "learnerId": "u-pilot-003",
+      "profile": {
+        "name": "Morgan Williams",
+        "role": "Career changer",
+        "experience": "No IT experience",
+        "goals": ["Entry-level IT role"]
+      },
+      "initialCalibration": {
+        "recommendedMode": "L0",
+        "confidence": 0.9,
+        "notes": "Complete beginner, needs full scaffolding"
+      },
+      "deviceProfile": {
+        "tier": "baseline",
+        "device": "Mobile phone"
+      }
+    },
+    {
+      "learnerId": "u-pilot-004",
+      "profile": {
+        "name": "Casey Johnson",
+        "role": "System Administrator",
+        "experience": "5 years Windows admin",
+        "goals": ["Linux transition", "Cloud skills"]
+      },
+      "initialCalibration": {
+        "recommendedMode": "L3",
+        "confidence": 0.7,
+        "notes": "Strong fundamentals, learning new platform"
+      },
+      "deviceProfile": {
+        "tier": "full",
+        "device": "High-end laptop"
+      }
+    },
+    {
+      "learnerId": "u-pilot-005",
+      "profile": {
+        "name": "Taylor Davis",
+        "role": "Student",
+        "experience": "CS degree in progress",
+        "goals": ["Practical skills", "Job readiness"]
+      },
+      "initialCalibration": {
+        "recommendedMode": "L2",
+        "confidence": 0.65,
+        "notes": "Theoretical knowledge, limited practical experience"
+      },
+      "deviceProfile": {
+        "tier": "enhanced",
+        "device": "MacBook"
+      }
+    }
+  ],
+  "cohortMetrics": {
+    "expectedSize": 5,
+    "diversityTargets": {
+      "deviceTiers": {
+        "baseline": 2,
+        "enhanced": 2,
+        "full": 1
+      },
+      "experienceLevels": {
+        "beginner": 2,
+        "intermediate": 2,
+        "advanced": 1
+      }
+    }
+  }
+}

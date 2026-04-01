@@ -1,0 +1,42 @@
+{
+  "name": "@topshelf/mcp-server",
+  "version": "0.1.0",
+  "private": true,
+  "description": "MCP server for TopShelf Teaching - stateless orchestration, policy evaluation, and audit",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "clean": "rm -rf dist .turbo",
+    "dev": "tsup --watch",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "start": "node dist/index.js",
+    "test": "vitest run",
+    "test:ci": "vitest run --coverage",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@topshelf/shared": "workspace:*",
+    "@topshelf/policy-engine": "workspace:*",
+    "@topshelf/content-authoring": "workspace:*",
+    "@topshelf/nlp": "workspace:*",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "tsup": "^8.0.1",
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.0"
+  }
+}

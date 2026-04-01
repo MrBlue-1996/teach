@@ -38,30 +38,35 @@ TopShelf Teaching is built as a modular TypeScript system with clear separation 
 ## Core Components
 
 ### 1. Express Server (`src/index.ts`)
+
 - HTTP server handling REST API requests
 - Session management with in-memory Map
 - Request validation and error handling
 - CORS and JSON middleware
 
 ### 2. Pedagogy Engine (`src/pedagogy-engine.ts`)
+
 - Orchestrates teaching decisions
 - Processes teaching requests
 - Applies mode-based formatting
 - Integrates trigger detection and constraints
 
 ### 3. Trigger Detector (`src/trigger-detector.ts`)
+
 - Analyzes teaching context for triggers
 - Detects error patterns and stuck states
 - Suggests mode elevation when appropriate
 - Implements "solve first" logic
 
 ### 4. Constraint Engine (`src/constraint-engine.ts`)
+
 - Defines device capability profiles
 - Filters unsuitable suggestions
 - Enforces response size limits
 - Blocks heavy frameworks for Chromebooks
 
 ### 5. Type System (`src/types.ts`)
+
 - TypeScript interfaces for all domain objects
 - Enums for modes, profiles, and triggers
 - Strong typing throughout the system
@@ -69,6 +74,7 @@ TopShelf Teaching is built as a modular TypeScript system with clear separation 
 ## Data Flow
 
 ### Teaching Request Flow
+
 ```
 1. Client sends POST /api/teach
    └─> sessionId, content, metrics
@@ -89,6 +95,7 @@ TopShelf Teaching is built as a modular TypeScript system with clear separation 
 ```
 
 ### Session Lifecycle
+
 ```
 Init → Active → Update Metrics → Detect Triggers → Mode Adjustment → Delete
 ```
@@ -128,16 +135,19 @@ tests/
 ## Scalability Considerations
 
 ### Current: In-Memory Sessions
+
 - Simple Map-based storage
 - Fast access, no persistence
 - Suitable for single-server deployments
 
 ### Future: Distributed Sessions
+
 - Redis for session storage
 - Multi-server deployments
 - Session persistence across restarts
 
 ### Future: Analytics
+
 - Track teaching effectiveness
 - Mode usage patterns
 - Device profile distribution

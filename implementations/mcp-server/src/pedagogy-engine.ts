@@ -16,7 +16,7 @@ export class PedagogyEngine {
   ): TeachingResponse {
     // Detect current triggers
     const triggers = TriggerDetector.detectTriggers(context);
-    
+
     // Update context with detected triggers
     context.triggers = triggers;
 
@@ -63,10 +63,7 @@ export class PedagogyEngine {
   /**
    * Format teaching content based on mode
    */
-  private static formatTeachingContent(
-    content: string,
-    mode: TeachingMode
-  ): string {
+  private static formatTeachingContent(content: string, mode: TeachingMode): string {
     const prefix = this.getModePrefix(mode);
     return `${prefix}\n\n${content}`;
   }

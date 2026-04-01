@@ -1,0 +1,39 @@
+{
+  "name": "@topshelf/api-server",
+  "version": "1.0.0",
+  "description": "TopShelf Service LLC - API Server with Hono Framework",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "topshelf-server": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "test": "vitest run",
+    "test:ci": "vitest run --coverage",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.8.0",
+    "@hono/zod-validator": "^0.7.6",
+    "@topshelf/auth": "workspace:*",
+    "@topshelf/config": "workspace:*",
+    "@topshelf/database": "workspace:*",
+    "@topshelf/observability": "workspace:*",
+    "@topshelf/shared": "workspace:*",
+    "hono": "^4.0.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.1",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.0"
+  },
+  "license": "SEE LICENSE IN LICENSE",
+  "author": "TopShelf Service LLC"
+}

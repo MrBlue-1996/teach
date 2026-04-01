@@ -1,0 +1,75 @@
+{
+  "name": "topshelf-teaching",
+  "version": "1.0.0",
+  "private": true,
+  "description": "TopShelf Teaching - Proprietary AI-powered educational platform by TopShelf Service LLC",
+  "keywords": [
+    "education",
+    "pedagogy",
+    "solve-first",
+    "micro-benchmarks",
+    "competency-based",
+    "ai-tutoring"
+  ],
+  "license": "SEE LICENSE IN LICENSE",
+  "author": "TopShelf Service LLC",
+  "type": "module",
+  "scripts": {
+    "build": "turbo run build",
+    "build:packages": "pnpm -r --filter './packages/*' run build",
+    "clean": "turbo run clean && rm -rf node_modules",
+    "dev": "turbo run dev --parallel",
+    "dev:server": "pnpm --filter @topshelf/api-server run dev",
+    "start": "pnpm --filter @topshelf/api-server run start",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "turbo run lint",
+    "lint:fix": "turbo run lint:fix",
+    "prepare": "husky",
+    "test": "turbo run test",
+    "test:ci": "turbo run test:ci",
+    "test:parity": "pnpm --filter @topshelf/tests run test:parity",
+    "test:e2e": "pnpm --filter @topshelf/tests run test:e2e",
+    "typecheck": "turbo run typecheck",
+    "validate": "pnpm run format:check && pnpm run lint && pnpm run typecheck && pnpm run test",
+    "validate:content-packs": "pnpm --filter @topshelf/content-authoring run validate:packs",
+    "validate:policies": "pnpm --filter @topshelf/policy-engine run validate:policies",
+    "db:migrate": "pnpm --filter @topshelf/database run db:migrate",
+    "db:generate": "pnpm --filter @topshelf/database run db:generate",
+    "db:studio": "pnpm --filter @topshelf/database run db:studio",
+    "cli": "pnpm --filter @topshelf/cli run start",
+    "docker:build": "docker-compose -f infrastructure/docker/docker-compose.yml build",
+    "docker:up": "docker-compose -f infrastructure/docker/docker-compose.yml up -d",
+    "docker:down": "docker-compose -f infrastructure/docker/docker-compose.yml down"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.27.1",
+    "@types/node": "^20.11.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-import-resolver-typescript": "^3.6.1",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-security": "^2.1.0",
+    "husky": "^9.0.0",
+    "lint-staged": "^15.2.0",
+    "prettier": "^3.2.0",
+    "turbo": "^2.0.0",
+    "typescript": "^5.3.3"
+  },
+  "packageManager": "pnpm@8.14.0",
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yaml,yml}": [
+      "prettier --write"
+    ]
+  }
+}

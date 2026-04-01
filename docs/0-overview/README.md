@@ -27,6 +27,7 @@ The server will start on port 3000 with the teaching kernel ready.
 ### Solve First, Teach Second
 
 Students attempt to solve problems independently before receiving teaching interventions. The system detects struggle points through:
+
 - Repeated errors
 - Time thresholds
 - Stuck states
@@ -35,6 +36,7 @@ Students attempt to solve problems independently before receiving teaching inter
 ### Device Constraints
 
 All teaching suggestions are filtered based on device capabilities:
+
 - Maximum response sizes
 - Framework restrictions
 - Asset limitations

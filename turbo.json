@@ -1,0 +1,63 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "globalDependencies": ["**/.env.*local", "tsconfig.base.json"],
+  "globalEnv": ["NODE_ENV", "CI", "TOPSHELF_ENV"],
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "inputs": ["src/**", "tsconfig.json", "package.json"],
+      "outputs": ["dist/**", ".next/**", "!.next/cache/**"],
+      "cache": true
+    },
+    "typecheck": {
+      "dependsOn": ["^build"],
+      "inputs": ["src/**", "tsconfig.json"],
+      "outputs": [],
+      "cache": true
+    },
+    "lint": {
+      "dependsOn": ["^build"],
+      "inputs": ["src/**", ".eslintrc.*", "tsconfig.json"],
+      "outputs": [],
+      "cache": true
+    },
+    "lint:fix": {
+      "dependsOn": ["^build"],
+      "cache": false
+    },
+    "test": {
+      "dependsOn": ["build"],
+      "inputs": ["src/**", "test/**", "vitest.config.*"],
+      "outputs": ["coverage/**"],
+      "cache": true,
+      "env": ["VITEST"]
+    },
+    "test:ci": {
+      "dependsOn": ["build"],
+      "inputs": ["src/**", "test/**", "vitest.config.*"],
+      "outputs": ["coverage/**"],
+      "cache": true,
+      "env": ["CI", "VITEST"]
+    },
+    "dev": {
+      "dependsOn": ["^build"],
+      "cache": false,
+      "persistent": true
+    },
+    "clean": {
+      "cache": false
+    },
+    "validate:packs": {
+      "dependsOn": ["build"],
+      "inputs": ["content-packs/**/*.json", "src/schemas/**"],
+      "outputs": [],
+      "cache": true
+    },
+    "validate:policies": {
+      "dependsOn": ["build"],
+      "inputs": ["policy/**/*.json", "src/schemas/**"],
+      "outputs": [],
+      "cache": true
+    }
+  }
+}

@@ -1,0 +1,228 @@
+{
+  "id": "pack-linux-fundamentals-v1",
+  "name": "Linux Fundamentals",
+  "version": "1.0.0",
+  "description": "Core Linux administration skills covering user management, file permissions, process control, and basic networking diagnostics.",
+  "tags": ["required"],
+  "roleMappings": ["badge-linux-admin-v1", "badge-devops-foundations-v1"],
+  "difficulty": "beginner",
+  "minDeviceProfile": {
+    "ramMb": 1024,
+    "networkKbps": 200,
+    "requiresWebGL": false,
+    "requiresWebGPU": false,
+    "requiresWasm": false
+  },
+  "teachingBlocks": [
+    {
+      "id": "tb-linux-user-001",
+      "concept": "Creating and Managing Linux Users",
+      "mode": "L0",
+      "canonicalSolution": "```bash\n# Create a new user with home directory\nsudo useradd -m -s /bin/bash newuser\n\n# Set the user's password\nsudo passwd newuser\n\n# Verify user creation\nid newuser\nls -la /home/newuser\n```",
+      "explanation": "Linux uses the useradd command to create user accounts. The -m flag creates a home directory, and -s specifies the login shell. User information is stored in /etc/passwd, and password hashes are stored in /etc/shadow. The id command confirms the user exists and shows their UID/GID. Understanding this pattern helps you manage access control across any Linux system.",
+      "surfaceVariants": [
+        {
+          "id": "variant-system-user",
+          "description": "Create a system user for running a service (no login shell)",
+          "data": {
+            "command": "useradd -r -s /usr/sbin/nologin serviceuser",
+            "context": "service account"
+          }
+        },
+        {
+          "id": "variant-specific-uid",
+          "description": "Create user with specific UID for NFS compatibility",
+          "data": {
+            "command": "useradd -u 1500 -m nfsuser",
+            "context": "NFS environment"
+          }
+        }
+      ],
+      "timeBudgetSeconds": 300,
+      "difficulty": "beginner",
+      "prerequisites": [],
+      "successCriteria": {
+        "minCorrectnessScore": 0.7,
+        "maxTimeSeconds": 600,
+        "maxRetries": 3,
+        "requiresExplanation": false
+      },
+      "hints": [
+        "Think about what information a user account needs: username, home directory, and shell",
+        "The useradd command has flags for each of these - check man useradd",
+        "Use -m for home directory and -s for shell specification"
+      ],
+      "commonErrors": [
+        {
+          "pattern": "adduser instead of useradd",
+          "description": "Used adduser which is a friendlier wrapper but less portable",
+          "remediation": "While adduser works on Debian-based systems, useradd is the low-level command that works on all Linux distributions"
+        },
+        {
+          "pattern": "forgot -m flag",
+          "description": "Created user without home directory",
+          "remediation": "Without -m, the user has no home directory. Many applications expect ~/ to exist."
+        }
+      ]
+    },
+    {
+      "id": "tb-linux-perms-001",
+      "concept": "Understanding and Setting File Permissions",
+      "mode": "L0",
+      "canonicalSolution": "```bash\n# View current permissions\nls -la /path/to/file\n\n# Set permissions using symbolic notation\nchmod u+rwx,g+rx,o+r script.sh\n\n# Or using octal notation (equivalent to above)\nchmod 754 script.sh\n\n# Change ownership\nsudo chown user:group script.sh\n```",
+      "explanation": "Linux permissions operate on three levels: user (owner), group, and others. Each level can have read (r=4), write (w=2), and execute (x=1) permissions. The chmod command modifies permissions using either symbolic (u+rwx) or octal (754) notation. Understanding this model is fundamental because it's how Linux controls all file and directory access. Octal notation uses base-8 math: rwx=4+2+1=7.",
+      "surfaceVariants": [
+        {
+          "id": "variant-recursive",
+          "description": "Apply permissions recursively to a directory tree",
+          "data": {
+            "command": "chmod -R 755 /var/www/html",
+            "context": "web server directory"
+          }
+        },
+        {
+          "id": "variant-setuid",
+          "description": "Set special permissions (setuid/setgid)",
+          "data": {
+            "command": "chmod u+s /usr/local/bin/special",
+            "context": "privileged execution"
+          }
+        }
+      ],
+      "timeBudgetSeconds": 300,
+      "difficulty": "beginner",
+      "prerequisites": [],
+      "successCriteria": {
+        "minCorrectnessScore": 0.7,
+        "maxTimeSeconds": 600,
+        "maxRetries": 3,
+        "requiresExplanation": true
+      },
+      "hints": [
+        "Permissions are shown as 10 characters: type + 3 sets of rwx",
+        "r=4, w=2, x=1 - add them up for each position",
+        "754 means owner:rwx(7), group:rx(5), others:r(4)"
+      ],
+      "commonErrors": [
+        {
+          "pattern": "777 permissions",
+          "description": "Set world-writable permissions",
+          "remediation": "777 is almost never appropriate - it allows anyone to modify the file. Use 755 for executables and 644 for regular files."
+        },
+        {
+          "pattern": "confused user/group/other",
+          "description": "Applied permissions to wrong category",
+          "remediation": "Remember: first digit is owner (u), second is group (g), third is others (o)"
+        }
+      ]
+    },
+    {
+      "id": "tb-linux-process-001",
+      "concept": "Process Management and Monitoring",
+      "mode": "L0",
+      "canonicalSolution": "```bash\n# View running processes\nps aux | head -20\n\n# Real-time process monitoring\ntop -bn1 | head -20\n\n# Find specific process\npgrep -a nginx\n\n# Send signal to process\nkill -SIGTERM $(pgrep nginx)\n\n# Force kill if needed\nkill -9 <pid>\n```",
+      "explanation": "Every running program in Linux is a process with a unique PID. ps shows process snapshots, top provides real-time monitoring, and kill sends signals to processes. SIGTERM (15) asks a process to terminate gracefully, while SIGKILL (9) forces immediate termination. Understanding process management helps you diagnose performance issues and manage system resources.",
+      "surfaceVariants": [
+        {
+          "id": "variant-systemd",
+          "description": "Manage services through systemd",
+          "data": {
+            "command": "systemctl status nginx && systemctl restart nginx",
+            "context": "systemd service management"
+          }
+        },
+        {
+          "id": "variant-background",
+          "description": "Run and manage background processes",
+          "data": {
+            "command": "nohup ./long-task.sh &",
+            "context": "background execution"
+          }
+        }
+      ],
+      "timeBudgetSeconds": 360,
+      "difficulty": "intermediate",
+      "prerequisites": ["tb-linux-user-001"],
+      "successCriteria": {
+        "minCorrectnessScore": 0.75,
+        "maxTimeSeconds": 720,
+        "maxRetries": 3,
+        "requiresExplanation": true
+      },
+      "hints": [
+        "ps aux shows all processes with detailed info",
+        "Use pgrep to find process IDs by name",
+        "Always try SIGTERM before SIGKILL"
+      ],
+      "commonErrors": [
+        {
+          "pattern": "kill -9 first",
+          "description": "Immediately used SIGKILL without trying SIGTERM",
+          "remediation": "SIGKILL doesn't allow cleanup. Always try SIGTERM first and wait before using -9"
+        },
+        {
+          "pattern": "wrong pid",
+          "description": "Killed wrong process",
+          "remediation": "Always verify the PID with ps or pgrep before sending kill signals"
+        }
+      ]
+    },
+    {
+      "id": "tb-linux-network-001",
+      "concept": "Basic Network Diagnostics",
+      "mode": "L0",
+      "canonicalSolution": "```bash\n# Check network interfaces\nip addr show\n\n# Test connectivity\nping -c 3 google.com\n\n# Check DNS resolution\nhost google.com\n\n# View routing table\nip route show\n\n# Check listening ports\nss -tulnp\n```",
+      "explanation": "Network diagnostics start with checking your interfaces (ip addr), testing connectivity (ping), verifying DNS (host), and examining routes. The ss command replaces netstat for viewing socket statistics. Understanding this diagnostic flow helps you systematically troubleshoot connectivity issues from layer 1 (physical) through layer 7 (application).",
+      "surfaceVariants": [
+        {
+          "id": "variant-traceroute",
+          "description": "Trace network path to destination",
+          "data": {
+            "command": "traceroute -n google.com",
+            "context": "path analysis"
+          }
+        },
+        {
+          "id": "variant-tcpdump",
+          "description": "Capture and analyze network traffic",
+          "data": {
+            "command": "tcpdump -i eth0 port 80",
+            "context": "packet capture"
+          }
+        }
+      ],
+      "timeBudgetSeconds": 360,
+      "difficulty": "intermediate",
+      "prerequisites": [],
+      "successCriteria": {
+        "minCorrectnessScore": 0.75,
+        "maxTimeSeconds": 720,
+        "maxRetries": 3,
+        "requiresExplanation": true
+      },
+      "hints": [
+        "Start with ip addr to see if interfaces are up",
+        "ping tests basic connectivity; if it fails, check routing",
+        "ss -tulnp shows what's listening and which process owns each port"
+      ],
+      "commonErrors": [
+        {
+          "pattern": "ifconfig instead of ip",
+          "description": "Used deprecated ifconfig command",
+          "remediation": "ifconfig is deprecated. Use ip addr, ip route, ip link for modern Linux networking"
+        },
+        {
+          "pattern": "netstat instead of ss",
+          "description": "Used deprecated netstat command",
+          "remediation": "ss is faster and more feature-rich than netstat. Learn ss -tulnp"
+        }
+      ]
+    }
+  ],
+  "author": "TopShelf Teaching Team",
+  "createdAt": "2026-01-15T00:00:00Z",
+  "updatedAt": "2026-01-15T00:00:00Z",
+  "signature": "sig-v1-ECDSA-P256-SHA256-placeholder",
+  "signingKeyId": "key-prod-001",
+  "schemaVersion": "1.0.0"
+}

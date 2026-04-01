@@ -82,20 +82,14 @@ describe('TriggerDetector', () => {
   describe('suggestModeElevation', () => {
     it('should suggest elevation with severe triggers', () => {
       const triggers = [TriggerType.ERROR_REPEATED, TriggerType.STUCK_DETECTED];
-      const suggested = TriggerDetector.suggestModeElevation(
-        TeachingMode.L1_MINIMAL,
-        triggers
-      );
+      const suggested = TriggerDetector.suggestModeElevation(TeachingMode.L1_MINIMAL, triggers);
 
       expect(suggested).toBeGreaterThan(TeachingMode.L1_MINIMAL);
     });
 
     it('should not elevate beyond L4', () => {
       const triggers = [TriggerType.ERROR_REPEATED, TriggerType.STUCK_DETECTED];
-      const suggested = TriggerDetector.suggestModeElevation(
-        TeachingMode.L4_TUTORIAL,
-        triggers
-      );
+      const suggested = TriggerDetector.suggestModeElevation(TeachingMode.L4_TUTORIAL, triggers);
 
       expect(suggested).toBe(TeachingMode.L4_TUTORIAL);
     });
