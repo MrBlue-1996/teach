@@ -51,7 +51,7 @@ const db = program.command('db').description('Database management commands');
 db.command('migrate')
   .description('Run database migrations')
   .option('--dry-run', 'Show migration SQL without executing')
-  .action(async (options) => {
+  .action(async (_options) => {
     const ora = (await import('ora')).default;
     const spinner = ora('Running migrations...').start();
 
@@ -69,7 +69,7 @@ db.command('migrate')
 db.command('seed')
   .description('Seed database with sample data')
   .option('--env <environment>', 'Target environment', 'development')
-  .action(async (options) => {
+  .action(async (_options) => {
     const ora = (await import('ora')).default;
     const spinner = ora('Seeding database...').start();
 
@@ -158,7 +158,7 @@ user
   .description('List users')
   .option('-r, --role <role>', 'Filter by role')
   .option('-l, --limit <number>', 'Limit results', '20')
-  .action(async (options) => {
+  .action(async (_options) => {
     const ora = (await import('ora')).default;
     const spinner = ora('Fetching users...').start();
 
@@ -225,7 +225,7 @@ content
   .description('Sign a content pack')
   .argument('<path>', 'Path to content pack JSON file')
   .option('-k, --key <path>', 'Path to signing key')
-  .action(async (path, options) => {
+  .action(async (_path, _options) => {
     const ora = (await import('ora')).default;
     const spinner = ora('Signing content pack...').start();
 
@@ -244,7 +244,7 @@ content
   .description('Import a content pack into the database')
   .argument('<path>', 'Path to content pack JSON file')
   .option('--publish', 'Publish immediately after import')
-  .action(async (path, options) => {
+  .action(async (_path, options) => {
     const ora = (await import('ora')).default;
     const spinner = ora('Importing content pack...').start();
 
@@ -298,7 +298,7 @@ system
   .command('config')
   .description('Show current configuration')
   .option('--show-secrets', 'Show secret values (use with caution)')
-  .action(async (options) => {
+  .action(async (_options) => {
     console.log(chalk.white.bold('Current Configuration'));
     console.log(chalk.gray('─'.repeat(40)));
     console.log(chalk.gray('(Load config from environment to see values)'));

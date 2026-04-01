@@ -5,6 +5,7 @@
  */
 
 import type { ErrorHandler } from 'hono';
+import type { ContentfulStatusCode } from 'hono/utils/http-status';
 import { HTTPException } from 'hono/http-exception';
 import { ZodError } from 'zod';
 import { getConfig } from '@topshelf/config';
@@ -116,7 +117,7 @@ export const errorHandler: ErrorHandler = (err, c) => {
         requestId,
         ...(err.details && isDev ? { details: err.details } : {}),
       },
-      err.statusCode
+      err.statusCode as ContentfulStatusCode
     );
   }
 

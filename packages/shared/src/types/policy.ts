@@ -5,8 +5,8 @@
  * and evaluation decisions.
  */
 
-import type { LearningMode, LearnerId, SkillDomain } from './learner.js';
 import type { BadgeId } from './content.js';
+import type { LearningMode, LearnerId, SkillDomain } from './learner.js';
 
 /** Policy version identifier */
 export type PolicyVersion = `${number}-${number}-${number}`;

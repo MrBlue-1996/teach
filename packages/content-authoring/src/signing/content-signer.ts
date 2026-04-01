@@ -5,8 +5,9 @@
  * for authenticity and integrity verification.
  */
 
-import type { ContentPackManifest } from '@topshelf/shared';
 import { hashSHA256, nowISO } from '@topshelf/shared';
+
+import type { ContentPackManifest } from '@topshelf/shared';
 
 /** Signing configuration */
 export interface SigningConfig {
@@ -93,8 +94,22 @@ export class ContentPackSigner {
       };
     }
 
-    // Create canonical representation
-    const { signature: _, signingKeyId: __, ...packWithoutSig } = pack;
+    // Create canonical representation (exclude signature and signingKeyId)
+    const packWithoutSig: Omit<ContentPackManifest, 'signature' | 'signingKeyId'> = {
+      id: pack.id,
+      name: pack.name,
+      version: pack.version,
+      description: pack.description,
+      tags: pack.tags,
+      roleMappings: pack.roleMappings,
+      difficulty: pack.difficulty,
+      minDeviceProfile: pack.minDeviceProfile,
+      teachingBlocks: pack.teachingBlocks,
+      author: pack.author,
+      createdAt: pack.createdAt,
+      updatedAt: pack.updatedAt,
+      schemaVersion: pack.schemaVersion,
+    };
     const contentToVerify = this.createCanonicalContent(packWithoutSig);
     const contentHash = hashSHA256(contentToVerify);
 
@@ -102,12 +117,17 @@ export class ContentPackSigner {
     const expectedSignature = this.generateSignature(contentHash);
     const valid = pack.signature === expectedSignature;
 
-    return {
+    const result: VerificationResult = {
       valid,
       keyId: pack.signingKeyId,
       verifiedAt,
-      error: valid ? undefined : 'Signature verification failed',
     };
+
+    if (!valid) {
+      return { ...result, error: 'Signature verification failed' };
+    }
+
+    return result;
   }
 
   /**

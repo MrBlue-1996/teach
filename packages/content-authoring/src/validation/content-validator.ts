@@ -5,15 +5,14 @@
  * and parity requirements.
  */
 
+import { ParityValidator, type LLMFormattedOutput } from '@topshelf/deterministic-formatter';
 import {
   contentPackManifestSchema,
   type ContentPackManifest,
   type ContentPackValidationResult,
   type ValidationError,
   type ValidationWarning,
-  type TeachingBlock,
 } from '@topshelf/shared';
-import { ParityValidator, type LLMFormattedOutput } from '@topshelf/deterministic-formatter';
 
 import type { ZodError } from 'zod';
 
@@ -95,12 +94,17 @@ export class ContentPackValidator {
     const isValid =
       options.strict === true ? errors.length === 0 && warnings.length === 0 : errors.length === 0;
 
-    return {
+    const result: ContentPackValidationResult = {
       valid: isValid,
       errors,
       warnings,
-      parityResults,
     };
+
+    if (parityResults !== undefined) {
+      return { ...result, parityResults };
+    }
+
+    return result;
   }
 
   /**

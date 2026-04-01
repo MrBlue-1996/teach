@@ -221,5 +221,3 @@ async function startServer() {
 
 // Run if executed directly
 startServer().catch(console.error);
-
-export { createApp };

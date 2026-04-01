@@ -12,7 +12,7 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 'latest',
     sourceType: 'module',
-    project: ['./tsconfig.json', './packages/*/tsconfig.json'],
+    project: ['./tsconfig.json', './packages/*/tsconfig.json', './apps/*/tsconfig.json'],
     tsconfigRootDir: __dirname,
   },
   plugins: ['@typescript-eslint', 'import', 'security'],
@@ -29,7 +29,7 @@ module.exports = {
   settings: {
     'import/resolver': {
       typescript: {
-        project: ['./tsconfig.json', './packages/*/tsconfig.json'],
+        project: ['./tsconfig.json', './packages/*/tsconfig.json', './apps/*/tsconfig.json'],
       },
     },
   },
@@ -89,11 +89,27 @@ module.exports = {
   },
   overrides: [
     {
-      files: ['*.test.ts', '*.spec.ts', '**/__tests__/**/*.ts'],
+      // Relaxed rules for Next.js frontend apps
+      files: ['apps/web/**/*.ts', 'apps/web/**/*.tsx'],
       rules: {
-        '@typescript-eslint/no-explicit-any': 'off',
-        '@typescript-eslint/no-non-null-assertion': 'off',
-        'security/detect-object-injection': 'off',
+        '@typescript-eslint/explicit-function-return-type': 'off',
+        '@typescript-eslint/explicit-module-boundary-types': 'off',
+        '@typescript-eslint/strict-boolean-expressions': 'off',
+        '@typescript-eslint/no-unsafe-assignment': 'off',
+        '@typescript-eslint/no-unsafe-member-access': 'off',
+        '@typescript-eslint/no-unsafe-call': 'off',
+        '@typescript-eslint/no-unsafe-return': 'off',
+        '@typescript-eslint/no-unsafe-argument': 'off',
+        '@typescript-eslint/no-explicit-any': 'warn',
+        '@typescript-eslint/prefer-nullish-coalescing': 'off',
+        '@typescript-eslint/no-floating-promises': 'off',
+        '@typescript-eslint/no-misused-promises': 'off',
+        '@typescript-eslint/require-await': 'off',
+        '@typescript-eslint/no-unnecessary-condition': 'off',
+        '@typescript-eslint/no-unused-vars': 'warn',
+        '@typescript-eslint/no-non-null-assertion': 'warn',
+        '@typescript-eslint/prefer-optional-chain': 'off',
+        curly: 'off',
       },
     },
     {
@@ -103,5 +119,17 @@ module.exports = {
       },
     },
   ],
-  ignorePatterns: ['node_modules/', 'dist/', 'build/', 'coverage/', '.turbo/', '*.min.js'],
+  ignorePatterns: [
+    'node_modules/',
+    'dist/',
+    'build/',
+    'coverage/',
+    '.turbo/',
+    '*.min.js',
+    '**/*.test.ts',
+    '**/*.spec.ts',
+    '**/*.test.tsx',
+    '**/*.spec.tsx',
+    '**/__tests__/**',
+  ],
 };

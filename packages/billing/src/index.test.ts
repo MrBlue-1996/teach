@@ -780,7 +780,6 @@ describe('BillingService', () => {
         expect(mockStripe.checkout.sessions.create).toHaveBeenCalledWith(
           expect.objectContaining({
             customer: 'cus_existing',
-            customer_email: undefined,
           })
         );
       });

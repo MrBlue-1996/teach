@@ -6,7 +6,6 @@
 
 import Stripe from 'stripe';
 import { z } from 'zod';
-import { getConfig } from '@topshelf/config';
 import { getLogger } from '@topshelf/observability';
 
 // =============================================================================
@@ -343,20 +342,28 @@ export class BillingService {
     if (updates.plan && updates.interval) {
       const priceId = this.config.stripePriceIds[updates.plan][updates.interval];
       const subscription = await this.stripe.subscriptions.retrieve(subscriptionId);
+      const firstItem = subscription.items.data[0];
+      if (firstItem === undefined) {
+        throw new Error('Subscription has no items');
+      }
 
       updateParams.items = [
         {
-          id: subscription.items.data[0].id,
+          id: firstItem.id,
           price: priceId,
           quantity: updates.seats,
         },
       ];
       updateParams.proration_behavior = 'create_prorations';
-    } else if (updates.seats) {
+    } else if (updates.seats !== undefined) {
       const subscription = await this.stripe.subscriptions.retrieve(subscriptionId);
+      const firstItem = subscription.items.data[0];
+      if (firstItem === undefined) {
+        throw new Error('Subscription has no items');
+      }
       updateParams.items = [
         {
-          id: subscription.items.data[0].id,
+          id: firstItem.id,
           quantity: updates.seats,
         },
       ];
@@ -486,17 +493,18 @@ export class BillingService {
 
     return this.stripe.checkout.sessions.create({
       mode: 'subscription',
-      customer: params.customerId,
-      customer_email: params.customerId ? undefined : params.customerEmail,
+      ...(params.customerId !== undefined && { customer: params.customerId }),
+      ...(params.customerId === undefined &&
+        params.customerEmail !== undefined && { customer_email: params.customerEmail }),
       line_items: [
         {
           price: priceId,
-          quantity: params.seats || 1,
+          quantity: params.seats ?? 1,
         },
       ],
       subscription_data: {
         trial_period_days: this.config.trialDays,
-        metadata: params.metadata,
+        ...(params.metadata !== undefined && { metadata: params.metadata }),
       },
       success_url: params.successUrl,
       cancel_url: params.cancelUrl,
@@ -542,13 +550,15 @@ export class BillingService {
   }): Promise<Stripe.Coupon> {
     return this.stripe.coupons.create({
       name: params.name,
-      percent_off: params.percentOff,
-      amount_off: params.amountOff,
-      currency: params.currency || 'usd',
+      currency: params.currency ?? 'usd',
       duration: params.duration,
-      duration_in_months: params.durationInMonths,
-      max_redemptions: params.maxRedemptions,
-      redeem_by: params.redeemBy ? Math.floor(params.redeemBy.getTime() / 1000) : undefined,
+      ...(params.percentOff !== undefined && { percent_off: params.percentOff }),
+      ...(params.amountOff !== undefined && { amount_off: params.amountOff }),
+      ...(params.durationInMonths !== undefined && { duration_in_months: params.durationInMonths }),
+      ...(params.maxRedemptions !== undefined && { max_redemptions: params.maxRedemptions }),
+      ...(params.redeemBy !== undefined && {
+        redeem_by: Math.floor(params.redeemBy.getTime() / 1000),
+      }),
     });
   }
 
@@ -561,8 +571,10 @@ export class BillingService {
     return this.stripe.promotionCodes.create({
       coupon: params.couponId,
       code: params.code,
-      max_redemptions: params.maxRedemptions,
-      expires_at: params.expiresAt ? Math.floor(params.expiresAt.getTime() / 1000) : undefined,
+      ...(params.maxRedemptions !== undefined && { max_redemptions: params.maxRedemptions }),
+      ...(params.expiresAt !== undefined && {
+        expires_at: Math.floor(params.expiresAt.getTime() / 1000),
+      }),
     });
   }
 }

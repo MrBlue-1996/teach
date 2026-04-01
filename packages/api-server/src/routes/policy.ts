@@ -64,6 +64,10 @@ export function createPolicyRoutes() {
       })
       .returning();
 
+    if (!record) {
+      throw new Error('Failed to create policy evaluation');
+    }
+
     return c.json({
       evaluationId: record.id,
       ...evaluation,

@@ -60,7 +60,7 @@ export function createAdminRoutes() {
   // GET /admin/users - List users
   // ---------------------------------------------------------------------------
   router.get('/users', async (c) => {
-    const userRole = c.get('userRole');
+    // userRole available from middleware for future role-based filtering
     const db = getDatabase();
 
     // System admins see all, others see only their org

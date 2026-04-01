@@ -98,6 +98,7 @@ export const teachingBlockSchema = z
 /** Semantic version pattern */
 export const semanticVersionSchema = z
   .string()
+  // eslint-disable-next-line security/detect-unsafe-regex -- This regex is safe; bounded length with no nested quantifiers
   .regex(/^\d+\.\d+\.\d+(-[a-zA-Z0-9.]+)?$/, 'Invalid semantic version');
 
 /** Content pack manifest (full schema for validation) */
