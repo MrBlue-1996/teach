@@ -7,7 +7,7 @@ export default defineConfig({
       '@topshelf/shared': resolve(__dirname, '../shared/src/index.ts'),
       '@topshelf/deterministic-formatter': resolve(
         __dirname,
-        '../deterministic-formatter/src/index.ts'
+        '../_future/deterministic-formatter/src/index.ts'
       ),
     },
   },

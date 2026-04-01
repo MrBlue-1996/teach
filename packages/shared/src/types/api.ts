@@ -5,12 +5,12 @@
  * and error handling.
  */
 
+import type { LearnerId, LearnerState, CalibrationResult, LearnerEvent } from './learner.js';
+import type { ContentPackId, TeachingBlockId, BadgeId } from './content.js';
+import type { PolicyEvaluationInput, PolicyEvaluationOutput } from './policy.js';
+import type { DeviceProfile } from './device.js';
 import type { Badge, EmployerArtifact } from './badge.js';
 import type { BenchmarkId, BenchmarkAttempt, MicroBenchmark } from './benchmark.js';
-import type { ContentPackId, TeachingBlockId, BadgeId } from './content.js';
-import type { DeviceProfile } from './device.js';
-import type { LearnerId, LearnerState, CalibrationResult, LearnerEvent } from './learner.js';
-import type { PolicyEvaluationInput, PolicyEvaluationOutput } from './policy.js';
 
 /** API version */
 export type ApiVersion = 'v1';

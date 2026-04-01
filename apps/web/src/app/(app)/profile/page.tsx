@@ -1,5 +1,10 @@
 'use client';
 
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
 import {
   User,
   Mail,
@@ -14,17 +19,11 @@ import {
   Flame,
   Loader2,
 } from 'lucide-react';
-import Link from 'next/link';
-import { useState, useEffect } from 'react';
-
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
+import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
+import { learnerApi, type LearnerState } from '@/lib/api/learner';
 import { badgesApi, type Badge } from '@/lib/api/badges';
 import { contentApi } from '@/lib/api/content';
-import { learnerApi, type LearnerState } from '@/lib/api/learner';
-import { cn } from '@/lib/utils';
 
 export default function ProfilePage() {
   const { user: authUser } = useAuth();
@@ -51,13 +50,13 @@ export default function ProfilePage() {
   useEffect(() => {
     async function loadProfile() {
       const name =
-        authUser?.firstName && authUser.lastName
+        authUser?.firstName && authUser?.lastName
           ? `${authUser.firstName} ${authUser.lastName}`
           : (authUser?.email ?? 'User');
       const initials =
-        authUser?.firstName && authUser.lastName
+        authUser?.firstName && authUser?.lastName
           ? `${authUser.firstName[0]}${authUser.lastName[0]}`.toUpperCase()
-          : (authUser?.email[0] ?? 'U').toUpperCase();
+          : (authUser?.email?.[0] ?? 'U').toUpperCase();
 
       const base = {
         name,

@@ -1,5 +1,11 @@
 'use client';
 
+import { useState } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/hooks/use-auth';
 import {
   Zap,
   LayoutDashboard,
@@ -12,13 +18,6 @@ import {
   User,
   ChevronDown,
 } from 'lucide-react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useState } from 'react';
-
-import { Button } from '@/components/ui/button';
-import { useAuth } from '@/hooks/use-auth';
-import { cn } from '@/lib/utils';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -35,14 +34,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   const user = {
     name:
-      authUser?.firstName && authUser.lastName
+      authUser?.firstName && authUser?.lastName
         ? `${authUser.firstName} ${authUser.lastName}`
         : (authUser?.email ?? 'User'),
     email: authUser?.email ?? '',
     initials:
-      authUser?.firstName && authUser.lastName
+      authUser?.firstName && authUser?.lastName
         ? `${authUser.firstName[0]}${authUser.lastName[0]}`.toUpperCase()
-        : (authUser?.email[0] ?? 'U').toUpperCase(),
+        : (authUser?.email?.[0] ?? 'U').toUpperCase(),
   };
 
   return (

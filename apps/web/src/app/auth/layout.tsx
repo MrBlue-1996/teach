@@ -1,5 +1,5 @@
-import { Zap } from 'lucide-react';
 import Link from 'next/link';
+import { Zap } from 'lucide-react';
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (

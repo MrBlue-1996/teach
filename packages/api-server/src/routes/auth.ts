@@ -17,7 +17,7 @@ import {
   generateSecureToken,
 } from '@topshelf/auth';
 import { getDatabase, users, authSessions, eq, and, isNull } from '@topshelf/database';
-import { badRequest, unauthorized, conflict } from '../middleware/error-handler.js';
+import { badRequest, unauthorized, conflict, notFound } from '../middleware/error-handler.js';
 
 // =============================================================================
 // SCHEMAS
@@ -333,7 +333,7 @@ export function createAuthRoutes() {
   // POST /auth/reset-password - Reset password with token
   // ---------------------------------------------------------------------------
   router.post('/reset-password', zValidator('json', ResetPasswordSchema), async (c) => {
-    const { token: _token, password } = c.req.valid('json');
+    const { token, password } = c.req.valid('json');
 
     // Validate password strength
     const passwordCheck = validatePasswordStrength(password);

@@ -1,5 +1,11 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
 import {
   Search,
   BookOpen,
@@ -10,16 +16,8 @@ import {
   Filter,
   CheckCircle2,
 } from 'lucide-react';
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
-
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Progress } from '@/components/ui/progress';
-import { contentApi, learnerApi } from '@/lib/api';
 import { cn, getLevelGradientFrom, getLevelName } from '@/lib/utils';
-
+import { contentApi, learnerApi } from '@/lib/api';
 import type { ContentPack, LearnerState } from '@/lib/api';
 
 interface DisplayPack extends ContentPack {
@@ -50,7 +48,7 @@ export default function ContentPage() {
         // Build a map of pack ID -> learner state for quick lookup
         const stateMap = new Map<string, LearnerState>();
         for (const s of states) {
-          if (s.contentPack.id) {
+          if (s.contentPack?.id) {
             stateMap.set(s.contentPack.id, s);
           }
         }

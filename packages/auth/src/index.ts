@@ -4,7 +4,7 @@
  * Copyright (c) 2026 TopShelf Service LLC. All Rights Reserved.
  */
 
-import { SignJWT, jwtVerify } from 'jose';
+import { SignJWT, jwtVerify, type JWTPayload } from 'jose';
 import bcrypt from 'bcrypt';
 import { z } from 'zod';
 import { getConfig } from '@topshelf/config';
@@ -110,7 +110,7 @@ function getJwtSecret(): Uint8Array {
  */
 function parseDuration(duration: string): number {
   const match = duration.match(/^(\d+)([smhd])$/);
-  if (!match || !match[1] || !match[2]) {
+  if (!match) {
     throw new Error(`Invalid duration format: ${duration}`);
   }
 

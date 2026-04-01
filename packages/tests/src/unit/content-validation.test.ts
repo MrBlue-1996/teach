@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { validateContentPack } from '@topshelf/content-authoring';
+import { ContentPackValidator, validateContentPack } from '@topshelf/content-authoring';
 import type { ContentPackManifest } from '@topshelf/shared';
 
 describe('ContentPackValidator', () => {
@@ -69,12 +69,7 @@ describe('ContentPackValidator', () => {
     const result = validateContentPack(invalidPack);
 
     expect(result.valid).toBe(false);
-    // Validation may happen at schema level or business rule level
-    expect(
-      result.errors.some(
-        (e) => e.code === 'MISSING_ROLE_MAPPING' || e.message.toLowerCase().includes('role')
-      )
-    ).toBe(true);
+    expect(result.errors.some((e) => e.code === 'MISSING_ROLE_MAPPING')).toBe(true);
   });
 
   it('should reject pack with less than 2 surface variants', () => {
@@ -192,13 +187,8 @@ describe('Content Pack Schema', () => {
   });
 
   it('should reject negative time budget', () => {
-    const basePack = createMinimalPack();
-    const pack = {
-      ...basePack,
-      teachingBlocks: basePack.teachingBlocks.map((block, i) =>
-        i === 0 ? { ...block, timeBudgetSeconds: -10 } : block
-      ),
-    };
+    const pack = createMinimalPack();
+    pack.teachingBlocks[0]!.timeBudgetSeconds = -10;
 
     const result = validateContentPack(pack);
 

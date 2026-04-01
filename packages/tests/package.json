@@ -13,7 +13,7 @@
     "test:parity": "vitest run src/parity",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "lint": "echo 'Skipping lint for test-only package'",
+    "lint": "eslint src --ext .ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

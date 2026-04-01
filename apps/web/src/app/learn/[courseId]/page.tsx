@@ -1,5 +1,11 @@
 'use client';
 
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   X,
   ChevronRight,
@@ -12,16 +18,9 @@ import {
   RotateCcw,
   Loader2,
 } from 'lucide-react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
-
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
+import { cn } from '@/lib/utils';
 import { contentApi, type ContentBlockDetail, type ContentPackDetail } from '@/lib/api/content';
 import { learnerApi } from '@/lib/api/learner';
-import { cn } from '@/lib/utils';
 
 interface LessonData {
   id: string;
@@ -94,25 +93,25 @@ export default function LearnPage({ params }: { params: { courseId: string } }) 
           }
         }
 
-        const blockContent = blockDetail?.block.content as Record<string, unknown> | undefined;
-        const blockHints = blockDetail?.block.hints as string[] | undefined;
+        const blockContent = blockDetail?.block?.content as Record<string, unknown> | undefined;
+        const blockHints = blockDetail?.block?.hints as string[] | undefined;
 
         setLesson({
-          id: targetBlock.blockId || '1',
+          id: targetBlock?.blockId || '1',
           courseTitle: pack?.title || 'Course',
-          blockTitle: targetBlock.title || blockDetail?.block.title || 'Learning Block',
-          level: targetBlock.targetMode || blockDetail?.learnerMode || 'L2_EXPLAIN',
+          blockTitle: targetBlock?.title || blockDetail?.block?.title || 'Learning Block',
+          level: targetBlock?.targetMode || blockDetail?.learnerMode || 'L2_EXPLAIN',
           progress: progress ? Math.round(progress.overallMastery * 100) : 0,
           totalBlocks: pack?.totalBlocks || blocks.length || 1,
           currentBlock: (currentBlockIndex >= 0 ? currentBlockIndex : 0) + 1,
-          estimatedTime: targetBlock.timeBudgetSeconds
+          estimatedTime: targetBlock?.timeBudgetSeconds
             ? Math.round(targetBlock.timeBudgetSeconds / 60)
             : 15,
           content: {
             type: (blockContent?.type as string) || 'challenge',
             question:
               (blockContent?.question as string) ||
-              targetBlock.objective ||
+              targetBlock?.objective ||
               'Complete this learning block.',
             hints: blockHints || [],
             correctAnswer: (blockContent?.correctAnswer as string) || '',
@@ -144,9 +143,7 @@ export default function LearnPage({ params }: { params: { courseId: string } }) 
   };
 
   const handleSubmit = () => {
-    if (!lesson) {
-      return;
-    }
+    if (!lesson) return;
     const correct = lesson.content.correctAnswer
       ? userAnswer.trim().toLowerCase() === lesson.content.correctAnswer.toLowerCase()
       : false;

@@ -1,11 +1,10 @@
 'use client';
 
-import { User, Bell, Shield, Palette, Clock, Save, Moon, Sun, Monitor } from 'lucide-react';
 import { useState } from 'react';
-
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { User, Bell, Shield, Palette, Clock, Save, Moon, Sun, Monitor } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 type TabType = 'profile' | 'notifications' | 'appearance' | 'learning' | 'security';

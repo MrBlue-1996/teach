@@ -1,8 +1,20 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "noEmit": true
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "@topshelf/*": ["../*/src"]
+    }
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules"],
+  "references": [
+    { "path": "../shared" },
+    { "path": "../_future/policy-engine" },
+    { "path": "../_future/deterministic-formatter" },
+    { "path": "../content-authoring" },
+    { "path": "../_future/nlp" },
+    { "path": "../_future/mcp-server" }
+  ]
 }

@@ -229,7 +229,7 @@ export const ERROR_CODES = {
 
 // === Schema Version ===
 
-export const CURRENT_SCHEMA_VERSION = '1.0.0';
+export const CURRENT_SCHEMA_VERSION = '1.0.0' as const;
 
 // === API Configuration ===
 

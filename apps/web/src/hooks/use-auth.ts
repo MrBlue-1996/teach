@@ -1,8 +1,7 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
-
+import { useRouter } from 'next/navigation';
 import { authApi, type User, type BackendAuthResponse } from '@/lib/api';
 import { useAuthStore } from '@/stores/auth-store';
 

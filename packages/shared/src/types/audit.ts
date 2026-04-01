@@ -5,8 +5,8 @@
  * and incident tracking.
  */
 
-import type { ContentPackId } from './content.js';
 import type { LearnerId } from './learner.js';
+import type { ContentPackId } from './content.js';
 
 /** Audit event identifier */
 export type AuditEventId = `audit-${string}`;

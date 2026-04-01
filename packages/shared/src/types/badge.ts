@@ -5,8 +5,8 @@
  * signed reports, and verification.
  */
 
-import type { BadgeId, ContentPackId } from './content.js';
 import type { LearnerId } from './learner.js';
+import type { BadgeId, ContentPackId } from './content.js';
 import type { PolicyVersion } from './policy.js';
 
 /** Evidence identifier */

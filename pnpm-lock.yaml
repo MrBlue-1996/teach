@@ -175,6 +175,122 @@ importers:
         specifier: ^1.2.0
         version: 1.6.1(@types/node@20.19.30)(jsdom@29.0.1)
 
+  packages/_future/client-pwa:
+    dependencies:
+      '@topshelf/deterministic-formatter':
+        specifier: workspace:*
+        version: link:../deterministic-formatter
+      '@topshelf/shared':
+        specifier: workspace:*
+        version: link:../../shared
+    devDependencies:
+      '@types/node':
+        specifier: ^20.11.0
+        version: 20.19.30
+      tsup:
+        specifier: ^8.0.1
+        version: 8.5.1(typescript@5.9.3)
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+      vitest:
+        specifier: ^1.2.0
+        version: 1.6.1(@types/node@20.19.30)(jsdom@29.0.1)
+
+  packages/_future/deterministic-formatter:
+    dependencies:
+      '@topshelf/shared':
+        specifier: workspace:*
+        version: link:../../shared
+    devDependencies:
+      '@types/node':
+        specifier: ^20.11.0
+        version: 20.19.30
+      tsup:
+        specifier: ^8.0.1
+        version: 8.5.1(typescript@5.9.3)
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+      vitest:
+        specifier: ^1.2.0
+        version: 1.6.1(@types/node@20.19.30)(jsdom@29.0.1)
+
+  packages/_future/mcp-server:
+    dependencies:
+      '@topshelf/content-authoring':
+        specifier: workspace:*
+        version: link:../../content-authoring
+      '@topshelf/nlp':
+        specifier: workspace:*
+        version: link:../nlp
+      '@topshelf/policy-engine':
+        specifier: workspace:*
+        version: link:../policy-engine
+      '@topshelf/shared':
+        specifier: workspace:*
+        version: link:../../shared
+      zod:
+        specifier: ^3.22.4
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^20.11.0
+        version: 20.19.30
+      tsup:
+        specifier: ^8.0.1
+        version: 8.5.1(typescript@5.9.3)
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+      vitest:
+        specifier: ^1.2.0
+        version: 1.6.1(@types/node@20.19.30)(jsdom@29.0.1)
+
+  packages/_future/nlp:
+    dependencies:
+      '@topshelf/shared':
+        specifier: workspace:*
+        version: link:../../shared
+    devDependencies:
+      '@types/node':
+        specifier: ^20.11.0
+        version: 20.19.30
+      tsup:
+        specifier: ^8.0.1
+        version: 8.5.1(typescript@5.9.3)
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+      vitest:
+        specifier: ^1.2.0
+        version: 1.6.1(@types/node@20.19.30)(jsdom@29.0.1)
+
+  packages/_future/policy-engine:
+    dependencies:
+      '@topshelf/shared':
+        specifier: workspace:*
+        version: link:../../shared
+      zod:
+        specifier: ^3.22.4
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^20.11.0
+        version: 20.19.30
+      ts-node:
+        specifier: ^10.9.2
+        version: 10.9.2(@types/node@20.19.30)(typescript@5.9.3)
+      tsup:
+        specifier: ^8.0.1
+        version: 8.5.1(typescript@5.9.3)
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+      vitest:
+        specifier: ^1.2.0
+        version: 1.6.1(@types/node@20.19.30)(jsdom@29.0.1)
+
   packages/api-server:
     dependencies:
       '@hono/node-server':
@@ -205,9 +321,6 @@ importers:
         specifier: ^3.22.4
         version: 3.25.76
     devDependencies:
-      '@vitest/coverage-v8':
-        specifier: ^1.2.0
-        version: 1.6.1(vitest@1.6.1)
       tsup:
         specifier: ^8.0.1
         version: 8.5.1(tsx@4.21.0)(typescript@5.9.3)
@@ -242,9 +355,6 @@ importers:
       '@types/bcrypt':
         specifier: ^5.0.2
         version: 5.0.2
-      '@vitest/coverage-v8':
-        specifier: ^1.2.0
-        version: 1.6.1(vitest@1.6.1)
       tsup:
         specifier: ^8.0.1
         version: 8.5.1(typescript@5.9.3)
@@ -273,9 +383,6 @@ importers:
         specifier: ^3.22.4
         version: 3.25.76
     devDependencies:
-      '@vitest/coverage-v8':
-        specifier: ^1.2.0
-        version: 1.6.1(vitest@1.6.1)
       tsup:
         specifier: ^8.0.1
         version: 8.5.1(typescript@5.9.3)
@@ -320,28 +427,6 @@ importers:
         specifier: ^5.3.3
         version: 5.9.3
 
-  packages/client-pwa:
-    dependencies:
-      '@topshelf/deterministic-formatter':
-        specifier: workspace:*
-        version: link:../deterministic-formatter
-      '@topshelf/shared':
-        specifier: workspace:*
-        version: link:../shared
-    devDependencies:
-      '@types/node':
-        specifier: ^20.11.0
-        version: 20.19.30
-      tsup:
-        specifier: ^8.0.1
-        version: 8.5.1(typescript@5.9.3)
-      typescript:
-        specifier: ^5.3.3
-        version: 5.9.3
-      vitest:
-        specifier: ^1.2.0
-        version: 1.6.1(@types/node@20.19.30)(jsdom@29.0.1)
-
   packages/config:
     dependencies:
       dotenv:
@@ -351,9 +436,6 @@ importers:
         specifier: ^3.22.4
         version: 3.25.76
     devDependencies:
-      '@vitest/coverage-v8':
-        specifier: ^1.2.0
-        version: 1.6.1(vitest@1.6.1)
       tsup:
         specifier: ^8.0.1
         version: 8.5.1(typescript@5.9.3)
@@ -368,7 +450,7 @@ importers:
     dependencies:
       '@topshelf/deterministic-formatter':
         specifier: workspace:*
-        version: link:../deterministic-formatter
+        version: link:../_future/deterministic-formatter
       '@topshelf/shared':
         specifier: workspace:*
         version: link:../shared
@@ -379,9 +461,6 @@ importers:
       '@types/node':
         specifier: ^20.11.0
         version: 20.19.30
-      '@vitest/coverage-v8':
-        specifier: ^1.2.0
-        version: 1.6.1(vitest@1.6.1)
       ts-node:
         specifier: ^10.9.2
         version: 10.9.2(@types/node@20.19.30)(typescript@5.9.3)
@@ -413,31 +492,9 @@ importers:
         specifier: ^3.22.4
         version: 3.25.76
     devDependencies:
-      '@vitest/coverage-v8':
-        specifier: ^1.2.0
-        version: 1.6.1(vitest@1.6.1)
       drizzle-kit:
         specifier: ^0.20.13
         version: 0.20.18
-      tsup:
-        specifier: ^8.0.1
-        version: 8.5.1(typescript@5.9.3)
-      typescript:
-        specifier: ^5.3.3
-        version: 5.9.3
-      vitest:
-        specifier: ^1.2.0
-        version: 1.6.1(@types/node@20.19.30)(jsdom@29.0.1)
-
-  packages/deterministic-formatter:
-    dependencies:
-      '@topshelf/shared':
-        specifier: workspace:*
-        version: link:../shared
-    devDependencies:
-      '@types/node':
-        specifier: ^20.11.0
-        version: 20.19.30
       tsup:
         specifier: ^8.0.1
         version: 8.5.1(typescript@5.9.3)
@@ -469,59 +526,6 @@ importers:
       '@types/nodemailer':
         specifier: ^6.4.14
         version: 6.4.22
-      '@vitest/coverage-v8':
-        specifier: ^1.2.0
-        version: 1.6.1(vitest@1.6.1)
-      tsup:
-        specifier: ^8.0.1
-        version: 8.5.1(typescript@5.9.3)
-      typescript:
-        specifier: ^5.3.3
-        version: 5.9.3
-      vitest:
-        specifier: ^1.2.0
-        version: 1.6.1(@types/node@20.19.30)(jsdom@29.0.1)
-
-  packages/mcp-server:
-    dependencies:
-      '@topshelf/content-authoring':
-        specifier: workspace:*
-        version: link:../content-authoring
-      '@topshelf/nlp':
-        specifier: workspace:*
-        version: link:../nlp
-      '@topshelf/policy-engine':
-        specifier: workspace:*
-        version: link:../policy-engine
-      '@topshelf/shared':
-        specifier: workspace:*
-        version: link:../shared
-      zod:
-        specifier: ^3.22.4
-        version: 3.25.76
-    devDependencies:
-      '@types/node':
-        specifier: ^20.11.0
-        version: 20.19.30
-      tsup:
-        specifier: ^8.0.1
-        version: 8.5.1(typescript@5.9.3)
-      typescript:
-        specifier: ^5.3.3
-        version: 5.9.3
-      vitest:
-        specifier: ^1.2.0
-        version: 1.6.1(@types/node@20.19.30)(jsdom@29.0.1)
-
-  packages/nlp:
-    dependencies:
-      '@topshelf/shared':
-        specifier: workspace:*
-        version: link:../shared
-    devDependencies:
-      '@types/node':
-        specifier: ^20.11.0
-        version: 20.19.30
       tsup:
         specifier: ^8.0.1
         version: 8.5.1(typescript@5.9.3)
@@ -544,34 +548,6 @@ importers:
         specifier: ^10.3.1
         version: 10.3.1
     devDependencies:
-      '@vitest/coverage-v8':
-        specifier: ^1.2.0
-        version: 1.6.1(vitest@1.6.1)
-      tsup:
-        specifier: ^8.0.1
-        version: 8.5.1(typescript@5.9.3)
-      typescript:
-        specifier: ^5.3.3
-        version: 5.9.3
-      vitest:
-        specifier: ^1.2.0
-        version: 1.6.1(@types/node@20.19.30)(jsdom@29.0.1)
-
-  packages/policy-engine:
-    dependencies:
-      '@topshelf/shared':
-        specifier: workspace:*
-        version: link:../shared
-      zod:
-        specifier: ^3.22.4
-        version: 3.25.76
-    devDependencies:
-      '@types/node':
-        specifier: ^20.11.0
-        version: 20.19.30
-      ts-node:
-        specifier: ^10.9.2
-        version: 10.9.2(@types/node@20.19.30)(typescript@5.9.3)
       tsup:
         specifier: ^8.0.1
         version: 8.5.1(typescript@5.9.3)
@@ -591,9 +567,6 @@ importers:
       '@types/node':
         specifier: ^20.11.0
         version: 20.19.30
-      '@vitest/coverage-v8':
-        specifier: ^1.2.0
-        version: 1.6.1(vitest@1.6.1)
       tsup:
         specifier: ^8.0.1
         version: 8.5.1(typescript@5.9.3)
@@ -611,16 +584,16 @@ importers:
         version: link:../content-authoring
       '@topshelf/deterministic-formatter':
         specifier: workspace:*
-        version: link:../deterministic-formatter
+        version: link:../_future/deterministic-formatter
       '@topshelf/mcp-server':
         specifier: workspace:*
-        version: link:../mcp-server
+        version: link:../_future/mcp-server
       '@topshelf/nlp':
         specifier: workspace:*
-        version: link:../nlp
+        version: link:../_future/nlp
       '@topshelf/policy-engine':
         specifier: workspace:*
-        version: link:../policy-engine
+        version: link:../_future/policy-engine
       '@topshelf/shared':
         specifier: workspace:*
         version: link:../shared
@@ -6121,7 +6094,7 @@ packages:
 
   /glob@7.2.3:
     resolution: {integrity: sha512-nFR0zLpU2YCaRxwoCJvL6UvCH2JFyFVIvwTLsIf21AuHlMskA1hhTdk+LlYJtOlYt9v6dvszD2BGRqBL+iQK9Q==}
-    deprecated: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+    deprecated: Glob versions prior to v9 are no longer supported
     dependencies:
       fs.realpath: 1.0.0
       inflight: 1.0.6

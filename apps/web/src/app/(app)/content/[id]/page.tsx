@@ -1,5 +1,11 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
 import {
   ArrowLeft,
   Clock,
@@ -13,16 +19,8 @@ import {
   Target,
   Zap,
 } from 'lucide-react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import { contentApi, learnerApi } from '@/lib/api';
 import { cn, getLevelName, getLevelGradientFrom } from '@/lib/utils';
-
+import { contentApi, learnerApi } from '@/lib/api';
 import type { ContentPackDetail, ContentBlockSummary } from '@/lib/api';
 
 export default function CourseDetailPage({ params }: { params: { id: string } }) {

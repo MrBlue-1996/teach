@@ -1,5 +1,10 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
 import {
   ArrowRight,
   Clock,
@@ -11,15 +16,8 @@ import {
   Award,
   ChevronRight,
 } from 'lucide-react';
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
-
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import { learnerApi, contentApi, badgesApi } from '@/lib/api';
 import { formatDuration, getLevelColor, getLevelName } from '@/lib/utils';
-
+import { learnerApi, contentApi, badgesApi } from '@/lib/api';
 import type { LearnerState, LearningSession, ContentPack } from '@/lib/api';
 
 interface DashboardData {
@@ -109,7 +107,7 @@ export default function DashboardPage() {
   const recentSessions = sessions.slice(0, 3);
 
   // Packs user has NOT started (no learner state) for suggestions
-  const enrolledPackIds = new Set(states.map((s) => s.contentPack.id).filter(Boolean));
+  const enrolledPackIds = new Set(states.map((s) => s.contentPack?.id).filter(Boolean));
   const suggestedPacks = packs.filter((p) => !enrolledPackIds.has(p.id)).slice(0, 2);
 
   // Compute streak from consecutive session days
@@ -230,7 +228,7 @@ export default function DashboardPage() {
                   <div key={s.id} className="flex items-start gap-2 text-sm">
                     <BookOpen className="mt-0.5 h-4 w-4 text-muted-foreground" />
                     <div className="flex-1 truncate">
-                      <p className="truncate">{s.contentPack.title || 'Unknown course'}</p>
+                      <p className="truncate">{s.contentPack?.title || 'Unknown course'}</p>
                       <p className="text-xs text-muted-foreground">
                         {s.blocksCompleted} blocks - {Math.round(s.overallMastery * 100)}% mastery
                       </p>
@@ -309,26 +307,20 @@ export default function DashboardPage() {
 
 /** Compute streak as number of consecutive days with sessions (ending today or yesterday). */
 function computeStreak(sessions: LearningSession[]): number {
-  if (sessions.length === 0) {
-    return 0;
-  }
+  if (sessions.length === 0) return 0;
 
   const uniqueDays = new Set(
     sessions.filter((s) => s.startedAt).map((s) => new Date(s.startedAt).toISOString().slice(0, 10))
   );
 
   const sortedDays = Array.from(uniqueDays).sort().reverse();
-  if (sortedDays.length === 0) {
-    return 0;
-  }
+  if (sortedDays.length === 0) return 0;
 
   const today = new Date().toISOString().slice(0, 10);
   const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
 
   // Streak must include today or yesterday
-  if (sortedDays[0] !== today && sortedDays[0] !== yesterday) {
-    return 0;
-  }
+  if (sortedDays[0] !== today && sortedDays[0] !== yesterday) return 0;
 
   let streak = 1;
   for (let i = 1; i < sortedDays.length; i++) {

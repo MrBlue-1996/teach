@@ -151,7 +151,7 @@ export function percentileRank(value: number, sortedValues: readonly number[]): 
 export function chunk<T>(array: readonly T[], size: number): T[][] {
   const result: T[][] = [];
   for (let i = 0; i < array.length; i += size) {
-    result.push(array.slice(i, i + size));
+    result.push(array.slice(i, i + size) as T[]);
   }
   return result;
 }
@@ -162,7 +162,6 @@ export function chunk<T>(array: readonly T[], size: number): T[][] {
  * Check if a string is a valid semantic version
  */
 export function isValidSemver(version: string): boolean {
-  // eslint-disable-next-line security/detect-unsafe-regex -- This regex is safe; bounded length with no nested quantifiers
   return /^\d+\.\d+\.\d+(-[a-zA-Z0-9.]+)?$/.test(version);
 }
 

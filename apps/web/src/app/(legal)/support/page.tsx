@@ -1,10 +1,8 @@
-import { BookOpen, MessageCircle, Mail, FileQuestion, Clock, ExternalLink } from 'lucide-react';
-import Link from 'next/link';
-
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-
 import type { Metadata } from 'next';
+import Link from 'next/link';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { BookOpen, MessageCircle, Mail, FileQuestion, Clock, ExternalLink } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Support',

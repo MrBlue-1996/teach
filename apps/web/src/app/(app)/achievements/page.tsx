@@ -1,5 +1,9 @@
 'use client';
 
+import { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 import {
   Award,
   Trophy,
@@ -14,14 +18,9 @@ import {
   CheckCircle2,
   Loader2,
 } from 'lucide-react';
-import { useState, useEffect } from 'react';
-
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
+import { cn, getLevelColor, getLevelName } from '@/lib/utils';
 import { badgesApi, type Badge } from '@/lib/api/badges';
 import { learnerApi, type LearnerState } from '@/lib/api/learner';
-import { cn, getLevelColor, getLevelName } from '@/lib/utils';
 
 interface DisplayBadge {
   id: string;
@@ -65,8 +64,8 @@ export default function AchievementsPage() {
             apiBadges.map((b: Badge) => ({
               id: b.id,
               title: b.badgeType,
-              description: `${b.contentPack.certificationTarget || 'Achievement'} badge`,
-              category: b.contentPack.certificationTarget || '',
+              description: `${b.contentPack?.certificationTarget || 'Achievement'} badge`,
+              category: b.contentPack?.certificationTarget || '',
               level: b.level,
               earnedAt: b.issuedAt,
               earned: b.status === 'issued',

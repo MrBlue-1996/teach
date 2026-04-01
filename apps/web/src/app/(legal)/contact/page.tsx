@@ -1,13 +1,11 @@
 'use client';
 
-import { Mail, Building, Users, MessageSquare, CheckCircle2, Send } from 'lucide-react';
 import { useState } from 'react';
-
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-
 import type { Metadata } from 'next';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Mail, Building, Users, MessageSquare, CheckCircle2, Send } from 'lucide-react';
 
 const inquiryTypes = [
   {

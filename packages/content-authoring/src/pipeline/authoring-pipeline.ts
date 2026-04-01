@@ -5,21 +5,20 @@
  * Author UI -> Schema Validation -> Parity Tests -> Human Review -> Sign -> Publish
  */
 
-import { CanonicalFormatter } from '@topshelf/deterministic-formatter';
-import { nowISO, generateContentPackId, generateTeachingBlockId } from '@topshelf/shared';
-
-import {
-  ContentPackSigner,
-  createSignedPack,
-  type SigningConfig,
-} from '../signing/content-signer.js';
-import { ContentPackValidator, type ValidationOptions } from '../validation/content-validator.js';
-
 import type {
   ContentPackManifest,
   ContentPackValidationResult,
   TeachingBlock,
 } from '@topshelf/shared';
+import { nowISO, generateContentPackId, generateTeachingBlockId } from '@topshelf/shared';
+import { CanonicalFormatter } from '@topshelf/deterministic-formatter';
+
+import { ContentPackValidator, type ValidationOptions } from '../validation/content-validator.js';
+import {
+  ContentPackSigner,
+  createSignedPack,
+  type SigningConfig,
+} from '../signing/content-signer.js';
 
 /** Pipeline stage */
 export type PipelineStage =
@@ -208,7 +207,7 @@ export class AuthoringPipeline {
 
     for (const block of blocks) {
       // Format block
-      const formatted = this.formatter.formatBlock(block);
+      const formatted = this.formatter.formatBlock(block as TeachingBlock);
       // In production, compare with LLM outputs
       // For now, just ensure formatter runs without error
       if (formatted.contentHash.length === 0) {
@@ -333,7 +332,7 @@ export class AuthoringPipeline {
    * Convert draft blocks to full teaching blocks
    */
   private convertDraftBlocks(drafts: DraftTeachingBlock[]): TeachingBlock[] {
-    return drafts.map((draft, _index) => {
+    return drafts.map((draft, index) => {
       const blockId = generateTeachingBlockId();
 
       return {
