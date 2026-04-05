@@ -5,6 +5,7 @@ This directory contains educational content organized by domain.
 ## Structure
 
 Each domain pack should contain:
+
 - `manifest.json` - Domain metadata and configuration
 - `lessons/` - Teaching lessons and materials
 - `exercises/` - Practice problems
@@ -28,6 +29,7 @@ Each domain pack should contain:
 ## Device Constraints
 
 All content must respect device constraints:
+
 - Keep file sizes small (< 100KB per resource)
 - Avoid heavy frameworks
 - Provide text-based alternatives

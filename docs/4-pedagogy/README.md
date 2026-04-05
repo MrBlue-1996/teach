@@ -7,13 +7,16 @@ The core teaching philosophy is to maximize learning through struggle and discov
 ## Why Solve First?
 
 ### Learning Through Struggle
+
 - **Deeper Understanding**: Wrestling with problems creates stronger neural pathways
 - **Problem-Solving Skills**: Students develop debugging and analytical skills
 - **Confidence**: Successfully solving independently builds self-efficacy
 - **Retention**: Struggling before learning improves long-term retention
 
 ### Research Basis
+
 Based on educational research showing:
+
 - "Desirable difficulties" enhance learning
 - Immediate help can create learned helplessness
 - Productive struggle leads to deeper understanding
@@ -22,6 +25,7 @@ Based on educational research showing:
 ## Implementation
 
 ### Phase 1: Solve First
+
 ```
 Student encounters problem
     ↓
@@ -33,6 +37,7 @@ Triggers detect if help is needed
 ```
 
 ### Phase 2: Teach Second
+
 ```
 Trigger detected (error, stuck, help requested)
     ↓
@@ -48,11 +53,13 @@ Deliver appropriate guidance
 ### When to Intervene
 
 **Early Intervention (Prevent Frustration)**
+
 - 3+ repeated errors on same concept
 - 5+ minutes with no progress
 - Explicit help request
 
 **No Intervention (Allow Struggle)**
+
 - First attempt at problem
 - Making progress (even if slow)
 - Different approaches being tried
@@ -60,6 +67,7 @@ Deliver appropriate guidance
 ### Avoiding Over-Teaching
 
 The system actively prevents:
+
 - Immediate hints (L0-L1 modes)
 - Unsolicited explanations
 - Solution spoilers
@@ -68,7 +76,9 @@ The system actively prevents:
 ## Balancing Act
 
 ### Too Little Help
+
 Signs:
+
 - Student gives up
 - Frustration visible
 - Same error repeatedly
@@ -77,7 +87,9 @@ Signs:
 Response: Elevate teaching mode
 
 ### Too Much Help
+
 Signs:
+
 - Student not trying independently
 - Always waiting for hints
 - Not learning from mistakes
@@ -88,16 +100,19 @@ Response: Reduce teaching mode
 ## Teaching Strategies by Mode
 
 ### L0-L1: Pure Discovery
+
 - Silent observation
 - Let students struggle
 - Only respond to explicit requests
 
 ### L2: Balanced Support
+
 - Monitor for genuine stuck points
 - Provide contextual hints
 - Guide without solving
 
 ### L3-L4: Structured Guidance
+
 - Proactive teaching
 - Step-by-step breakdowns
 - Concept explanations

@@ -1,126 +1,307 @@
-# TopShelf Teaching 🎓
+# TopShelf Teaching Platform
 
-Device-aware AI teaching kernel enforcing "Solve First, Teach Second" pedagogy.
+> Learn the fastest way possible. A two-piece template system for building adaptive learning experiences.
 
-## Overview
+**Version:** 1.0.0-mvp
+**Owner:** TopShelf Service LLC
+**License:** Proprietary
 
-TopShelf Teaching is an intelligent teaching system designed for Chromebooks and low-resource devices. It features adaptive teaching modes (L0-L4), trigger-based intervention detection, and a constraint engine that ensures all teaching content is suitable for the target device.
+---
 
-## Key Features
+## What Is This?
 
-- **🎯 Solve First, Teach Second**: Students learn through productive struggle before receiving guidance
-- **📊 5 Teaching Modes (L0-L4)**: Progressive depth from silent observation to full tutorials
-- **🔍 Trigger Detection**: Automatic detection of when students need help
-- **💻 Chromebook-First**: Optimized for low-resource devices with offline support
-- **🛡️ Constraint Engine**: Filters unsuitable suggestions based on device capabilities
-- **⚡ TypeScript + Express**: Type-safe MCP server with REST API
+TopShelf Teaching is a **template system** for building educational platforms. It has two pieces:
 
-## Quick Start
+| Piece            | What It Is            | What It Does                                   |
+| ---------------- | --------------------- | ---------------------------------------------- |
+| **Platform**     | The learning system   | Auth, dashboard, progress tracking, badges, UI |
+| **Content Pack** | The teaching material | Questions, answers, hints, explanations        |
 
-```bash
-# Navigate to the MCP server
-cd implementations/mcp-server
+The Platform stays the same. The Content Pack changes based on what you're teaching.
 
-# Install dependencies
-npm install
-
-# Run tests
-npm test
-
-# Build the project
-npm run build
-
-# Start the server
-npm start
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    PLATFORM (apps/web)                      │
+│  Landing → Signup → Dashboard → Learn → Achievements        │
+│  • Always the same structure                                │
+│  • Handles user experience                                  │
+│  • Tracks progress and awards badges                        │
+└─────────────────────────────────────────────────────────────┘
+                              ↓
+                    Loads content from
+                              ↓
+┌─────────────────────────────────────────────────────────────┐
+│                 CONTENT PACK (content-packs/)               │
+│  • Questions, correct answers, hints                        │
+│  • Customized per project (Uncle Julio's, Network+, etc.)   │
+│  • Follows a standard schema                                │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-The server will start on port 3000 (default).
+---
+
+## Quick Start (For Developers)
+
+### Prerequisites
+
+- Node.js 20+
+- pnpm 8+ (`npm install -g pnpm`)
+
+### Setup
+
+```bash
+# Clone the repository
+git clone <repo-url>
+cd teach
+
+# Install dependencies
+pnpm install
+
+# Run the frontend
+pnpm --filter @topshelf/web dev
+
+# Open http://localhost:3000
+```
+
+### Build for Production
+
+```bash
+pnpm --filter @topshelf/web build
+```
+
+---
 
 ## Project Structure
 
 ```
 teach/
-├── implementations/
-│   └── mcp-server/          # TypeScript MCP server
-│       ├── src/             # Source code
-│       ├── tests/           # Vitest tests
-│       └── dist/            # Compiled output
-├── content/                 # Domain packs
-│   └── web-fundamentals/    # Example domain
-├── projects/                # Hands-on lab projects
-├── docs/                    # Documentation (0-10)
-│   ├── 0-overview/
-│   ├── 2-teaching-modes/
-│   ├── 3-device-constraints/
-│   ├── 4-pedagogy/
-│   └── 5-api/
-└── .github/workflows/       # CI configuration
+├── apps/
+│   └── web/                    # Next.js 14 frontend (THE PLATFORM)
+│       ├── src/
+│       │   ├── app/            # Pages (App Router)
+│       │   │   ├── (app)/      # Authenticated pages
+│       │   │   │   ├── dashboard/
+│       │   │   │   ├── content/
+│       │   │   │   ├── achievements/
+│       │   │   │   ├── settings/
+│       │   │   │   └── profile/
+│       │   │   ├── (legal)/    # Legal pages
+│       │   │   ├── auth/       # Login, signup, forgot-password
+│       │   │   └── learn/      # Learning interface
+│       │   ├── components/     # Reusable UI components
+│       │   ├── hooks/          # React hooks
+│       │   ├── lib/            # Utilities and API client
+│       │   └── stores/         # State management (Zustand)
+│       └── package.json
+│
+├── packages/                   # Backend services (not yet connected)
+│   ├── api-server/             # REST API (Hono)
+│   ├── auth/                   # JWT authentication
+│   ├── database/               # PostgreSQL schema (Drizzle)
+│   ├── billing/                # Stripe integration
+│   ├── email/                  # Transactional emails
+│   ├── config/                 # Environment configuration
+│   └── ...                     # Other services
+│
+├── content-packs/              # CONTENT PACKS GO HERE
+│   ├── template_content_pack.json
+│   ├── content_pack_linux_v1.json
+│   └── content_pack_networkplus_v1.json
+│
+├── legal/                      # Terms, Privacy Policy
+├── docs/                       # Documentation
+└── policy/                     # Promotion rules
 ```
 
-## Teaching Modes
+---
 
-- **L0 - Silent**: No teaching, only solve
-- **L1 - Minimal**: Hints only on explicit request
-- **L2 - Contextual**: Balanced guidance based on triggers (default)
-- **L3 - Active**: Proactive teaching
-- **L4 - Tutorial**: Full step-by-step guidance
+## The Golden Path
 
-## Device Profiles
+This is the user journey the platform is optimized for:
 
-- **Chromebook Low**: 2GB RAM, no frameworks, 50KB max response
-- **Chromebook Standard**: 4GB RAM, vanilla JS only, 100KB max response
-- **Desktop Low/Standard/High**: Progressive relaxation of constraints
+```
+1. LANDING (/)
+   ↓ "Start Learning Free" button
+2. SIGNUP (/auth/signup)
+   ↓ Google OAuth or email (30 seconds)
+3. DASHBOARD (/dashboard)
+   ↓ "Continue Learning" button
+4. CONTENT BROWSER (/content)
+   ↓ Select a course
+5. COURSE DETAIL (/content/[id])
+   ↓ "Start Learning" button
+6. LEARN (/learn/[courseId])
+   ↓ Complete challenges, get immediate feedback
+7. ACHIEVEMENTS (/achievements)
+   ↓ View earned badges, share credentials
+```
 
-## API Example
+---
 
-```typescript
-// Initialize a teaching session
-POST /api/session/init
+## Content Pack Specification
+
+Content packs follow this schema:
+
+```json
 {
-  "sessionId": "student-123",
-  "mode": 2,
-  "deviceProfile": "chromebook_standard"
-}
-
-// Process teaching request
-POST /api/teach
-{
-  "sessionId": "student-123",
-  "content": "Consider using a loop here",
-  "errorCount": 2
+  "id": "pack-unique-id",
+  "name": "Course Name",
+  "version": "1.0.0",
+  "description": "What this course teaches",
+  "teachingBlocks": [
+    {
+      "id": "block-001",
+      "type": "challenge",
+      "concept": "Topic Name",
+      "question": "The question to ask the learner",
+      "correctAnswer": "The expected answer",
+      "hints": [
+        "First hint (subtle)",
+        "Second hint (more direct)",
+        "Third hint (nearly gives it away)"
+      ],
+      "explanation": "Why this is the correct answer",
+      "level": "L1_RECALL"
+    }
+  ],
+  "badges": [
+    {
+      "id": "badge-001",
+      "title": "Badge Name",
+      "description": "How to earn this badge",
+      "requirements": {
+        "blocksCompleted": ["block-001", "block-002"]
+      }
+    }
+  ]
 }
 ```
 
-## Documentation
+### Levels
 
-Comprehensive documentation is available in the `/docs` folder:
+| Level      | Name    | Description                     |
+| ---------- | ------- | ------------------------------- |
+| L1_RECALL  | Recall  | Remember facts                  |
+| L2_EXPLAIN | Explain | Understand concepts             |
+| L3_APPLY   | Apply   | Use knowledge in new situations |
+| L4_ANALYZE | Analyze | Break down complex problems     |
+| L5_EXPERT  | Expert  | Create and evaluate             |
 
-- [Overview](docs/0-overview/README.md)
-- [Teaching Modes](docs/2-teaching-modes/README.md)
-- [Device Constraints](docs/3-device-constraints/README.md)
-- [Pedagogy](docs/4-pedagogy/README.md)
-- [API Reference](docs/5-api/README.md)
+---
 
-## Testing
+## How to Customize for a New Project
+
+### Step 1: Fork or Copy
 
 ```bash
-cd implementations/mcp-server
-npm test              # Run all tests
-npm run test:watch    # Watch mode
+# Option A: Fork the repo (for ongoing updates)
+# Option B: Copy the directory (for standalone project)
+cp -r teach my-project
+cd my-project
 ```
 
-## CI/CD
+### Step 2: Update Branding
 
-GitHub Actions CI runs on push and pull requests:
-- Type checking
-- Build verification
-- Test suite
-- Linting
+Edit these files:
 
-## License
+- `apps/web/src/app/layout.tsx` - Title, metadata
+- `apps/web/src/app/page.tsx` - Landing page content
+- `apps/web/tailwind.config.ts` - Colors (topshelf brand colors)
 
-MIT License - see [LICENSE](LICENSE) file for details.
+### Step 3: Create Your Content Pack
 
-## Contributing
+```bash
+# Copy the template
+cp content-packs/template_content_pack.json content-packs/my_project_v1.json
 
-This project enforces strict TypeScript, Chromebook-first design, and comprehensive testing. See documentation for guidelines.
+# Edit with your content
+```
+
+### Step 4: Update the Frontend to Load Your Content
+
+Currently, content is mocked in the page files. To use your content pack:
+
+1. Import it in the relevant page
+2. Replace mock data with content pack data
+
+---
+
+## Current State (MVP)
+
+| Component        | Status      | Notes                    |
+| ---------------- | ----------- | ------------------------ |
+| Frontend UI      | Complete    | All 16 pages working     |
+| Golden Path      | Complete    | Fully walkable           |
+| Mock Data        | In Place    | Simulates real behavior  |
+| API Client       | Written     | Not connected to backend |
+| Backend Packages | Written     | Not running              |
+| Database         | Schema Only | Not deployed             |
+| Authentication   | Mock        | Real auth needs backend  |
+
+### What Works Now
+
+- Click through entire app
+- All pages render correctly
+- Mobile responsive
+- Dark/light theme
+- Form validation
+
+### What Needs Backend
+
+- User persistence
+- Progress saving
+- Real authentication
+- Badge issuance
+
+---
+
+## Technology Stack
+
+| Layer    | Technology                         |
+| -------- | ---------------------------------- |
+| Frontend | Next.js 14, React 18, TypeScript   |
+| Styling  | Tailwind CSS, shadcn/ui components |
+| State    | Zustand, React hooks               |
+| Backend  | Hono (Node.js), Drizzle ORM        |
+| Database | PostgreSQL                         |
+| Auth     | JWT (jose), bcrypt                 |
+| Payments | Stripe                             |
+| Email    | SendGrid/SMTP                      |
+
+---
+
+## Commands Reference
+
+```bash
+# Development
+pnpm install              # Install all dependencies
+pnpm --filter @topshelf/web dev    # Run frontend dev server
+pnpm --filter @topshelf/web build  # Build frontend for production
+
+# Type Checking
+pnpm --filter @topshelf/web typecheck  # Check TypeScript
+
+# All Packages
+pnpm run build            # Build all packages
+pnpm run typecheck        # Typecheck all packages
+```
+
+---
+
+## Support
+
+- **Documentation:** `/docs/` directory
+- **Legal:** `/legal/` directory
+- **Issues:** Contact TopShelf Service LLC
+
+---
+
+## Version History
+
+| Version   | Date       | Description                          |
+| --------- | ---------- | ------------------------------------ |
+| 1.0.0-mvp | 2026-02-02 | Initial MVP - Complete UI, mock data |
+
+---
+
+_Built by TopShelf Service LLC. All rights reserved._

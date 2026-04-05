@@ -5,6 +5,7 @@ This directory contains practical, hands-on projects for students to build.
 ## Structure
 
 Each project should include:
+
 - `README.md` - Project overview and objectives
 - `starter/` - Starter code and templates
 - `solution/` - Reference solution
@@ -29,6 +30,7 @@ Each project should include:
 ## Testing Projects
 
 Projects can be tested using:
+
 - Automated test suites
 - Manual validation checklists
 - Peer review criteria

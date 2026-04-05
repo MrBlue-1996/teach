@@ -1,0 +1,34 @@
+{
+  "name": "@topshelf/tests",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Comprehensive test suite for TopShelf Teaching platform",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ci": "vitest run --coverage --reporter=junit --outputFile=junit.xml",
+    "test:unit": "vitest run src/unit",
+    "test:integration": "vitest run src/integration",
+    "test:parity": "vitest run src/parity",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "lint": "eslint src --ext .ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@topshelf/shared": "workspace:*",
+    "@topshelf/policy-engine": "workspace:*",
+    "@topshelf/deterministic-formatter": "workspace:*",
+    "@topshelf/content-authoring": "workspace:*",
+    "@topshelf/nlp": "workspace:*",
+    "@topshelf/mcp-server": "workspace:*"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.41.0",
+    "@types/node": "^20.11.0",
+    "@vitest/coverage-v8": "^1.2.0",
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.0"
+  }
+}

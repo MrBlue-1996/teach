@@ -22,7 +22,7 @@ export class TriggerDetector {
     // Detect stuck state (time spent without progress)
     const timeElapsed = Date.now() - context.sessionStartTime.getTime();
     const progressRate = context.problemsSolved / (timeElapsed / 60000); // problems per minute
-    
+
     if (timeElapsed > this.STUCK_TIME_THRESHOLD_MS && progressRate < 0.1) {
       triggers.push(TriggerType.STUCK_DETECTED);
     }
@@ -50,10 +50,11 @@ export class TriggerDetector {
 
       case TeachingMode.L2_CONTEXTUAL:
         // Teach on specific triggers
-        return triggers.some(t => 
-          t === TriggerType.ERROR_REPEATED || 
-          t === TriggerType.STUCK_DETECTED ||
-          t === TriggerType.HELP_REQUESTED
+        return triggers.some(
+          (t) =>
+            t === TriggerType.ERROR_REPEATED ||
+            t === TriggerType.STUCK_DETECTED ||
+            t === TriggerType.HELP_REQUESTED
         );
 
       case TeachingMode.L3_ACTIVE:
@@ -72,19 +73,15 @@ export class TriggerDetector {
   /**
    * Suggest mode elevation based on triggers
    */
-  static suggestModeElevation(
-    currentMode: TeachingMode,
-    triggers: TriggerType[]
-  ): TeachingMode {
+  static suggestModeElevation(currentMode: TeachingMode, triggers: TriggerType[]): TeachingMode {
     // Don't elevate if already at max
     if (currentMode >= TeachingMode.L4_TUTORIAL) {
       return currentMode;
     }
 
     // Elevate mode based on trigger severity
-    const severeTriggers = triggers.filter(t => 
-      t === TriggerType.ERROR_REPEATED || 
-      t === TriggerType.STUCK_DETECTED
+    const severeTriggers = triggers.filter(
+      (t) => t === TriggerType.ERROR_REPEATED || t === TriggerType.STUCK_DETECTED
     );
 
     if (severeTriggers.length >= 2 && currentMode < TeachingMode.L3_ACTIVE) {

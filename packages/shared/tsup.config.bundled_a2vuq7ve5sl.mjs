@@ -1,0 +1,22 @@
+// tsup.config.ts
+import { defineConfig } from 'tsup';
+var tsup_config_default = defineConfig({
+  entry: {
+    index: 'src/index.ts',
+    'types/index': 'src/types/index.ts',
+    'schemas/index': 'src/schemas/index.ts',
+    'constants/index': 'src/constants/index.ts',
+    'utils/index': 'src/utils/index.ts',
+  },
+  format: ['esm'],
+  dts: true,
+  sourcemap: true,
+  clean: true,
+  treeshake: true,
+  splitting: false,
+  minify: false,
+  target: 'es2022',
+  outDir: 'dist',
+});
+export { tsup_config_default as default };
+//# sourceMappingURL=data:application/json;base64,ewogICJ2ZXJzaW9uIjogMywKICAic291cmNlcyI6IFsidHN1cC5jb25maWcudHMiXSwKICAic291cmNlc0NvbnRlbnQiOiBbImNvbnN0IF9faW5qZWN0ZWRfZmlsZW5hbWVfXyA9IFwiL2hvbWUvdXNlci90ZWFjaC9wYWNrYWdlcy9zaGFyZWQvdHN1cC5jb25maWcudHNcIjtjb25zdCBfX2luamVjdGVkX2Rpcm5hbWVfXyA9IFwiL2hvbWUvdXNlci90ZWFjaC9wYWNrYWdlcy9zaGFyZWRcIjtjb25zdCBfX2luamVjdGVkX2ltcG9ydF9tZXRhX3VybF9fID0gXCJmaWxlOi8vL2hvbWUvdXNlci90ZWFjaC9wYWNrYWdlcy9zaGFyZWQvdHN1cC5jb25maWcudHNcIjtpbXBvcnQgeyBkZWZpbmVDb25maWcgfSBmcm9tICd0c3VwJztcblxuZXhwb3J0IGRlZmF1bHQgZGVmaW5lQ29uZmlnKHtcbiAgZW50cnk6IHtcbiAgICBpbmRleDogJ3NyYy9pbmRleC50cycsXG4gICAgJ3R5cGVzL2luZGV4JzogJ3NyYy90eXBlcy9pbmRleC50cycsXG4gICAgJ3NjaGVtYXMvaW5kZXgnOiAnc3JjL3NjaGVtYXMvaW5kZXgudHMnLFxuICAgICdjb25zdGFudHMvaW5kZXgnOiAnc3JjL2NvbnN0YW50cy9pbmRleC50cycsXG4gICAgJ3V0aWxzL2luZGV4JzogJ3NyYy91dGlscy9pbmRleC50cycsXG4gIH0sXG4gIGZvcm1hdDogWydlc20nXSxcbiAgZHRzOiB0cnVlLFxuICBzb3VyY2VtYXA6IHRydWUsXG4gIGNsZWFuOiB0cnVlLFxuICB0cmVlc2hha2U6IHRydWUsXG4gIHNwbGl0dGluZzogZmFsc2UsXG4gIG1pbmlmeTogZmFsc2UsXG4gIHRhcmdldDogJ2VzMjAyMicsXG4gIG91dERpcjogJ2Rpc3QnLFxufSk7XG4iXSwKICAibWFwcGluZ3MiOiAiO0FBQThPLFNBQVMsb0JBQW9CO0FBRTNRLElBQU8sc0JBQVEsYUFBYTtBQUFBLEVBQzFCLE9BQU87QUFBQSxJQUNMLE9BQU87QUFBQSxJQUNQLGVBQWU7QUFBQSxJQUNmLGlCQUFpQjtBQUFBLElBQ2pCLG1CQUFtQjtBQUFBLElBQ25CLGVBQWU7QUFBQSxFQUNqQjtBQUFBLEVBQ0EsUUFBUSxDQUFDLEtBQUs7QUFBQSxFQUNkLEtBQUs7QUFBQSxFQUNMLFdBQVc7QUFBQSxFQUNYLE9BQU87QUFBQSxFQUNQLFdBQVc7QUFBQSxFQUNYLFdBQVc7QUFBQSxFQUNYLFFBQVE7QUFBQSxFQUNSLFFBQVE7QUFBQSxFQUNSLFFBQVE7QUFDVixDQUFDOyIsCiAgIm5hbWVzIjogW10KfQo=

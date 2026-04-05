@@ -1,9 +1,53 @@
-node_modules
-dist
-*.log
-.DS_Store
-.env
-.vscode
-.idea
-coverage
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+
+# TypeScript
 *.tsbuildinfo
+
+# Environment
+.env
+.env.local
+.env.*.local
+.env.production
+.env.staging
+.env.development
+
+# Secrets & credentials
+*.pem
+*.key
+*.p12
+*.pfx
+credentials.json
+service-account.json
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Test coverage
+coverage/
+
+# Turbo
+.turbo/
+
+# Claude Code
+.claude/
+
+# Auto-generated
+next-env.d.ts

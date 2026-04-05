@@ -1,0 +1,37 @@
+{
+  "name": "@topshelf/email",
+  "version": "1.0.0",
+  "description": "TopShelf Service LLC - Transactional Email Service",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "test:ci": "vitest run --coverage",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@topshelf/config": "workspace:*",
+    "@topshelf/observability": "workspace:*",
+    "@sendgrid/mail": "^8.1.0",
+    "nodemailer": "^6.9.8",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/nodemailer": "^6.4.14",
+    "tsup": "^8.0.1",
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.0"
+  },
+  "license": "SEE LICENSE IN LICENSE",
+  "author": "TopShelf Service LLC"
+}

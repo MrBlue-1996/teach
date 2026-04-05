@@ -40,10 +40,7 @@ describe('PedagogyEngine', () => {
         DeviceProfile.CHROMEBOOK_STANDARD
       );
 
-      const response = PedagogyEngine.processTeachingRequest(
-        context,
-        'This is teaching content'
-      );
+      const response = PedagogyEngine.processTeachingRequest(context, 'This is teaching content');
 
       expect(response.shouldTeach).toBe(true);
       expect(response.content).toContain('Tutorial:');
@@ -74,14 +71,8 @@ describe('PedagogyEngine', () => {
       ];
 
       for (const { mode, prefix } of modes) {
-        const context = PedagogyEngine.createContext(
-          mode,
-          DeviceProfile.DESKTOP_STANDARD
-        );
-        const response = PedagogyEngine.processTeachingRequest(
-          context,
-          'Content'
-        );
+        const context = PedagogyEngine.createContext(mode, DeviceProfile.DESKTOP_STANDARD);
+        const response = PedagogyEngine.processTeachingRequest(context, 'Content');
 
         if (response.content) {
           expect(response.content).toContain(prefix);

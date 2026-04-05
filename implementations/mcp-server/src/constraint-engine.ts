@@ -80,7 +80,7 @@ export class ConstraintEngine {
     if (!constraints.allowHeavyFrameworks) {
       const heavyFrameworks = ['react', 'angular', 'vue', 'webpack', 'parcel'];
       const lowerSuggestion = suggestion.toLowerCase();
-      
+
       for (const framework of heavyFrameworks) {
         if (lowerSuggestion.includes(framework)) {
           return {
@@ -95,7 +95,7 @@ export class ConstraintEngine {
     if (!constraints.allowLargeAssets) {
       const largeAssetKeywords = ['large image', 'video file', 'high-res', '4k', 'hd video'];
       const lowerSuggestion = suggestion.toLowerCase();
-      
+
       for (const keyword of largeAssetKeywords) {
         if (lowerSuggestion.includes(keyword)) {
           return {
@@ -122,8 +122,9 @@ export class ConstraintEngine {
 
     // Truncate if too large
     if (filtered.length > constraints.maxResponseSize) {
-      filtered = filtered.substring(0, constraints.maxResponseSize - 100) + 
-                 '\n\n[Response truncated for device constraints]';
+      filtered =
+        filtered.substring(0, constraints.maxResponseSize - 100) +
+        '\n\n[Response truncated for device constraints]';
       wasModified = true;
     }
 

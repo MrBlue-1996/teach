@@ -34,10 +34,7 @@ content/
   "estimatedHours": 10,
   "chromebookCompatible": true,
   "offlineCapable": true,
-  "topics": [
-    "Topic 1",
-    "Topic 2"
-  ],
+  "topics": ["Topic 1", "Topic 2"],
   "prerequisites": ["other-domain"],
   "constraints": {
     "maxFrameworkSize": 0,
@@ -50,6 +47,7 @@ content/
 ## Chromebook-First Guidelines
 
 ### ✅ DO
+
 - Use vanilla JavaScript, HTML, CSS
 - Keep examples simple and focused
 - Provide text-based content
@@ -58,6 +56,7 @@ content/
 - Test on real Chromebooks
 
 ### ❌ DON'T
+
 - Require heavy frameworks (React, Angular)
 - Use large images or videos
 - Depend on external CDNs
@@ -67,24 +66,29 @@ content/
 ## Content Quality Standards
 
 ### 1. Clear Learning Objectives
+
 Every lesson should state:
+
 - What you'll learn
 - Prerequisites
 - Expected outcomes
 
 ### 2. Progressive Difficulty
+
 - Start simple
 - Build incrementally
 - Provide scaffolding
 - Remove scaffolding gradually
 
 ### 3. Practice-Oriented
+
 - More exercises than explanations
 - Real-world scenarios
 - Immediate feedback
 - Multiple attempts encouraged
 
 ### 4. Device-Aware
+
 - Consider device constraints in examples
 - Provide alternative approaches
 - Test on target hardware
@@ -95,28 +99,35 @@ Every lesson should state:
 # Lesson Title
 
 ## Learning Objectives
+
 - Objective 1
 - Objective 2
 
 ## Prerequisites
+
 - Concept A
 - Concept B
 
 ## Introduction
+
 Brief overview...
 
 ## Core Concepts
 
 ### Concept 1
+
 Explanation with examples...
 
 ## Practice Exercise
+
 Problem statement...
 
 ## Summary
+
 Key takeaways...
 
 ## Next Steps
+
 What to learn next...
 ```
 
@@ -128,31 +139,38 @@ What to learn next...
 ## Difficulty: ★★☆☆☆
 
 ## Objective
+
 What this exercise teaches...
 
 ## Problem Statement
+
 Clear description of what to build...
 
 ## Constraints
+
 - Must work offline
 - Vanilla JS only
 - < 100 lines of code
 
 ## Starter Code
+
 \`\`\`javascript
 // Your code here
 \`\`\`
 
 ## Tests
+
 How to verify correctness...
 
 ## Hints (Collapsed)
+
 <details>
 <summary>Hint 1</summary>
 First hint...
 </details>
 
 ## Solution (Collapsed)
+
 <details>
 <summary>Solution</summary>
 \`\`\`javascript
@@ -164,6 +182,7 @@ First hint...
 ## Creating a New Domain Pack
 
 1. **Create Directory Structure**
+
    ```bash
    mkdir -p content/my-domain/{lessons,exercises,resources}
    ```

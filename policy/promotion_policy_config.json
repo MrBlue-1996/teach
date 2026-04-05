@@ -1,0 +1,33 @@
+{
+  "$schema": "../packages/shared/schemas/policy.schema.json",
+  "policyVersion": "2026-01-21",
+  "multiSignal": {
+    "requiredSignals": ["benchmark_passes", "transfer_score", "time_efficiency", "retention"],
+    "windowMinutes": 1440,
+    "consecutivePasses": 3,
+    "transferThreshold": 0.75,
+    "timePercentileThreshold": 0.6,
+    "probationTasks": 3,
+    "rollbackOnFailureRate": 0.4
+  },
+  "domainOverrides": {
+    "security": {
+      "consecutivePasses": 5,
+      "transferThreshold": 0.85,
+      "probationTasks": 5
+    },
+    "networking.advanced": {
+      "consecutivePasses": 4,
+      "transferThreshold": 0.8
+    }
+  },
+  "employerRequirements": {
+    "requiredBadges": ["badge-linux-admin-v1", "badge-networking-tech-v1"],
+    "minRetentionDays": 7,
+    "requiresProctoredCapstone": true,
+    "promotionThresholds": {
+      "transferThreshold": 0.8,
+      "timePercentileThreshold": 0.5
+    }
+  }
+}

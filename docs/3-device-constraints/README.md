@@ -7,6 +7,7 @@ TopShelf Teaching is Chromebook-first, designed to work seamlessly on low-resour
 ## Device Profiles
 
 ### Chromebook Low
+
 - **Memory**: 2GB RAM
 - **CPU**: 2 cores
 - **Max Response**: 50KB
@@ -15,6 +16,7 @@ TopShelf Teaching is Chromebook-first, designed to work seamlessly on low-resour
 - **Offline**: Required
 
 ### Chromebook Standard (Default for Education)
+
 - **Memory**: 4GB RAM
 - **CPU**: 4 cores
 - **Max Response**: 100KB
@@ -23,6 +25,7 @@ TopShelf Teaching is Chromebook-first, designed to work seamlessly on low-resour
 - **Offline**: Required
 
 ### Desktop Profiles
+
 - **Low**: 4GB RAM, basic web dev
 - **Standard**: 8GB RAM, modern frameworks ok
 - **High**: 16GB+ RAM, no restrictions
@@ -30,6 +33,7 @@ TopShelf Teaching is Chromebook-first, designed to work seamlessly on low-resour
 ## Constraint Engine
 
 ### Response Size Filtering
+
 ```typescript
 // Automatically truncates responses exceeding device limits
 if (response.length > constraints.maxResponseSize) {
@@ -38,14 +42,18 @@ if (response.length > constraints.maxResponseSize) {
 ```
 
 ### Framework Detection
+
 Blocks suggestions for heavy frameworks on Chromebooks:
+
 - ❌ React, Angular, Vue
 - ❌ Webpack, Parcel
 - ✅ Vanilla JavaScript
 - ✅ Lightweight libraries (< 50KB)
 
 ### Asset Filtering
+
 Prevents large asset suggestions:
+
 - ❌ "Use high-res images"
 - ❌ "Add video files"
 - ✅ "Use SVG icons"
@@ -54,17 +62,18 @@ Prevents large asset suggestions:
 ## Offline Support
 
 ### Required for Chromebooks
+
 All Chromebook profiles require offline capability:
+
 - Content cached locally
 - No CDN dependencies
 - Embedded resources
 - Progressive enhancement
 
 ### Implementation
+
 ```typescript
-const constraints = ConstraintEngine.getConstraints(
-  DeviceProfile.CHROMEBOOK_STANDARD
-);
+const constraints = ConstraintEngine.getConstraints(DeviceProfile.CHROMEBOOK_STANDARD);
 
 if (constraints.offlineCapable) {
   // Use local resources only
@@ -84,11 +93,9 @@ if (constraints.offlineCapable) {
 ## Validation
 
 Use the constraint checker before suggesting content:
+
 ```typescript
-const result = ConstraintEngine.isSuggestionSuitable(
-  suggestion,
-  deviceProfile
-);
+const result = ConstraintEngine.isSuggestionSuitable(suggestion, deviceProfile);
 
 if (!result.suitable) {
   console.log(`Blocked: ${result.reason}`);

@@ -1,0 +1,33 @@
+{
+  "name": "@topshelf/cli",
+  "version": "1.0.0",
+  "description": "TopShelf Service LLC - Administration CLI Tool",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "topshelf": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@topshelf/config": "workspace:*",
+    "@topshelf/database": "workspace:*",
+    "@topshelf/auth": "workspace:*",
+    "commander": "^12.0.0",
+    "chalk": "^5.3.0",
+    "ora": "^8.0.1",
+    "inquirer": "^9.2.12"
+  },
+  "devDependencies": {
+    "@types/inquirer": "^9.0.7",
+    "tsup": "^8.0.1",
+    "typescript": "^5.3.3"
+  },
+  "license": "SEE LICENSE IN LICENSE",
+  "author": "TopShelf Service LLC"
+}

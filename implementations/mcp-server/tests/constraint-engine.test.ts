@@ -6,7 +6,7 @@ describe('ConstraintEngine', () => {
   describe('getConstraints', () => {
     it('should return correct constraints for Chromebook low profile', () => {
       const constraints = ConstraintEngine.getConstraints(DeviceProfile.CHROMEBOOK_LOW);
-      
+
       expect(constraints.maxMemoryMB).toBe(2048);
       expect(constraints.maxCPUCores).toBe(2);
       expect(constraints.offlineCapable).toBe(true);
@@ -15,7 +15,7 @@ describe('ConstraintEngine', () => {
 
     it('should return correct constraints for Desktop high profile', () => {
       const constraints = ConstraintEngine.getConstraints(DeviceProfile.DESKTOP_HIGH);
-      
+
       expect(constraints.maxMemoryMB).toBe(16384);
       expect(constraints.allowHeavyFrameworks).toBe(true);
       expect(constraints.allowLargeAssets).toBe(true);
@@ -47,10 +47,7 @@ describe('ConstraintEngine', () => {
 
     it('should accept heavy frameworks for Desktop high', () => {
       const suggestion = 'You should use React for this project';
-      const result = ConstraintEngine.isSuggestionSuitable(
-        suggestion,
-        DeviceProfile.DESKTOP_HIGH
-      );
+      const result = ConstraintEngine.isSuggestionSuitable(suggestion, DeviceProfile.DESKTOP_HIGH);
 
       expect(result.suitable).toBe(true);
     });
@@ -92,10 +89,7 @@ describe('ConstraintEngine', () => {
 
     it('should not modify suitable suggestions', () => {
       const suggestion = 'This is a normal suggestion';
-      const result = ConstraintEngine.filterSuggestion(
-        suggestion,
-        DeviceProfile.CHROMEBOOK_LOW
-      );
+      const result = ConstraintEngine.filterSuggestion(suggestion, DeviceProfile.CHROMEBOOK_LOW);
 
       expect(result.filtered).toBe(suggestion);
       expect(result.wasModified).toBe(false);

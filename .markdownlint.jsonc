@@ -1,0 +1,61 @@
+{
+  // TopShelf Teaching Markdown Linting Configuration
+  "default": true,
+
+  // Allow long lines for code blocks and tables
+  "MD013": {
+    "line_length": 120,
+    "code_blocks": false,
+    "tables": false,
+    "headings": false,
+  },
+
+  // Allow inline HTML for accessibility and custom components
+  "MD033": {
+    "allowed_elements": [
+      "details",
+      "summary",
+      "kbd",
+      "abbr",
+      "br",
+      "sup",
+      "sub",
+      "mark",
+      "img",
+      "a",
+    ],
+  },
+
+  // Allow duplicate headings in different sections
+  "MD024": {
+    "siblings_only": true,
+  },
+
+  // Require blank lines around headings
+  "MD022": true,
+  "MD023": true,
+
+  // Consistent list markers
+  "MD004": {
+    "style": "dash",
+  },
+
+  // Proper heading increment
+  "MD001": true,
+
+  // No trailing spaces (except for line breaks)
+  "MD009": {
+    "br_spaces": 2,
+  },
+
+  // Fenced code blocks should have language specified
+  "MD040": true,
+
+  // Lists should be consistent
+  "MD030": {
+    "ul_single": 1,
+    "ol_single": 1,
+    "ul_multi": 1,
+    "ol_multi": 1,
+  },
+}

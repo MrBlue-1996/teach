@@ -1,0 +1,69 @@
+{
+  "$schema": "../packages/shared/schemas/content-pack.schema.json",
+  "id": "pack-template",
+  "name": "Template Content Pack",
+  "version": "1.0.0",
+  "description": "Template for creating new content packs. Copy this file and fill in your content.",
+  "tags": ["required"],
+  "roleMappings": ["badge-example-v1"],
+  "difficulty": "beginner",
+  "minDeviceProfile": {
+    "ramMb": 1024,
+    "networkKbps": 200,
+    "requiresWebGL": false,
+    "requiresWebGPU": false,
+    "requiresWasm": false
+  },
+  "teachingBlocks": [
+    {
+      "id": "tb-template-001",
+      "concept": "Example Concept",
+      "mode": "L0",
+      "canonicalSolution": "```bash\n# This is the canonical solution\necho 'Hello World'\n```",
+      "explanation": "This explanation describes WHY the solution works, not just what it does. It should help learners build mental models.",
+      "surfaceVariants": [
+        {
+          "id": "variant-1",
+          "description": "Variant A - Different context, same underlying concept",
+          "data": {
+            "context": "server environment"
+          }
+        },
+        {
+          "id": "variant-2",
+          "description": "Variant B - Another different context",
+          "data": {
+            "context": "container environment"
+          }
+        }
+      ],
+      "timeBudgetSeconds": 180,
+      "difficulty": "beginner",
+      "prerequisites": [],
+      "successCriteria": {
+        "minCorrectnessScore": 0.7,
+        "maxTimeSeconds": 360,
+        "maxRetries": 3,
+        "requiresExplanation": false
+      },
+      "hints": [
+        "First hint - most general guidance",
+        "Second hint - more specific direction",
+        "Third hint - nearly gives away the answer"
+      ],
+      "commonErrors": [
+        {
+          "pattern": "missing quotes",
+          "description": "Learner forgot to quote the string",
+          "remediation": "Remember that strings with spaces need quotes in bash"
+        }
+      ]
+    }
+  ],
+  "author": "TopShelf Teaching Team",
+  "createdAt": "2026-01-01T00:00:00Z",
+  "updatedAt": "2026-01-01T00:00:00Z",
+  "signature": "sig-placeholder",
+  "signingKeyId": "key-dev-001",
+  "schemaVersion": "1.0.0"
+}
