@@ -1,13 +1,21 @@
-import express, { Request, Response } from 'express';
+import express, { Express, Request, Response } from 'express';
 import { TeachingMode, DeviceProfile } from './types.js';
 import { PedagogyEngine } from './pedagogy-engine.js';
 import { TriggerDetector } from './trigger-detector.js';
+import { renderMvpPage } from './mvp-page.js';
 
-const app = express();
-const PORT = process.env.PORT || 3000;
+const app: Express = express();
 
 // Middleware
 app.use(express.json());
+
+app.get('/', (_req: Request, res: Response) => {
+  res.redirect('/mvp');
+});
+
+app.get('/mvp', (_req: Request, res: Response) => {
+  res.type('html').send(renderMvpPage());
+});
 
 // Store active teaching contexts
 const contexts = new Map<string, import('./types.js').TeachingContext>();
@@ -23,11 +31,7 @@ app.get('/health', (_req: Request, res: Response) => {
  * Initialize teaching session
  */
 app.post('/api/session/init', (req: Request, res: Response): void => {
-  const {
-    sessionId,
-    mode = TeachingMode.L2_CONTEXTUAL,
-    deviceProfile = DeviceProfile.CHROMEBOOK_STANDARD,
-  } = req.body;
+  const { sessionId, mode = TeachingMode.L2_CONTEXTUAL, deviceProfile = DeviceProfile.CHROMEBOOK_STANDARD } = req.body;
 
   if (!sessionId) {
     res.status(400).json({ error: 'sessionId is required' });
@@ -153,7 +157,7 @@ app.get('/api/session/:sessionId', (req: Request, res: Response): void => {
  */
 app.delete('/api/session/:sessionId', (req: Request, res: Response) => {
   const { sessionId } = req.params;
-
+  
   if (contexts.delete(sessionId)) {
     res.json({ message: 'Session deleted', sessionId });
   } else {
@@ -164,9 +168,9 @@ app.delete('/api/session/:sessionId', (req: Request, res: Response) => {
 /**
  * Start server
  */
-export function startServer() {
-  return app.listen(PORT, () => {
-    console.log(`🎓 TopShelf Teaching MCP Server running on port ${PORT}`);
+export function startServer(port = Number(process.env.PORT ?? 3000)) {
+  return app.listen(port, () => {
+    console.log(`🎓 TopShelf Teaching MCP Server running on port ${port}`);
     console.log(`📚 Enforce "Solve First, Teach Second" pedagogy`);
     console.log(`💻 Chromebook-first with device constraints`);
   });

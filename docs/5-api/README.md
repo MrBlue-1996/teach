@@ -1,21 +1,21 @@
 # 5. API Reference
 
 ## Base URL
-
 ```
 http://localhost:3000
 ```
 
+## Manual MVP Page
+Open `http://localhost:3000/mvp` to initialize sessions, send teaching requests, inspect triggers, update modes, and delete sessions from the browser.
+
 ## Endpoints
 
 ### Health Check
-
 ```http
 GET /health
 ```
 
 **Response**
-
 ```json
 {
   "status": "healthy",
@@ -26,13 +26,11 @@ GET /health
 ---
 
 ### Initialize Session
-
 ```http
 POST /api/session/init
 ```
 
 **Request Body**
-
 ```json
 {
   "sessionId": "string",
@@ -42,7 +40,6 @@ POST /api/session/init
 ```
 
 **Response**
-
 ```json
 {
   "sessionId": "abc123",
@@ -62,24 +59,21 @@ POST /api/session/init
 ---
 
 ### Process Teaching Request
-
 ```http
 POST /api/teach
 ```
 
 **Request Body**
-
 ```json
 {
   "sessionId": "string",
-  "content": "string", // Teaching content to evaluate
-  "errorCount": 0, // Optional
-  "problemsSolved": 0 // Optional
+  "content": "string",  // Teaching content to evaluate
+  "errorCount": 0,      // Optional
+  "problemsSolved": 0   // Optional
 }
 ```
 
 **Response**
-
 ```json
 {
   "shouldTeach": true,
@@ -93,13 +87,11 @@ POST /api/teach
 ---
 
 ### Detect Triggers
-
 ```http
 POST /api/triggers/detect
 ```
 
 **Request Body**
-
 ```json
 {
   "sessionId": "string"
@@ -107,7 +99,6 @@ POST /api/triggers/detect
 ```
 
 **Response**
-
 ```json
 {
   "currentMode": 2,
@@ -120,13 +111,11 @@ POST /api/triggers/detect
 ---
 
 ### Update Teaching Mode
-
 ```http
 POST /api/session/mode
 ```
 
 **Request Body**
-
 ```json
 {
   "sessionId": "string",
@@ -135,7 +124,6 @@ POST /api/session/mode
 ```
 
 **Response**
-
 ```json
 {
   "sessionId": "abc123",
@@ -146,13 +134,11 @@ POST /api/session/mode
 ---
 
 ### Get Session Status
-
 ```http
 GET /api/session/:sessionId
 ```
 
 **Response**
-
 ```json
 {
   "sessionId": "abc123",
@@ -168,13 +154,11 @@ GET /api/session/:sessionId
 ---
 
 ### Delete Session
-
 ```http
 DELETE /api/session/:sessionId
 ```
 
 **Response**
-
 ```json
 {
   "message": "Session deleted",
@@ -193,7 +177,6 @@ All endpoints may return standard error responses:
 ```
 
 **Status Codes**
-
 - `400` - Bad Request (missing or invalid parameters)
 - `404` - Not Found (session not found)
 - `500` - Internal Server Error
@@ -208,8 +191,8 @@ const initResponse = await fetch('http://localhost:3000/api/session/init', {
   body: JSON.stringify({
     sessionId: 'user-123',
     mode: 2,
-    deviceProfile: 'chromebook_standard',
-  }),
+    deviceProfile: 'chromebook_standard'
+  })
 });
 
 // Process teaching request
@@ -219,8 +202,8 @@ const teachResponse = await fetch('http://localhost:3000/api/teach', {
   body: JSON.stringify({
     sessionId: 'user-123',
     content: 'Consider using a for loop here',
-    errorCount: 2,
-  }),
+    errorCount: 2
+  })
 });
 
 const result = await teachResponse.json();

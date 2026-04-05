@@ -6,16 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import {
-  ArrowLeft,
-  Clock,
-  BookOpen,
-  CheckCircle2,
-  Play,
-  Lock,
-  Target,
-  Zap,
-} from 'lucide-react';
+import { ArrowLeft, Clock, BookOpen, CheckCircle2, Play, Lock, Target, Zap } from 'lucide-react';
 import { cn, getLevelName, getLevelGradientFrom } from '@/lib/utils';
 import { contentApi, learnerApi } from '@/lib/api';
 import type { ContentPackDetail } from '@/lib/api';

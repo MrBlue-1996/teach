@@ -32,7 +32,7 @@
     "test": "vitest run --passWithNoTests",
     "test:ci": "vitest run --coverage",
     "typecheck": "tsc --noEmit",
-    "validate:policies": "node --loader ts-node/esm src/cli/validate.ts"
+    "validate:policies": "tsx src/cli/validate.ts"
   },
   "dependencies": {
     "@topshelf/shared": "workspace:*",

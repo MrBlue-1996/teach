@@ -12,7 +12,12 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 'latest',
     sourceType: 'module',
-    project: ['./tsconfig.json', './packages/*/tsconfig.json', './packages/_future/*/tsconfig.json', './apps/*/tsconfig.json'],
+    project: [
+      './tsconfig.json',
+      './packages/*/tsconfig.json',
+      './packages/_future/*/tsconfig.json',
+      './apps/*/tsconfig.json',
+    ],
     tsconfigRootDir: __dirname,
   },
   plugins: ['@typescript-eslint', 'import', 'security'],
@@ -29,7 +34,12 @@ module.exports = {
   settings: {
     'import/resolver': {
       typescript: {
-        project: ['./tsconfig.json', './packages/*/tsconfig.json', './packages/_future/*/tsconfig.json', './apps/*/tsconfig.json'],
+        project: [
+          './tsconfig.json',
+          './packages/*/tsconfig.json',
+          './packages/_future/*/tsconfig.json',
+          './apps/*/tsconfig.json',
+        ],
       },
     },
   },

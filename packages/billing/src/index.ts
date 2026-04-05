@@ -486,7 +486,9 @@ export class BillingService {
     return this.stripe.checkout.sessions.create({
       mode: 'subscription',
       ...(params.customerId !== undefined ? { customer: params.customerId } : {}),
-      ...(params.customerId === undefined && params.customerEmail !== undefined ? { customer_email: params.customerEmail } : {}),
+      ...(params.customerId === undefined && params.customerEmail !== undefined
+        ? { customer_email: params.customerEmail }
+        : {}),
       line_items: [
         {
           price: priceId,
@@ -545,9 +547,13 @@ export class BillingService {
       duration: params.duration,
       ...(params.percentOff !== undefined ? { percent_off: params.percentOff } : {}),
       ...(params.amountOff !== undefined ? { amount_off: params.amountOff } : {}),
-      ...(params.durationInMonths !== undefined ? { duration_in_months: params.durationInMonths } : {}),
+      ...(params.durationInMonths !== undefined
+        ? { duration_in_months: params.durationInMonths }
+        : {}),
       ...(params.maxRedemptions !== undefined ? { max_redemptions: params.maxRedemptions } : {}),
-      ...(params.redeemBy !== undefined ? { redeem_by: Math.floor(params.redeemBy.getTime() / 1000) } : {}),
+      ...(params.redeemBy !== undefined
+        ? { redeem_by: Math.floor(params.redeemBy.getTime() / 1000) }
+        : {}),
     });
   }
 
@@ -561,7 +567,9 @@ export class BillingService {
       coupon: params.couponId,
       code: params.code,
       ...(params.maxRedemptions !== undefined ? { max_redemptions: params.maxRedemptions } : {}),
-      ...(params.expiresAt !== undefined ? { expires_at: Math.floor(params.expiresAt.getTime() / 1000) } : {}),
+      ...(params.expiresAt !== undefined
+        ? { expires_at: Math.floor(params.expiresAt.getTime() / 1000) }
+        : {}),
     });
   }
 }

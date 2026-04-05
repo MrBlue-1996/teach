@@ -141,7 +141,9 @@ export default function LearnPage({ params }: { params: { courseId: string } }) 
   };
 
   const handleSubmit = () => {
-    if (!lesson) { return; }
+    if (!lesson) {
+      return;
+    }
     const correct = lesson.content.correctAnswer
       ? userAnswer.trim().toLowerCase() === lesson.content.correctAnswer.toLowerCase()
       : false;

@@ -6,11 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import {
-  Search,
-  BookOpen,
-  CheckCircle2,
-} from 'lucide-react';
+import { Search, BookOpen, CheckCircle2 } from 'lucide-react';
 import { cn, getLevelGradientFrom } from '@/lib/utils';
 import { contentApi, learnerApi } from '@/lib/api';
 import type { ContentPack, LearnerState } from '@/lib/api';

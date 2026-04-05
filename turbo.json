@@ -55,7 +55,7 @@
     },
     "validate:policies": {
       "dependsOn": ["build"],
-      "inputs": ["policy/**/*.json", "src/schemas/**"],
+      "inputs": ["governance/policies/**/*.json", "src/schemas/**"],
       "outputs": [],
       "cache": true
     }

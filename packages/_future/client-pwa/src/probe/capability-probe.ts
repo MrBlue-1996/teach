@@ -261,7 +261,9 @@ export function determineAvailableFeatures(
     deterministicFormatter: true,
     smallPacks: true,
     wasmInference: isEnhancedOrFull ? capabilities.wasm.available : false,
-    localEmbeddings: isEnhancedOrFull ? capabilities.wasm.available && capabilities.wasm.simd : false,
+    localEmbeddings: isEnhancedOrFull
+      ? capabilities.wasm.available && capabilities.wasm.simd
+      : false,
     webGPU: isFull ? capabilities.webGPU.available : false,
     localLLM: isFull ? capabilities.webGPU.available : false,
     offline: capabilities.serviceWorker && capabilities.indexedDB,

@@ -289,7 +289,7 @@ export class ResponseParser {
     }
 
     // Has headers or bullet points
-    if (/^[#\-\*\d\.]\s/m.test(text)) {
+    if (/^[#\-*\d.]\s/m.test(text)) {
       score += 1;
     }
 
