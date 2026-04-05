@@ -5,6 +5,13 @@
  * retention history, and promotion tracking.
  */
 
+import {
+  nowISO,
+  generateLearnerId,
+  calculateWeightedScore,
+  DEFAULT_MASTERY_WEIGHTS,
+} from '@topshelf/shared';
+
 import type {
   LearnerId,
   LearnerState,
@@ -15,12 +22,6 @@ import type {
   PromotionRecord,
   MasteryScore,
   TimeEfficiency,
-} from '@topshelf/shared';
-import {
-  nowISO,
-  generateLearnerId,
-  calculateWeightedScore,
-  DEFAULT_MASTERY_WEIGHTS,
 } from '@topshelf/shared';
 
 /** Learner state storage interface */
@@ -34,15 +35,15 @@ export interface LearnerStateStorage {
 export class InMemoryLearnerStateStorage implements LearnerStateStorage {
   private readonly states: Map<LearnerId, LearnerState> = new Map();
 
-  async get(learnerId: LearnerId): Promise<LearnerState | null> {
+  get(learnerId: LearnerId): Promise<LearnerState | null> {
     return this.states.get(learnerId) ?? null;
   }
 
-  async set(state: LearnerState): Promise<void> {
+  set(state: LearnerState): Promise<void> {
     this.states.set(state.learnerId, state);
   }
 
-  async delete(learnerId: LearnerId): Promise<void> {
+  delete(learnerId: LearnerId): Promise<void> {
     this.states.delete(learnerId);
   }
 

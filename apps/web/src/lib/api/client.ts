@@ -40,13 +40,17 @@ async function handleResponse<T>(response: Response): Promise<T> {
 
   // Handle empty responses
   const text = await response.text();
-  if (!text) { return {} as T; }
+  if (!text) {
+    return {} as T;
+  }
 
   return JSON.parse(text) as T;
 }
 
 function getAuthToken(): string | null {
-  if (typeof window === 'undefined') { return null; }
+  if (typeof window === 'undefined') {
+    return null;
+  }
   return localStorage.getItem('auth_token');
 }
 

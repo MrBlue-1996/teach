@@ -23,7 +23,7 @@
     "start": "pnpm --filter @topshelf/api-server run start",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "lint": "turbo run lint",
+    "lint": "NODE_OPTIONS=\"--max-old-space-size=4096\" turbo run lint --concurrency=1",
     "lint:fix": "turbo run lint:fix",
     "prepare": "husky",
     "test": "turbo run test",
@@ -40,13 +40,18 @@
     "cli": "pnpm --filter @topshelf/cli run start",
     "docker:build": "docker-compose -f infrastructure/docker/docker-compose.yml build",
     "docker:up": "docker-compose -f infrastructure/docker/docker-compose.yml up -d",
-    "docker:down": "docker-compose -f infrastructure/docker/docker-compose.yml down"
+    "docker:down": "docker-compose -f infrastructure/docker/docker-compose.yml down",
+    "bootstrap": "node scripts/bootstrap.mjs",
+    "bootstrap:ci": "CI=1 node scripts/bootstrap.mjs --ci",
+    "lint:full": "turbo run lint",
+    "verify:local": "NODE_OPTIONS=\"--max-old-space-size=4096\" turbo run lint typecheck build --concurrency=1 --force"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.1",
     "@types/node": "^20.11.0",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^7.0.0",
+    "@vitest/coverage-v8": "^1.2.0",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-import-resolver-typescript": "^3.6.1",
@@ -55,6 +60,7 @@
     "husky": "^9.0.0",
     "lint-staged": "^15.2.0",
     "prettier": "^3.2.0",
+    "tsx": "^4.7.0",
     "turbo": "^2.0.0",
     "typescript": "^5.3.3"
   },

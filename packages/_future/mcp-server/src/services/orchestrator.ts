@@ -311,7 +311,10 @@ export class MCPOrchestrator {
   /**
    * Get blocks to preload for offline
    */
-  private getPreloadBlocks(pack: ContentPackManifest, currentBlock: TeachingBlock): TeachingBlockId[] {
+  private getPreloadBlocks(
+    pack: ContentPackManifest,
+    currentBlock: TeachingBlock
+  ): TeachingBlockId[] {
     const preload: TeachingBlockId[] = [];
     const currentIndex = pack.teachingBlocks.findIndex((b) => b.id === currentBlock.id);
 

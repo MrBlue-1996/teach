@@ -5,8 +5,8 @@
  * used in the multi-signal evaluation system.
  */
 
-import type { LearnerId, SkillDomain } from './learner.js';
 import type { TeachingBlockId, DifficultyLevel } from './content.js';
+import type { LearnerId, SkillDomain } from './learner.js';
 import type { ProbeType } from './policy.js';
 
 /** Benchmark identifier */

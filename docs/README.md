@@ -2,6 +2,10 @@
 
 This directory contains comprehensive documentation organized by topic.
 
+## Workspace Index
+
+If you need the repo grouped by area instead of by document sequence, start with [WORKSPACE_INDEX.md](WORKSPACE_INDEX.md).
+
 ## Structure
 
 Documentation is organized in numbered folders (0-10) for progressive learning:
@@ -19,3 +23,18 @@ Documentation is organized in numbered folders (0-10) for progressive learning:
 - **10-contributing** - Contribution guidelines
 
 Navigate to each folder for detailed documentation on that topic.
+
+## Related Indexes
+
+- [../apps/README.md](../apps/README.md)
+- [../packages/README.md](../packages/README.md)
+- [../implementations/README.md](../implementations/README.md)
+- [../content/README.md](../content/README.md)
+- [../projects/README.md](../projects/README.md)
+
+## Governance Indexes
+
+- [../governance/README.md](../governance/README.md)
+- [../governance/policies/README.md](../governance/policies/README.md)
+- [../governance/legal/README.md](../governance/legal/README.md)
+- [../governance/standards/README.md](../governance/standards/README.md)
