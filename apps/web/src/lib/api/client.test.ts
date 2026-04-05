@@ -47,7 +47,7 @@ describe('apiRequest', () => {
       text: () => Promise.resolve(JSON.stringify({ data: 'test' })),
     });
 
-    const result = await apiRequest<{ data: string }>('/test');
+    await apiRequest<{ data: string }>('/test');
 
     expect(mockFetch).toHaveBeenCalledTimes(1);
     const [url, options] = mockFetch.mock.calls[0];

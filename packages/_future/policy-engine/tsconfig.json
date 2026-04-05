@@ -6,8 +6,6 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
-      "@topshelf/shared": ["../../shared/src"],
-      "@topshelf/shared/*": ["../../shared/src/*"]
     }
   },
   "include": ["src/**/*.ts"],

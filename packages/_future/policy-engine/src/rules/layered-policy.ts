@@ -160,7 +160,7 @@ export class LayeredPolicyEvaluator {
       return {
         ruleId: rule.id,
         matched,
-        decision: matched ? rule.action : undefined,
+        ...(matched ? { decision: rule.action } : {}),
         terminal: rule.terminal,
       };
     } catch {

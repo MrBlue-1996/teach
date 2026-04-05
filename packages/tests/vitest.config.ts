@@ -5,14 +5,14 @@ export default defineConfig({
   resolve: {
     alias: {
       '@topshelf/shared': resolve(__dirname, '../shared/src/index.ts'),
-      '@topshelf/policy-engine': resolve(__dirname, '../policy-engine/src/index.ts'),
+      '@topshelf/policy-engine': resolve(__dirname, '../_future/policy-engine/src/index.ts'),
       '@topshelf/deterministic-formatter': resolve(
         __dirname,
-        '../deterministic-formatter/src/index.ts'
+        '../_future/deterministic-formatter/src/index.ts'
       ),
       '@topshelf/content-authoring': resolve(__dirname, '../content-authoring/src/index.ts'),
-      '@topshelf/nlp': resolve(__dirname, '../nlp/src/index.ts'),
-      '@topshelf/mcp-server': resolve(__dirname, '../mcp-server/src/index.ts'),
+      '@topshelf/nlp': resolve(__dirname, '../_future/nlp/src/index.ts'),
+      '@topshelf/mcp-server': resolve(__dirname, '../_future/mcp-server/src/index.ts'),
     },
   },
   test: {

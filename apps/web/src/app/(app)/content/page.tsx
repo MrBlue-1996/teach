@@ -9,14 +9,9 @@ import { Progress } from '@/components/ui/progress';
 import {
   Search,
   BookOpen,
-  Clock,
-  Users,
-  ChevronRight,
-  Star,
-  Filter,
   CheckCircle2,
 } from 'lucide-react';
-import { cn, getLevelGradientFrom, getLevelName } from '@/lib/utils';
+import { cn, getLevelGradientFrom } from '@/lib/utils';
 import { contentApi, learnerApi } from '@/lib/api';
 import type { ContentPack, LearnerState } from '@/lib/api';
 

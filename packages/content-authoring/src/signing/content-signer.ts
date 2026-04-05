@@ -106,7 +106,7 @@ export class ContentPackSigner {
       valid,
       keyId: pack.signingKeyId,
       verifiedAt,
-      error: valid ? undefined : 'Signature verification failed',
+      ...(!valid ? { error: 'Signature verification failed' } : {}),
     };
   }
 

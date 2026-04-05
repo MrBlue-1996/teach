@@ -5,9 +5,7 @@
     "rootDir": "./src",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
-      "@topshelf/shared": ["../../shared/src"],
-      "@topshelf/shared/*": ["../../shared/src/*"]
+      "@/*": ["./src/*"]
     }
   },
   "include": ["src/**/*.ts"],

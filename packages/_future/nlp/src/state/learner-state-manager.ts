@@ -71,7 +71,7 @@ export class LearnerStateManager {
   /**
    * Create a new learner with initial state
    */
-  async createLearner(initialMode: LearningMode = 'L2'): Promise<LearnerState> {
+  async createLearner(_initialMode: LearningMode = 'L2'): Promise<LearnerState> {
     const learnerId = generateLearnerId();
     const now = nowISO();
 

@@ -15,7 +15,6 @@ import type {
 import {
   CanonicalFormatter,
   type FormattedOutput,
-  createContentHash,
 } from '../formatters/canonical-formatter.js';
 
 /** LLM output structure (simulated) */

@@ -13,6 +13,7 @@ import type {
   DeviceProfile,
   ContentPackManifest,
   TeachingBlock,
+  TeachingBlockId,
   PolicyEvaluationInput,
   PolicyEvaluationOutput,
   GetNextTaskResponse,
@@ -182,7 +183,7 @@ export class MCPOrchestrator {
    * Process task completion
    */
   async processTaskCompletion(request: TaskCompletionRequest): Promise<PolicyEvaluationOutput> {
-    const { learnerId, blockId, completion, events, nonce } = request;
+    const { learnerId, blockId, completion, events, nonce: _ } = request;
 
     const state = await this.learnerStateManager.getState(learnerId);
     if (state === null) {
@@ -310,8 +311,8 @@ export class MCPOrchestrator {
   /**
    * Get blocks to preload for offline
    */
-  private getPreloadBlocks(pack: ContentPackManifest, currentBlock: TeachingBlock): string[] {
-    const preload: string[] = [];
+  private getPreloadBlocks(pack: ContentPackManifest, currentBlock: TeachingBlock): TeachingBlockId[] {
+    const preload: TeachingBlockId[] = [];
     const currentIndex = pack.teachingBlocks.findIndex((b) => b.id === currentBlock.id);
 
     // Preload next 2 blocks

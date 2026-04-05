@@ -5,10 +5,7 @@
     "rootDir": "./src",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
-      "@topshelf/shared": ["../shared/src"],
-      "@topshelf/shared/*": ["../shared/src/*"],
-      "@topshelf/deterministic-formatter": ["../_future/deterministic-formatter/src"]
+      "@/*": ["./src/*"]
     }
   },
   "include": ["src/**/*.ts"],

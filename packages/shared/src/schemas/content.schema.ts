@@ -120,16 +120,17 @@ export const contentPackManifestSchema = z
     schemaVersion: semanticVersionSchema,
   })
   .strict()
-  .refine(
-    (data) => {
-      // If content has 'required' tag, it must have role mappings
-      if (data.tags.includes('required') && data.roleMappings.length === 0) {
-        return false;
-      }
-      return true;
-    },
-    { message: 'Content packs with required tag must have role mappings' }
-  )
+  .superRefine((data, ctx) => {
+    // If content has 'required' tag, it must have role mappings
+    if (data.tags.includes('required') && data.roleMappings.length === 0) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['roleMappings'],
+        message: 'Content packs with required tag must have role mappings',
+        params: { errorCode: 'MISSING_ROLE_MAPPING' },
+      });
+    }
+  })
   .refine(
     (data) => {
       // Each teaching block must have at least 2 surface variants

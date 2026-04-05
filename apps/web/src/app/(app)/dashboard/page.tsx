@@ -6,8 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import {
-  ArrowRight,
-  Clock,
   Flame,
   Target,
   TrendingUp,
@@ -16,7 +14,7 @@ import {
   Award,
   ChevronRight,
 } from 'lucide-react';
-import { formatDuration, getLevelColor, getLevelName } from '@/lib/utils';
+import { getLevelColor, getLevelName } from '@/lib/utils';
 import { learnerApi, contentApi, badgesApi } from '@/lib/api';
 import type { LearnerState, LearningSession, ContentPack } from '@/lib/api';
 
@@ -307,20 +305,20 @@ export default function DashboardPage() {
 
 /** Compute streak as number of consecutive days with sessions (ending today or yesterday). */
 function computeStreak(sessions: LearningSession[]): number {
-  if (sessions.length === 0) return 0;
+  if (sessions.length === 0) { return 0; }
 
   const uniqueDays = new Set(
     sessions.filter((s) => s.startedAt).map((s) => new Date(s.startedAt).toISOString().slice(0, 10))
   );
 
   const sortedDays = Array.from(uniqueDays).sort().reverse();
-  if (sortedDays.length === 0) return 0;
+  if (sortedDays.length === 0) { return 0; }
 
   const today = new Date().toISOString().slice(0, 10);
   const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
 
   // Streak must include today or yesterday
-  if (sortedDays[0] !== today && sortedDays[0] !== yesterday) return 0;
+  if (sortedDays[0] !== today && sortedDays[0] !== yesterday) { return 0; }
 
   let streak = 1;
   for (let i = 1; i < sortedDays.length; i++) {

@@ -375,10 +375,10 @@ export class PolicyEvaluator {
 
     return {
       decision: partial.decision,
-      targetMode: partial.targetMode,
+      ...(partial.targetMode !== undefined ? { targetMode: partial.targetMode } : {}),
       reasoning: partial.reasoning,
       contributingSignals,
-      missingSignals: partial.missingSignals,
+      ...(partial.missingSignals !== undefined ? { missingSignals: partial.missingSignals } : {}),
       recommendedAction: partial.recommendedAction,
       evaluatedAt,
       signature,

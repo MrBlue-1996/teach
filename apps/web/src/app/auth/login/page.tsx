@@ -36,7 +36,7 @@ export default function LoginPage() {
     }
   };
 
-  const handleGoogleLogin = async () => {
+  const handleGoogleLogin = () => {
     // TODO: Google OAuth not implemented on backend
     setError('Google login is not yet available');
   };

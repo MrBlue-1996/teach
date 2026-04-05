@@ -8,7 +8,6 @@ import type {
   PolicyAuditRecord,
   PolicyEvaluationInput,
   PolicyEvaluationOutput,
-  PolicyVersion,
 } from '@topshelf/shared';
 import { nowISO, generateAuditEventId, hashSHA256 } from '@topshelf/shared';
 
@@ -119,21 +118,7 @@ export class PolicyAuditLogger {
    * Verify a single audit record's signature
    */
   verifyRecord(record: PolicyAuditRecord): boolean {
-    // Reconstruct what was signed (without the signature itself)
-    const { signature: _, ...recordWithoutSig } = record as PolicyAuditRecord & {
-      signature: string;
-    };
-
-    // Note: In production, retrieve previousHash from the actual chain
-    const expectedPayload = JSON.stringify({
-      auditId: record.auditId,
-      input: record.input,
-      output: record.output,
-      timestamp: record.timestamp,
-      previousHash: 'verify-skip', // Would need chain verification
-    });
-
-    // Simplified verification - production would use proper crypto
+    // Simplified verification - production would use proper crypto with full payload reconstruction
     return record.signature.startsWith(`sig-${record.nodeId}-`);
   }
 

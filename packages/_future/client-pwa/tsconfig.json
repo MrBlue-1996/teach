@@ -7,8 +7,6 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
-      "@topshelf/shared": ["../../shared/src"],
-      "@topshelf/shared/*": ["../../shared/src/*"],
       "@topshelf/deterministic-formatter": ["../deterministic-formatter/src"]
     }
   },

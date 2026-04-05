@@ -253,29 +253,20 @@ export function determineAvailableFeatures(
   tier: DeviceTier,
   capabilities: DeviceCapabilities
 ): DeviceFeatures {
-  const base: DeviceFeatures = {
+  const isEnhancedOrFull = tier === 'enhanced' || tier === 'full';
+  const isFull = tier === 'full';
+
+  return {
     baselineUI: true,
     deterministicFormatter: true,
     smallPacks: true,
-    wasmInference: false,
-    localEmbeddings: false,
-    webGPU: false,
-    localLLM: false,
+    wasmInference: isEnhancedOrFull ? capabilities.wasm.available : false,
+    localEmbeddings: isEnhancedOrFull ? capabilities.wasm.available && capabilities.wasm.simd : false,
+    webGPU: isFull ? capabilities.webGPU.available : false,
+    localLLM: isFull ? capabilities.webGPU.available : false,
     offline: capabilities.serviceWorker && capabilities.indexedDB,
     backgroundSync: capabilities.serviceWorker,
   };
-
-  if (tier === 'enhanced' || tier === 'full') {
-    base.wasmInference = capabilities.wasm.available;
-    base.localEmbeddings = capabilities.wasm.available && capabilities.wasm.simd;
-  }
-
-  if (tier === 'full') {
-    base.webGPU = capabilities.webGPU.available;
-    base.localLLM = capabilities.webGPU.available;
-  }
-
-  return base;
 }
 
 /**

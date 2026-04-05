@@ -4,7 +4,7 @@
  * Copyright (c) 2026 TopShelf Service LLC. All Rights Reserved.
  */
 
-import { SignJWT, jwtVerify, type JWTPayload } from 'jose';
+import { SignJWT, jwtVerify } from 'jose';
 import bcrypt from 'bcrypt';
 import { z } from 'zod';
 import { getConfig } from '@topshelf/config';
@@ -114,8 +114,8 @@ function parseDuration(duration: string): number {
     throw new Error(`Invalid duration format: ${duration}`);
   }
 
-  const value = parseInt(match[1], 10);
-  const unit = match[2];
+  const value = parseInt(match[1]!, 10);
+  const unit = match[2]!;
 
   switch (unit) {
     case 's':

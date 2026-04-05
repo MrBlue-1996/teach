@@ -7,7 +7,6 @@ import { Progress } from '@/components/ui/progress';
 import {
   Award,
   Trophy,
-  Star,
   Flame,
   Target,
   Clock,
@@ -18,7 +17,7 @@ import {
   CheckCircle2,
   Loader2,
 } from 'lucide-react';
-import { cn, getLevelColor, getLevelName } from '@/lib/utils';
+import { cn, getLevelName } from '@/lib/utils';
 import { badgesApi, type Badge } from '@/lib/api/badges';
 import { learnerApi, type LearnerState } from '@/lib/api/learner';
 

@@ -11,7 +11,7 @@
  * 4. Maintains parity with LLM outputs
  */
 
-import type { TeachingBlock, SurfaceVariant, DifficultyLevel } from '@topshelf/shared';
+import type { TeachingBlock, SurfaceVariant } from '@topshelf/shared';
 import { hashSHA256 } from '@topshelf/shared';
 
 /** Formatter configuration */

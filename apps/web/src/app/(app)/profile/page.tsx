@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import {
-  User,
   Mail,
   Calendar,
   Award,
@@ -23,7 +22,6 @@ import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
 import { learnerApi, type LearnerState } from '@/lib/api/learner';
 import { badgesApi, type Badge } from '@/lib/api/badges';
-import { contentApi } from '@/lib/api/content';
 
 export default function ProfilePage() {
   const { user: authUser } = useAuth();

@@ -777,12 +777,9 @@ describe('BillingService', () => {
           cancelUrl: 'https://app.example.com/cancel',
         });
 
-        expect(mockStripe.checkout.sessions.create).toHaveBeenCalledWith(
-          expect.objectContaining({
-            customer: 'cus_existing',
-            customer_email: undefined,
-          })
-        );
+        const callArgs = mockStripe.checkout.sessions.create.mock.calls[0][0];
+        expect(callArgs).toMatchObject({ customer: 'cus_existing' });
+        expect(callArgs).not.toHaveProperty('customer_email');
       });
     });
 

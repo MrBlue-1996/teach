@@ -29,18 +29,18 @@ function SignupForm() {
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
-    if (!formData.name.trim()) newErrors.name = 'Name is required';
-    if (!formData.email.trim()) newErrors.email = 'Email is required';
-    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Invalid email';
-    if (!formData.password) newErrors.password = 'Password is required';
-    else if (formData.password.length < 8) newErrors.password = 'Min 8 characters';
+    if (!formData.name.trim()) { newErrors.name = 'Name is required'; }
+    if (!formData.email.trim()) { newErrors.email = 'Email is required'; }
+    else if (!/\S+@\S+\.\S+/.test(formData.email)) { newErrors.email = 'Invalid email'; }
+    if (!formData.password) { newErrors.password = 'Password is required'; }
+    else if (formData.password.length < 8) { newErrors.password = 'Min 8 characters'; }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validate()) return;
+    if (!validate()) { return; }
 
     setIsLoading(true);
     try {
@@ -58,7 +58,7 @@ function SignupForm() {
     }
   };
 
-  const handleGoogleSignup = async () => {
+  const handleGoogleSignup = () => {
     // TODO: Google OAuth not implemented on backend
     setErrors({ form: 'Google signup is not yet available' });
   };

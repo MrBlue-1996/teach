@@ -9,19 +9,16 @@ import { Progress } from '@/components/ui/progress';
 import {
   ArrowLeft,
   Clock,
-  Users,
-  Star,
   BookOpen,
   CheckCircle2,
   Play,
   Lock,
-  Award,
   Target,
   Zap,
 } from 'lucide-react';
 import { cn, getLevelName, getLevelGradientFrom } from '@/lib/utils';
 import { contentApi, learnerApi } from '@/lib/api';
-import type { ContentPackDetail, ContentBlockSummary } from '@/lib/api';
+import type { ContentPackDetail } from '@/lib/api';
 
 export default function CourseDetailPage({ params }: { params: { id: string } }) {
   const router = useRouter();

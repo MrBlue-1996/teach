@@ -17,7 +17,7 @@ import {
   jsonb,
   index,
   uniqueIndex,
-  primaryKey,
+  type AnyPgColumn,
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
@@ -72,7 +72,7 @@ export const organizations = pgTable(
     name: varchar('name', { length: 255 }).notNull(),
     slug: varchar('slug', { length: 100 }).notNull().unique(),
     type: varchar('type', { length: 50 }).notNull(), // district, school, enterprise
-    parentId: uuid('parent_id').references(() => organizations.id),
+    parentId: uuid('parent_id').references((): AnyPgColumn => organizations.id),
     settings: jsonb('settings').default({}),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),

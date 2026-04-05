@@ -11,7 +11,6 @@ import {
   type ContentPackValidationResult,
   type ValidationError,
   type ValidationWarning,
-  type TeachingBlock,
 } from '@topshelf/shared';
 import { ParityValidator, type LLMFormattedOutput } from '@topshelf/deterministic-formatter';
 
@@ -99,7 +98,7 @@ export class ContentPackValidator {
       valid: isValid,
       errors,
       warnings,
-      parityResults,
+      ...(parityResults !== undefined ? { parityResults } : {}),
     };
   }
 
@@ -115,12 +114,23 @@ export class ContentPackValidator {
       return { valid: true, errors: [] };
     } catch (err) {
       const zodError = err as ZodError;
-      const errors: ValidationError[] = zodError.errors.map((issue) => ({
-        code: 'SCHEMA_' + issue.code.toUpperCase(),
-        path: issue.path.join('.'),
-        message: issue.message,
-        severity: 'error' as const,
-      }));
+      const errors: ValidationError[] = zodError.errors.map((issue) => {
+        if (issue.code === 'custom') {
+          const customParams = issue.params as { errorCode?: string } | undefined;
+          return {
+            code: customParams?.errorCode ?? 'SCHEMA_CUSTOM',
+            path: issue.path.join('.'),
+            message: issue.message,
+            severity: 'error' as const,
+          };
+        }
+        return {
+          code: 'SCHEMA_' + issue.code.toUpperCase(),
+          path: issue.path.join('.'),
+          message: issue.message,
+          severity: 'error' as const,
+        };
+      });
       return { valid: false, errors };
     }
   }

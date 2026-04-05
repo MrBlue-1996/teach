@@ -332,7 +332,7 @@ export class AuthoringPipeline {
    * Convert draft blocks to full teaching blocks
    */
   private convertDraftBlocks(drafts: DraftTeachingBlock[]): TeachingBlock[] {
-    return drafts.map((draft, index) => {
+    return drafts.map((draft, _index) => {
       const blockId = generateTeachingBlockId();
 
       return {

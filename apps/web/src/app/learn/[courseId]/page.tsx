@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Card, CardContent } from '@/components/ui/card';
@@ -41,7 +40,6 @@ interface LessonData {
 }
 
 export default function LearnPage({ params }: { params: { courseId: string } }) {
-  const router = useRouter();
   const [userAnswer, setUserAnswer] = useState('');
   const [showHint, setShowHint] = useState(false);
   const [hintIndex, setHintIndex] = useState(0);
@@ -57,7 +55,7 @@ export default function LearnPage({ params }: { params: { courseId: string } }) 
   useEffect(() => {
     async function loadContent() {
       try {
-        const [packResult, nextBlockResult] = await Promise.allSettled([
+        const [packResult] = await Promise.allSettled([
           contentApi.getPack(params.courseId),
           contentApi.getNextBlock(params.courseId),
         ]);
@@ -143,7 +141,7 @@ export default function LearnPage({ params }: { params: { courseId: string } }) 
   };
 
   const handleSubmit = () => {
-    if (!lesson) return;
+    if (!lesson) { return; }
     const correct = lesson.content.correctAnswer
       ? userAnswer.trim().toLowerCase() === lesson.content.correctAnswer.toLowerCase()
       : false;

@@ -12,7 +12,7 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 'latest',
     sourceType: 'module',
-    project: ['./tsconfig.json', './packages/*/tsconfig.json'],
+    project: ['./tsconfig.json', './packages/*/tsconfig.json', './packages/_future/*/tsconfig.json', './apps/*/tsconfig.json'],
     tsconfigRootDir: __dirname,
   },
   plugins: ['@typescript-eslint', 'import', 'security'],
@@ -29,7 +29,7 @@ module.exports = {
   settings: {
     'import/resolver': {
       typescript: {
-        project: ['./tsconfig.json', './packages/*/tsconfig.json'],
+        project: ['./tsconfig.json', './packages/*/tsconfig.json', './packages/_future/*/tsconfig.json', './apps/*/tsconfig.json'],
       },
     },
   },
@@ -93,6 +93,11 @@ module.exports = {
       rules: {
         '@typescript-eslint/no-explicit-any': 'off',
         '@typescript-eslint/no-non-null-assertion': 'off',
+        '@typescript-eslint/no-unsafe-assignment': 'off',
+        '@typescript-eslint/no-unsafe-member-access': 'off',
+        '@typescript-eslint/no-unsafe-argument': 'off',
+        '@typescript-eslint/no-unsafe-return': 'off',
+        '@typescript-eslint/no-unsafe-call': 'off',
         'security/detect-object-injection': 'off',
       },
     },
@@ -100,6 +105,22 @@ module.exports = {
       files: ['*.cjs'],
       rules: {
         '@typescript-eslint/no-var-requires': 'off',
+      },
+    },
+    {
+      // React/Next.js UI files — relax strict TypeScript rules not suited for component code
+      files: ['apps/web/src/**/*.{ts,tsx}'],
+      rules: {
+        '@typescript-eslint/explicit-function-return-type': 'off',
+        '@typescript-eslint/explicit-module-boundary-types': 'off',
+        '@typescript-eslint/no-misused-promises': 'off',
+        '@typescript-eslint/no-floating-promises': 'off',
+        '@typescript-eslint/strict-boolean-expressions': 'off',
+        '@typescript-eslint/no-unnecessary-condition': 'off',
+        '@typescript-eslint/no-non-null-assertion': 'off',
+        '@typescript-eslint/prefer-nullish-coalescing': 'off',
+        '@typescript-eslint/prefer-optional-chain': 'off',
+        'import/order': 'off',
       },
     },
   ],

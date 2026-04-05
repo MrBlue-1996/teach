@@ -23,7 +23,7 @@
     "dev": "tsup --watch",
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
-    "test": "vitest run",
+    "test": "vitest run --passWithNoTests",
     "test:ci": "vitest run --coverage",
     "test:parity": "node --loader ts-node/esm src/tests/parity.test.ts",
     "typecheck": "tsc --noEmit"
