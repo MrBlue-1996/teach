@@ -34,7 +34,7 @@ vi.mock('@/stores/auth-store', () => ({
   })),
 }));
 
-const mockAuthApi = authApi as {
+const mockAuthApi = authApi as unknown as {
   login: ReturnType<typeof vi.fn>;
   signup: ReturnType<typeof vi.fn>;
   logout: ReturnType<typeof vi.fn>;
@@ -42,6 +42,8 @@ const mockAuthApi = authApi as {
   forgotPassword: ReturnType<typeof vi.fn>;
   resetPassword: ReturnType<typeof vi.fn>;
 };
+
+const mockUseAuthStore = useAuthStore as unknown as ReturnType<typeof vi.fn>;
 
 const mockRouter = {
   push: vi.fn(),
@@ -81,7 +83,7 @@ describe('useAuth', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
-    (useAuthStore as ReturnType<typeof vi.fn>).mockReturnValue(mockAuthStore);
+    mockUseAuthStore.mockReturnValue(mockAuthStore);
   });
 
   afterEach(() => {

@@ -5,7 +5,7 @@
  * validation, score calculation, string utilities, retry logic, and type guards.
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   generateLearnerId,
   generateContentPackId,

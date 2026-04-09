@@ -6,6 +6,14 @@
 
 import { createHash, randomBytes } from 'crypto';
 
+function isNumericSegment(value: string): boolean {
+  return value.length > 0 && /^[0-9]+$/.test(value);
+}
+
+function isAlphanumericSegment(value: string): boolean {
+  return value.length > 0 && /^[a-zA-Z0-9]+$/.test(value);
+}
+
 // === ID Generation ===
 
 /**
@@ -162,7 +170,18 @@ export function chunk<T>(array: readonly T[], size: number): T[][] {
  * Check if a string is a valid semantic version
  */
 export function isValidSemver(version: string): boolean {
-  return /^\d+\.\d+\.\d+(-[a-zA-Z0-9.]+)?$/.test(version);
+  const [core, prerelease] = version.split('-', 2);
+  const parts = core?.split('.') ?? [];
+
+  if (parts.length !== 3 || parts.some((part) => !isNumericSegment(part))) {
+    return false;
+  }
+
+  if (prerelease === undefined) {
+    return true;
+  }
+
+  return prerelease.split('.').every((part) => isAlphanumericSegment(part));
 }
 
 /**

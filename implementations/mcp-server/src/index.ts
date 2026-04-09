@@ -31,7 +31,11 @@ app.get('/health', (_req: Request, res: Response) => {
  * Initialize teaching session
  */
 app.post('/api/session/init', (req: Request, res: Response): void => {
-  const { sessionId, mode = TeachingMode.L2_CONTEXTUAL, deviceProfile = DeviceProfile.CHROMEBOOK_STANDARD } = req.body;
+  const {
+    sessionId,
+    mode = TeachingMode.L2_CONTEXTUAL,
+    deviceProfile = DeviceProfile.CHROMEBOOK_STANDARD,
+  } = req.body;
 
   if (!sessionId) {
     res.status(400).json({ error: 'sessionId is required' });
@@ -157,7 +161,7 @@ app.get('/api/session/:sessionId', (req: Request, res: Response): void => {
  */
 app.delete('/api/session/:sessionId', (req: Request, res: Response) => {
   const { sessionId } = req.params;
-  
+
   if (contexts.delete(sessionId)) {
     res.json({ message: 'Session deleted', sessionId });
   } else {

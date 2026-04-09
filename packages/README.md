@@ -20,7 +20,7 @@ This directory contains reusable platform packages grouped by responsibility.
 
 ## Reserved Or Incubating Areas
 
-- [_future](_future) is reserved for work not yet promoted into the active package set.
+- [\_future](_future) is reserved for work not yet promoted into the active package set.
 
 ## Indexing Notes
 

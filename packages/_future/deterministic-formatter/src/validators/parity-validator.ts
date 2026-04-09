@@ -6,12 +6,11 @@
  */
 
 import type {
-  TeachingBlock,
-  ParityTestResult,
   ParityDivergence,
+  ParityTestResult,
   TeachingBlockId,
+  TeachingBlock,
 } from '@topshelf/shared';
-
 import { CanonicalFormatter, type FormattedOutput } from '../formatters/canonical-formatter.js';
 
 /** LLM output structure (simulated) */

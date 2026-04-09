@@ -8,6 +8,23 @@ import { z } from 'zod';
 
 import { learningModeSchema } from './learner.schema.js';
 
+function isSemanticVersion(value: string): boolean {
+  const [core, prerelease] = value.split('-', 2);
+  const parts = core?.split('.') ?? [];
+
+  if (parts.length !== 3 || parts.some((part) => part.length === 0 || !/^\d+$/.test(part))) {
+    return false;
+  }
+
+  if (prerelease === undefined) {
+    return true;
+  }
+
+  return (
+    prerelease.length > 0 && prerelease.split('.').every((part) => /^[a-zA-Z0-9]+$/.test(part))
+  );
+}
+
 /** Content pack ID pattern */
 export const contentPackIdSchema = z
   .string()
@@ -98,7 +115,7 @@ export const teachingBlockSchema = z
 /** Semantic version pattern */
 export const semanticVersionSchema = z
   .string()
-  .regex(/^\d+\.\d+\.\d+(-[a-zA-Z0-9.]+)?$/, 'Invalid semantic version');
+  .refine(isSemanticVersion, 'Invalid semantic version');
 
 /** Content pack manifest (full schema for validation) */
 export const contentPackManifestSchema = z

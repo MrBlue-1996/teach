@@ -11,8 +11,8 @@
  * 4. Maintains parity with LLM outputs
  */
 
-import type { TeachingBlock, SurfaceVariant } from '@topshelf/shared';
 import { hashSHA256 } from '@topshelf/shared';
+import type { SurfaceVariant, TeachingBlock } from '@topshelf/shared';
 
 /** Formatter configuration */
 export interface FormatterConfig {
