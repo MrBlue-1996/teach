@@ -175,7 +175,7 @@ async function main(): Promise<void> {
       const inferredId = inferPolicyIdentifier(parsed, relativeFile);
       const existingPath = seenIds.get(inferredId);
 
-      if (existingPath) {
+      if (existingPath !== undefined) {
         issues.push({
           file: relativeFile,
           message: `Duplicate policy identifier "${inferredId}" already seen in ${existingPath}.`,

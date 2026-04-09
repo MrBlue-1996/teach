@@ -4,14 +4,16 @@
  * Collects and aggregates signals for multi-signal policy evaluation.
  */
 
-import type {
-  SignalType,
-  SignalValue,
-  LearnerState,
-  BenchmarkEvaluation,
-  RetentionRecord,
+import {
+  isWithinWindow,
+  median,
+  nowISO,
+  type BenchmarkEvaluation,
+  type LearnerState,
+  type RetentionRecord,
+  type SignalType,
+  type SignalValue,
 } from '@topshelf/shared';
-import { nowISO, isWithinWindow, median } from '@topshelf/shared';
 
 /** Signal collection context */
 export interface SignalCollectionContext {

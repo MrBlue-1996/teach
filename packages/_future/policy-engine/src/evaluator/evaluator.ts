@@ -5,18 +5,20 @@
  * promotion rules with layered policy model.
  */
 
-import type {
-  PolicyEvaluationInput,
-  PolicyEvaluationOutput,
-  PolicyDecision,
-  SignalValue,
-  SignalType,
-  LearningMode,
-  MultiSignalConfig,
-  RecommendedAction,
-  ProbeType,
+import {
+  hashSHA256,
+  LEARNING_MODE_ORDER,
+  nowISO,
+  type LearningMode,
+  type MultiSignalConfig,
+  type PolicyDecision,
+  type PolicyEvaluationInput,
+  type PolicyEvaluationOutput,
+  type ProbeType,
+  type RecommendedAction,
+  type SignalType,
+  type SignalValue,
 } from '@topshelf/shared';
-import { nowISO, hashSHA256, LEARNING_MODE_ORDER } from '@topshelf/shared';
 
 /** Evaluation context for internal use */
 interface EvaluationContext {

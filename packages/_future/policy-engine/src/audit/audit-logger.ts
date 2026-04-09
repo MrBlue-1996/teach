@@ -4,12 +4,14 @@
  * Append-only audit logging for policy evaluation decisions.
  */
 
-import type {
-  PolicyAuditRecord,
-  PolicyEvaluationInput,
-  PolicyEvaluationOutput,
+import {
+  generateAuditEventId,
+  hashSHA256,
+  nowISO,
+  type PolicyAuditRecord,
+  type PolicyEvaluationInput,
+  type PolicyEvaluationOutput,
 } from '@topshelf/shared';
-import { nowISO, generateAuditEventId, hashSHA256 } from '@topshelf/shared';
 
 /** Audit storage interface */
 export interface AuditStorage {
@@ -26,21 +28,22 @@ export class InMemoryAuditStorage implements AuditStorage {
   private readonly records: PolicyAuditRecord[] = [];
   private lastHash: string = 'genesis';
 
-  async append(record: PolicyAuditRecord): Promise<void> {
+  append(record: PolicyAuditRecord): Promise<void> {
     this.records.push(record);
     this.lastHash = hashSHA256(JSON.stringify(record));
+    return Promise.resolve();
   }
 
-  async getByLearnerId(learnerId: string, limit: number = 100): Promise<PolicyAuditRecord[]> {
-    return this.records.filter((r) => r.input.learnerId === learnerId).slice(-limit);
+  getByLearnerId(learnerId: string, limit: number = 100): Promise<PolicyAuditRecord[]> {
+    return Promise.resolve(this.records.filter((r) => r.input.learnerId === learnerId).slice(-limit));
   }
 
-  async getByAuditId(auditId: string): Promise<PolicyAuditRecord | null> {
-    return this.records.find((r) => r.auditId === auditId) ?? null;
+  getByAuditId(auditId: string): Promise<PolicyAuditRecord | null> {
+    return Promise.resolve(this.records.find((r) => r.auditId === auditId) ?? null);
   }
 
-  async getLastHash(): Promise<string> {
-    return this.lastHash;
+  getLastHash(): Promise<string> {
+    return Promise.resolve(this.lastHash);
   }
 
   // For testing

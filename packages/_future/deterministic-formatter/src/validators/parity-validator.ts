@@ -5,13 +5,14 @@
  * and LLM-generated content to ensure consistency.
  */
 
+import { CanonicalFormatter, type FormattedOutput } from '../formatters/canonical-formatter.js';
+
 import type {
   ParityDivergence,
   ParityTestResult,
   TeachingBlockId,
   TeachingBlock,
 } from '@topshelf/shared';
-import { CanonicalFormatter, type FormattedOutput } from '../formatters/canonical-formatter.js';
 
 /** LLM output structure (simulated) */
 export interface LLMFormattedOutput {

@@ -36,15 +36,17 @@ export class InMemoryLearnerStateStorage implements LearnerStateStorage {
   private readonly states: Map<LearnerId, LearnerState> = new Map();
 
   get(learnerId: LearnerId): Promise<LearnerState | null> {
-    return this.states.get(learnerId) ?? null;
+    return Promise.resolve(this.states.get(learnerId) ?? null);
   }
 
   set(state: LearnerState): Promise<void> {
     this.states.set(state.learnerId, state);
+    return Promise.resolve();
   }
 
   delete(learnerId: LearnerId): Promise<void> {
     this.states.delete(learnerId);
+    return Promise.resolve();
   }
 
   // For testing
@@ -294,7 +296,18 @@ export class LearnerStateManager {
 
     // Remove from probation if counter reaches 0
     if (updatedProbationWindows[domain] === 0) {
-      delete updatedProbationWindows[domain];
+      const finalProbationWindows = Object.fromEntries(
+        Object.entries(updatedProbationWindows).filter(([key]) => key !== domain)
+      ) as typeof updatedProbationWindows;
+
+      const updatedState: LearnerState = {
+        ...state,
+        probationWindows: finalProbationWindows,
+        lastActivity: nowISO(),
+      };
+
+      await this.storage.set(updatedState);
+      return updatedState;
     }
 
     const updatedState: LearnerState = {

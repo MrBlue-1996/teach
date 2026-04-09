@@ -9,11 +9,5 @@
     }
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"],
-  "references": [
-    { "path": "../../shared" },
-    { "path": "../policy-engine" },
-    { "path": "../../content-authoring" },
-    { "path": "../nlp" }
-  ]
+  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"]
 }

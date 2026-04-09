@@ -6,7 +6,6 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { pgTable, pgEnum } from 'drizzle-orm/pg-core';
 import {
   // Enums
   userRoleEnum,
