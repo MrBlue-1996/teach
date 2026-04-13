@@ -245,6 +245,8 @@ export function createLearnerRoutes() {
 
     // ---- Update teaching metrics on the session ----
     const sessionUpdates: Record<string, unknown> = {};
+    let nextProblemsSolved = session.problemsSolved ?? 0;
+    let nextErrorsEncountered = session.errorsEncountered ?? 0;
 
     if (eventData.eventType === 'completed') {
       sessionUpdates['blocksCompleted'] = (session.blocksCompleted || 0) + 1;
@@ -252,12 +254,14 @@ export function createLearnerRoutes() {
 
       // Correct answer → increment problems solved
       if (eventData.correctness !== undefined && eventData.correctness >= 0.5) {
-        sessionUpdates['problemsSolved'] = (session.problemsSolved ?? 0) + 1;
+        nextProblemsSolved += 1;
+        sessionUpdates['problemsSolved'] = nextProblemsSolved;
       }
 
       // Wrong answer → increment errors
       if (eventData.correctness !== undefined && eventData.correctness < 0.5) {
-        sessionUpdates['errorsEncountered'] = (session.errorsEncountered ?? 0) + 1;
+        nextErrorsEncountered += 1;
+        sessionUpdates['errorsEncountered'] = nextErrorsEncountered;
       }
 
       // Update learner state
@@ -273,7 +277,42 @@ export function createLearnerRoutes() {
 
     if (eventData.eventType === 'hint_used') {
       // Requesting a hint counts as an implicit error signal
-      sessionUpdates['errorsEncountered'] = (session.errorsEncountered ?? 0) + 1;
+      nextErrorsEncountered += 1;
+      sessionUpdates['errorsEncountered'] = nextErrorsEncountered;
+    }
+
+    if (eventData.eventType === 'skipped') {
+      nextErrorsEncountered += 1;
+      sessionUpdates['errorsEncountered'] = nextErrorsEncountered;
+    }
+
+    const deviceProfile = ConstraintEngine.inferProfile(
+      session.deviceInfo as Record<string, unknown> | null
+    );
+
+    const teachingContext: TeachingContext = {
+      mode: (session.teachingMode ?? TeachingMode.L2_CONTEXTUAL) as TeachingMode,
+      deviceProfile,
+      constraints: ConstraintEngine.getConstraints(deviceProfile),
+      triggers: [],
+      sessionStartTime: session.startedAt,
+      problemsSolved: nextProblemsSolved,
+      errorsEncountered: nextErrorsEncountered,
+    };
+
+    const triggers = TriggerDetector.detectTriggers(teachingContext);
+    const suggestedMode = TriggerDetector.suggestModeElevation(teachingContext.mode, triggers);
+
+    sessionUpdates['triggersFired'] = triggers;
+    sessionUpdates['teachingMode'] = suggestedMode;
+    sessionUpdates['deviceProfile'] = deviceProfile;
+
+    if (eventData.correctness !== undefined && eventData.eventType === 'completed') {
+      const priorAttempts = session.blocksAttempted ?? 0;
+      const previousAverage = session.averageCorrectness ?? null;
+      const nextAttemptCount = priorAttempts + 1;
+      const correctnessTotal = (previousAverage ?? 0) * priorAttempts + eventData.correctness;
+      sessionUpdates['averageCorrectness'] = correctnessTotal / nextAttemptCount;
     }
 
     if (Object.keys(sessionUpdates).length > 0) {

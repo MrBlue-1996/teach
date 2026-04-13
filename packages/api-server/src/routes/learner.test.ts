@@ -67,6 +67,13 @@ const mockSession = {
   userId: 'user-test-1',
   learnerStateId: 'state-1',
   status: 'active',
+  deviceInfo: { userAgent: 'Mozilla/5.0 (X11; CrOS x86_64 14526.89.0)' },
+  teachingMode: 2,
+  deviceProfile: 'chromebook_standard',
+  errorsEncountered: 2,
+  problemsSolved: 0,
+  triggersFired: [],
+  averageCorrectness: 0.5,
   blocksCompleted: 5,
   blocksAttempted: 6,
   startedAt: new Date('2026-03-20T10:00:00Z'),
@@ -487,6 +494,31 @@ describe('Learner Routes', () => {
       });
 
       expect(res.status).toBe(200);
+    });
+
+    it('should persist trigger state and elevated teaching mode after repeated struggle', async () => {
+      const setSpy = vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue(undefined),
+      });
+
+      mockDb.update.mockReturnValue({ set: setSpy });
+
+      const res = await app.request('/learner/session/session-1/event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          blockId: 'block-3',
+          eventType: 'hint_used',
+        }),
+      });
+
+      expect(res.status).toBe(200);
+      expect(setSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          teachingMode: 3,
+          triggersFired: expect.arrayContaining(['error_repeated', 'stuck_detected']),
+        })
+      );
     });
 
     it('should record skipped event', async () => {
