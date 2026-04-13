@@ -5,8 +5,7 @@
  * for authenticity and integrity verification.
  */
 
-import type { ContentPackManifest } from '@topshelf/shared';
-import { hashSHA256, nowISO } from '@topshelf/shared';
+import { hashSHA256, nowISO, type ContentPackManifest } from '@topshelf/shared';
 
 /** Signing configuration */
 export interface SigningConfig {
@@ -94,7 +93,9 @@ export class ContentPackSigner {
     }
 
     // Create canonical representation
-    const { signature: _, signingKeyId: __, ...packWithoutSig } = pack;
+    const packWithoutSig = Object.fromEntries(
+      Object.entries(pack).filter(([key]) => key !== 'signature' && key !== 'signingKeyId')
+    ) as Omit<ContentPackManifest, 'signature' | 'signingKeyId'>;
     const contentToVerify = this.createCanonicalContent(packWithoutSig);
     const contentHash = hashSHA256(contentToVerify);
 

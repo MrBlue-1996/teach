@@ -5,6 +5,7 @@
  * and parity requirements.
  */
 
+import { ParityValidator, type LLMFormattedOutput } from '@topshelf/deterministic-formatter';
 import {
   contentPackManifestSchema,
   type ContentPackManifest,
@@ -12,7 +13,6 @@ import {
   type ValidationError,
   type ValidationWarning,
 } from '@topshelf/shared';
-import { ParityValidator, type LLMFormattedOutput } from '@topshelf/deterministic-formatter';
 
 import type { ZodError } from 'zod';
 

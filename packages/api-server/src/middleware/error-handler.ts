@@ -6,6 +6,7 @@
 
 import type { ErrorHandler } from 'hono';
 import { HTTPException } from 'hono/http-exception';
+import type { ContentfulStatusCode } from 'hono/utils/http-status';
 import { ZodError } from 'zod';
 import { getConfig } from '@topshelf/config';
 
@@ -17,7 +18,7 @@ export class AppError extends Error {
   constructor(
     public readonly code: string,
     message: string,
-    public readonly statusCode: number = 500,
+    public readonly statusCode: ContentfulStatusCode = 500,
     public readonly details?: Record<string, unknown>
   ) {
     super(message);

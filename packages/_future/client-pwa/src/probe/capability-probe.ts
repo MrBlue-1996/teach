@@ -5,14 +5,16 @@
  * and available features. Runs in first 200ms of page load.
  */
 
-import type {
-  DeviceCapabilities,
-  DeviceProfile,
-  DeviceTier,
-  NetworkQuality,
-  DeviceFeatures,
+import {
+  DEVICE_TIER_THRESHOLDS,
+  hashSHA256,
+  nowISO,
+  type DeviceCapabilities,
+  type DeviceFeatures,
+  type DeviceProfile,
+  type DeviceTier,
+  type NetworkQuality,
 } from '@topshelf/shared';
-import { nowISO, hashSHA256, DEVICE_TIER_THRESHOLDS } from '@topshelf/shared';
 
 /**
  * Probe device capabilities
@@ -28,7 +30,7 @@ export async function probeDeviceCapabilities(): Promise<DeviceCapabilities> {
   ]);
 
   return {
-    hardwareConcurrency: navigator.hardwareConcurrency ?? 2,
+    hardwareConcurrency: navigator.hardwareConcurrency,
     deviceMemory: (navigator as NavigatorWithMemory).deviceMemory ?? null,
     webGL,
     webGPU,
@@ -44,7 +46,7 @@ export async function probeDeviceCapabilities(): Promise<DeviceCapabilities> {
 /**
  * Probe WebGL capabilities
  */
-async function probeWebGL(): Promise<DeviceCapabilities['webGL']> {
+function probeWebGL(): DeviceCapabilities['webGL'] {
   try {
     const canvas = document.createElement('canvas');
     const gl2 = canvas.getContext('webgl2');
@@ -98,7 +100,7 @@ async function probeWebGPU(): Promise<DeviceCapabilities['webGPU']> {
 /**
  * Probe WebAssembly capabilities
  */
-async function probeWasm(): Promise<DeviceCapabilities['wasm']> {
+function probeWasm(): DeviceCapabilities['wasm'] {
   const available = typeof WebAssembly === 'object';
 
   let simd = false;
@@ -128,7 +130,7 @@ async function probeWasm(): Promise<DeviceCapabilities['wasm']> {
 /**
  * Probe network information
  */
-async function probeNetwork(): Promise<DeviceCapabilities['network']> {
+function probeNetwork(): DeviceCapabilities['network'] {
   const connection = (navigator as NavigatorWithConnection).connection;
 
   if (connection === undefined) {

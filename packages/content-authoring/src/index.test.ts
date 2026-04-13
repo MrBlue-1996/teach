@@ -6,20 +6,18 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
-  ContentPackValidator,
-  validateContentPack,
+  AuthoringPipeline,
   ContentPackSigner,
+  ContentPackValidator,
   RevocationManager,
   createSignedPack,
-  AuthoringPipeline,
-} from './index.js';
-import type {
-  ContentPackManifest,
-  TeachingBlock,
-  ValidationOptions,
-  SigningConfig,
-  DraftContentPack,
-  DraftTeachingBlock,
+  validateContentPack,
+  type ContentPackManifest,
+  type DraftContentPack,
+  type DraftTeachingBlock,
+  type SigningConfig,
+  type TeachingBlock,
+  type ValidationOptions,
 } from './index.js';
 
 // =============================================================================

@@ -5,13 +5,14 @@
  * and event buffering using IndexedDB and Service Worker.
  */
 
-import type {
-  ContentPackManifest,
-  LearnerEvent,
-  LearnerState,
-  CacheStrategy,
+import {
+  CACHE_CONFIGS,
+  nowISO,
+  type CacheStrategy,
+  type ContentPackManifest,
+  type LearnerEvent,
+  type LearnerState,
 } from '@topshelf/shared';
-import { nowISO, CACHE_CONFIGS } from '@topshelf/shared';
 
 /** IndexedDB database name */
 const DB_NAME = 'topshelf-offline';
@@ -350,9 +351,9 @@ export class OfflineCacheManager {
   /**
    * Promisify IndexedDB request
    */
-  private promisifyRequest<T>(request: IDBRequest<T>): Promise<T> {
+  private promisifyRequest<T>(request: IDBRequest): Promise<T> {
     return new Promise((resolve, reject) => {
-      request.onsuccess = (): void => resolve(request.result);
+      request.onsuccess = (): void => resolve(request.result as T);
       request.onerror = (): void => reject(request.error);
     });
   }
