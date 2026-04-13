@@ -63,7 +63,9 @@ _No updates yet._
 _No updates yet._
 
 ### frontend-engineer
-_No updates yet._
+- 2026-04-13: Reworked the learn flow in `apps/web/src/app/learn/[courseId]/page.tsx` to use backend session/progress state more directly. The page now boots from `content/next`, starts or recovers a learner session, records `started` and `completed` events, advances to the next block only when the backend supports it, and surfaces support/device/recent-activity context in the UI.
+- 2026-04-13: Added the official Sisyphus trace asset at `apps/web/public/brand/topshelf-sisyphus-trace.svg` and used it as a restrained background accent in the learner flow.
+- 2026-04-13: Skip-to-next is still not backend-supported. `learner/session/:id/event` accepts `skipped`, but `content/next/:packId` only advances from `blocksCompleted`, so the UI now avoids promising skip progression.
 
 ### content-engineer
 _No updates yet._
@@ -72,7 +74,9 @@ _No updates yet._
 _No updates yet._
 
 ### test-engineer
-_No updates yet._
+- 2026-04-13: Expanded `packages/api-server` learner/policy route coverage around teaching-state lifecycle.
+- Added learner session-start assertions for persisted default teaching context and event-ingestion assertions for learner/session state updates, trigger persistence, and non-completion behavior.
+- Added policy evaluation assertions for demotion persistence, session-aware evaluation records, and no-op protection when stored teaching state already matches computed state.
 
 ### quality-reviewer
 _No updates yet._

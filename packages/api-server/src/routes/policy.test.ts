@@ -248,6 +248,56 @@ describe('Policy Routes', () => {
       expect(body.toMode).toBe('L2_EXPLAIN');
     });
 
+    it('should demote learner mode and persist a session-aware evaluation when struggle signals accumulate', async () => {
+      const setSpy = vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue(undefined),
+      });
+      const valuesSpy = vi.fn().mockReturnValue({
+        returning: vi.fn().mockResolvedValue([{ id: 'eval-demote-1' }]),
+      });
+
+      mockDb.query.learnerStates.findFirst.mockResolvedValue({
+        ...mockLearnerState,
+        currentMode: 'L3_APPLY',
+      });
+      mockDb.query.learningSessions.findFirst.mockResolvedValue(mockSession);
+      mockDb.update.mockReturnValue({ set: setSpy });
+      mockDb.insert.mockReturnValue({ values: valuesSpy });
+
+      const res = await app.request('/policy/evaluate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contentPackId: '550e8400-e29b-41d4-a716-446655440000',
+          sessionId: '550e8400-e29b-41d4-a716-446655440001',
+          signals: [
+            { type: 'correctness', value: 0.3, confidence: 0.95 },
+            { type: 'mastery', value: 0.25, confidence: 0.9 },
+            { type: 'incorrect_submissions', value: 3, confidence: 1 },
+          ],
+        }),
+      });
+
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.decision).toBe('demote');
+      expect(body.fromMode).toBe('L3_APPLY');
+      expect(body.toMode).toBe('L2_EXPLAIN');
+      expect(setSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          currentMode: 'L2_EXPLAIN',
+        })
+      );
+      expect(valuesSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          sessionId: '550e8400-e29b-41d4-a716-446655440001',
+          decision: 'demote',
+          fromMode: 'L3_APPLY',
+          toMode: 'L2_EXPLAIN',
+        })
+      );
+    });
+
     it('should defer learner promotion when session struggle triggers are active', async () => {
       mockDb.query.learningSessions.findFirst.mockResolvedValue(mockSession);
 
@@ -270,6 +320,37 @@ describe('Policy Routes', () => {
       expect(body.toMode).toBe('L1_RECALL');
       expect(body.triggers).toContain('help_requested');
       expect(mockDb.update).toHaveBeenCalled();
+    });
+
+    it('should avoid rewriting session teaching state when persisted triggers and mode already match', async () => {
+      mockDb.query.learningSessions.findFirst.mockResolvedValue({
+        ...mockSession,
+        teachingMode: 3,
+        triggersFired: ['help_requested', 'concept_gap'],
+        startedAt: new Date(),
+        problemsSolved: 2,
+        errorsEncountered: 0,
+      });
+
+      const res = await app.request('/policy/evaluate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contentPackId: '550e8400-e29b-41d4-a716-446655440000',
+          sessionId: '550e8400-e29b-41d4-a716-446655440001',
+          signals: [
+            { type: 'help_requested', value: 1, confidence: 1 },
+            { type: 'concept_gap', value: 1, confidence: 1 },
+          ],
+        }),
+      });
+
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.decision).toBe('defer');
+      expect(body.triggers).toEqual(['help_requested', 'concept_gap']);
+      expect(body.suggestedTeachingMode).toBe(3);
+      expect(mockDb.update).not.toHaveBeenCalled();
     });
 
     it('should return 404 for non-existent learner state', async () => {
