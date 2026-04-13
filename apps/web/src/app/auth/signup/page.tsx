@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowRight, Mail, Lock, User, Chrome } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
-import { supabase } from '@/lib/supabase';
+import { getSupabaseBrowserClient } from '@/lib/supabase';
 
 function SignupForm() {
   const { signup } = useAuth();
@@ -82,6 +82,7 @@ function SignupForm() {
     setIsLoading(true);
 
     try {
+      const supabase = getSupabaseBrowserClient();
       const redirectTo = new URL('/auth/callback', window.location.origin);
       const { error: authError } = await supabase.auth.signInWithOAuth({
         provider: 'google',
