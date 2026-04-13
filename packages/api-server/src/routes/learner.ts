@@ -12,10 +12,19 @@ import {
   learnerStates,
   learnerProgressEvents,
   learningSessions,
+  contentBlocks,
   eq,
   and,
   desc,
+  asc,
 } from '@topshelf/database';
+import {
+  PedagogyEngine,
+  TriggerDetector,
+  ConstraintEngine,
+  TeachingMode,
+  type TeachingContext,
+} from '@topshelf/engine';
 import { notFound } from '../middleware/error-handler.js';
 
 // =============================================================================
@@ -33,6 +42,11 @@ const ProgressEventSchema = z.object({
 const StartSessionSchema = z.object({
   contentPackId: z.string().uuid(),
   deviceInfo: z.record(z.unknown()).optional(),
+});
+
+const TeachRequestSchema = z.object({
+  blockId: z.string().optional(),
+  content: z.string().optional(),
 });
 
 // =============================================================================
@@ -139,7 +153,12 @@ export function createLearnerRoutes() {
       throw new Error('Insert failed');
     }
 
-    // Create new session
+    // Infer device profile from client-provided deviceInfo
+    const deviceProfile = ConstraintEngine.inferProfile(
+      deviceInfo as Record<string, unknown> | undefined
+    );
+
+    // Create new session with teaching context
     const [session] = await db
       .insert(learningSessions)
       .values({
@@ -147,6 +166,11 @@ export function createLearnerRoutes() {
         learnerStateId: state.id,
         status: 'active',
         deviceInfo,
+        teachingMode: TeachingMode.L2_CONTEXTUAL,
+        deviceProfile,
+        errorsEncountered: 0,
+        problemsSolved: 0,
+        triggersFired: [],
         startedAt: new Date(),
       })
       .returning();
@@ -168,6 +192,10 @@ export function createLearnerRoutes() {
           currentMode: state.currentMode,
           overallMastery: state.overallMastery,
           currentBlockId: state.currentBlockId,
+        },
+        teaching: {
+          mode: session.teachingMode,
+          deviceProfile: session.deviceProfile,
         },
       },
       201
@@ -215,15 +243,22 @@ export function createLearnerRoutes() {
       throw new Error('Insert failed');
     }
 
-    // Update session stats if task completed
+    // ---- Update teaching metrics on the session ----
+    const sessionUpdates: Record<string, unknown> = {};
+
     if (eventData.eventType === 'completed') {
-      await db
-        .update(learningSessions)
-        .set({
-          blocksCompleted: (session.blocksCompleted || 0) + 1,
-          blocksAttempted: (session.blocksAttempted || 0) + 1,
-        })
-        .where(eq(learningSessions.id, sessionId));
+      sessionUpdates['blocksCompleted'] = (session.blocksCompleted || 0) + 1;
+      sessionUpdates['blocksAttempted'] = (session.blocksAttempted || 0) + 1;
+
+      // Correct answer → increment problems solved
+      if (eventData.correctness !== undefined && eventData.correctness >= 0.5) {
+        sessionUpdates['problemsSolved'] = (session.problemsSolved ?? 0) + 1;
+      }
+
+      // Wrong answer → increment errors
+      if (eventData.correctness !== undefined && eventData.correctness < 0.5) {
+        sessionUpdates['errorsEncountered'] = (session.errorsEncountered ?? 0) + 1;
+      }
 
       // Update learner state
       await db
@@ -234,6 +269,18 @@ export function createLearnerRoutes() {
           blocksCompleted: session.blocksCompleted ? session.blocksCompleted + 1 : 1,
         })
         .where(eq(learnerStates.id, session.learnerStateId));
+    }
+
+    if (eventData.eventType === 'hint_used') {
+      // Requesting a hint counts as an implicit error signal
+      sessionUpdates['errorsEncountered'] = (session.errorsEncountered ?? 0) + 1;
+    }
+
+    if (Object.keys(sessionUpdates).length > 0) {
+      await db
+        .update(learningSessions)
+        .set(sessionUpdates)
+        .where(eq(learningSessions.id, sessionId));
     }
 
     return c.json({
@@ -315,6 +362,86 @@ export function createLearnerRoutes() {
       })),
     });
   });
+
+  // ---------------------------------------------------------------------------
+  // POST /learner/session/:sessionId/teach - Get engine-backed teaching guidance
+  // ---------------------------------------------------------------------------
+  router.post(
+    '/session/:sessionId/teach',
+    zValidator('json', TeachRequestSchema),
+    async (c) => {
+      const userId = c.get('userId');
+      const sessionId = c.req.param('sessionId');
+      const { blockId, content: clientContent } = c.req.valid('json');
+      const db = getDatabase();
+
+      // Look up session
+      const session = await db.query.learningSessions.findFirst({
+        where: and(
+          eq(learningSessions.id, sessionId),
+          eq(learningSessions.userId, userId),
+          eq(learningSessions.status, 'active')
+        ),
+        with: { learnerState: true },
+      });
+
+      if (!session) {
+        throw notFound('Active session', sessionId);
+      }
+
+      // Resolve teaching content: prefer existing block hints, fall back to client
+      let teachingContent = clientContent ?? '';
+
+      if (blockId) {
+        const block = await db.query.contentBlocks.findFirst({
+          where: eq(contentBlocks.blockId, blockId),
+        });
+
+        if (block) {
+          const hints = Array.isArray(block.hints) ? (block.hints as string[]) : [];
+          if (hints.length > 0) {
+            teachingContent = hints.join('\n\n');
+          }
+        }
+      }
+
+      // Reconstruct TeachingContext from persisted session state
+      const deviceProfile = ConstraintEngine.inferProfile(
+        session.deviceInfo as Record<string, unknown> | null
+      );
+
+      const context: TeachingContext = {
+        mode: (session.teachingMode ?? TeachingMode.L2_CONTEXTUAL) as TeachingMode,
+        deviceProfile,
+        constraints: ConstraintEngine.getConstraints(deviceProfile),
+        triggers: [],
+        sessionStartTime: session.startedAt,
+        problemsSolved: session.problemsSolved ?? 0,
+        errorsEncountered: session.errorsEncountered ?? 0,
+      };
+
+      // Run engine
+      const response = PedagogyEngine.processTeachingRequest(context, teachingContent);
+
+      // Check for mode elevation
+      const triggers = TriggerDetector.detectTriggers(context);
+      const suggestedMode = TriggerDetector.suggestModeElevation(context.mode, triggers);
+
+      if (suggestedMode > context.mode) {
+        await db
+          .update(learningSessions)
+          .set({ teachingMode: suggestedMode, triggersFired: triggers })
+          .where(eq(learningSessions.id, sessionId));
+      }
+
+      return c.json({
+        ...response,
+        triggers,
+        suggestedMode,
+        currentMode: context.mode,
+      });
+    }
+  );
 
   return router;
 }

@@ -50,6 +50,8 @@ export default function LearnPage({ params }: { params: { courseId: string } }) 
   const [lesson, setLesson] = useState<LessonData | null>(null);
   const [loading, setLoading] = useState(true);
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [engineHint, setEngineHint] = useState<string | null>(null);
+  const [errorCount, setErrorCount] = useState(0);
 
   // Load content from API
   useEffect(() => {
@@ -65,9 +67,14 @@ export default function LearnPage({ params }: { params: { courseId: string } }) 
           packData = packResult.value;
         }
 
-        // Start a learning session
+        // Start a learning session (pass device info for engine context)
         try {
-          const session = await learnerApi.startSession(params.courseId);
+          const deviceInfo = {
+            userAgent: navigator.userAgent,
+            deviceMemory: (navigator as unknown as Record<string, unknown>).deviceMemory ?? null,
+            hardwareConcurrency: navigator.hardwareConcurrency,
+          };
+          const session = await learnerApi.startSession(params.courseId, deviceInfo);
           setSessionId(session.sessionId);
         } catch {
           // Session start may fail if one is already active
@@ -151,6 +158,7 @@ export default function LearnPage({ params }: { params: { courseId: string } }) 
     setSubmitted(true);
     if (!correct) {
       setShowExplanation(true);
+      setErrorCount((prev) => prev + 1);
     }
     // Record event if we have a session
     if (sessionId) {
@@ -166,13 +174,13 @@ export default function LearnPage({ params }: { params: { courseId: string } }) 
   };
 
   const handleNext = () => {
-    // In real app, would save progress and load next block
     setUserAnswer('');
     setSubmitted(false);
     setIsCorrect(false);
     setShowHint(false);
     setHintIndex(0);
     setShowExplanation(false);
+    setEngineHint(null);
   };
 
   const handleRetry = () => {
@@ -181,8 +189,30 @@ export default function LearnPage({ params }: { params: { courseId: string } }) 
     setShowExplanation(false);
   };
 
-  const handleShowHint = () => {
+  const handleShowHint = async () => {
     setShowHint(true);
+
+    // Record hint_used event
+    if (sessionId && lesson) {
+      learnerApi
+        .recordEvent(sessionId, { blockId: lesson.id, eventType: 'hint_used' })
+        .catch(() => {});
+    }
+
+    // Try engine-backed guidance, fall back to static hints
+    if (sessionId && lesson) {
+      try {
+        const guidance = await learnerApi.getTeachingGuidance(sessionId, {
+          blockId: lesson.id,
+        });
+        if (guidance.shouldTeach && guidance.content) {
+          setEngineHint(guidance.content);
+          return;
+        }
+      } catch {
+        // Fall through to static hints
+      }
+    }
   };
 
   const handleNextHint = () => {
@@ -291,21 +321,21 @@ export default function LearnPage({ params }: { params: { courseId: string } }) 
                 </div>
 
                 {/* Hint Section */}
-                {showHint && !submitted && lesson.content.hints.length > 0 && (
+                {showHint && !submitted && (engineHint ?? lesson.content.hints.length > 0) && (
                   <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-900 dark:bg-yellow-950">
                     <div className="mb-2 flex items-center justify-between">
                       <span className="flex items-center gap-2 text-sm font-medium text-yellow-700 dark:text-yellow-400">
                         <Lightbulb className="h-4 w-4" />
-                        Hint {hintIndex + 1} of {lesson.content.hints.length}
+                        {engineHint ? 'Adaptive Hint' : `Hint ${hintIndex + 1} of ${lesson.content.hints.length}`}
                       </span>
-                      {hintIndex < lesson.content.hints.length - 1 && (
+                      {!engineHint && hintIndex < lesson.content.hints.length - 1 && (
                         <Button variant="ghost" size="sm" onClick={handleNextHint}>
                           Next hint
                         </Button>
                       )}
                     </div>
                     <p className="text-sm text-yellow-800 dark:text-yellow-300">
-                      {lesson.content.hints[hintIndex]}
+                      {engineHint ?? lesson.content.hints[hintIndex]}
                     </p>
                   </div>
                 )}

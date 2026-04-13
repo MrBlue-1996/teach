@@ -1,8 +1,8 @@
 {
-  "name": "@topshelf/mcp-server",
-  "version": "0.1.0",
+  "name": "@topshelf/engine",
+  "version": "1.0.0",
   "private": true,
-  "description": "MCP server for TopShelf Teaching - stateless orchestration, policy evaluation, and audit",
+  "description": "Teaching engine — trigger detection, constraint filtering, and pedagogy orchestration",
   "type": "module",
   "exports": {
     ".": {
@@ -19,19 +19,11 @@
     "build": "tsup",
     "clean": "rm -rf dist .turbo",
     "dev": "tsup --watch",
-    "lint": "eslint src",
-    "lint:fix": "eslint src --fix",
-    "start": "node dist/index.js",
-    "test": "vitest run --passWithNoTests",
+    "lint": "eslint src --ignore-pattern '**/*.test.ts' --ignore-pattern '**/*.spec.ts'",
+    "lint:fix": "eslint src --fix --ignore-pattern '**/*.test.ts' --ignore-pattern '**/*.spec.ts'",
+    "test": "vitest run",
     "test:ci": "vitest run --coverage",
     "typecheck": "tsc --noEmit"
-  },
-  "dependencies": {
-    "@topshelf/content-authoring": "workspace:*",
-    "@topshelf/nlp": "workspace:*",
-    "@topshelf/policy-engine": "workspace:*",
-    "@topshelf/shared": "workspace:*",
-    "zod": "^3.22.4"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",

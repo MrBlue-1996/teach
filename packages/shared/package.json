@@ -35,8 +35,8 @@
     "build": "tsup",
     "clean": "rm -rf dist .turbo",
     "dev": "tsup --watch",
-    "lint": "eslint src --ext .ts,.tsx --ignore-pattern '**/*.test.ts' --ignore-pattern '**/*.spec.ts'",
-    "lint:fix": "eslint src --ext .ts,.tsx --fix --ignore-pattern '**/*.test.ts' --ignore-pattern '**/*.spec.ts'",
+    "lint": "eslint src --ignore-pattern '**/*.test.ts' --ignore-pattern '**/*.spec.ts'",
+    "lint:fix": "eslint src --fix --ignore-pattern '**/*.test.ts' --ignore-pattern '**/*.spec.ts'",
     "test": "vitest run",
     "test:ci": "vitest run --coverage",
     "typecheck": "tsc --noEmit"
@@ -48,6 +48,6 @@
     "@types/node": "^20.11.0",
     "tsup": "^8.0.1",
     "typescript": "^5.3.3",
-    "vitest": "^1.2.0"
+    "vitest": "^2.1.9"
   }
 }

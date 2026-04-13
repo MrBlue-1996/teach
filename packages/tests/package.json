@@ -13,22 +13,22 @@
     "test:parity": "vitest run src/parity",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "lint": "eslint src --ext .ts",
+    "lint": "eslint src",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@topshelf/shared": "workspace:*",
-    "@topshelf/policy-engine": "workspace:*",
-    "@topshelf/deterministic-formatter": "workspace:*",
     "@topshelf/content-authoring": "workspace:*",
+    "@topshelf/deterministic-formatter": "workspace:*",
+    "@topshelf/mcp-server": "workspace:*",
     "@topshelf/nlp": "workspace:*",
-    "@topshelf/mcp-server": "workspace:*"
+    "@topshelf/policy-engine": "workspace:*",
+    "@topshelf/shared": "workspace:*"
   },
   "devDependencies": {
     "@playwright/test": "^1.41.0",
     "@types/node": "^20.11.0",
-    "@vitest/coverage-v8": "^1.2.0",
+    "@vitest/coverage-v8": "^2.1.9",
     "typescript": "^5.3.3",
-    "vitest": "^1.2.0"
+    "vitest": "^2.1.9"
   }
 }

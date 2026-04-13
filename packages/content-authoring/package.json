@@ -19,16 +19,16 @@
     "build": "tsup",
     "clean": "rm -rf dist .turbo",
     "dev": "tsup --watch",
-    "lint": "eslint src --ext .ts",
-    "lint:fix": "eslint src --ext .ts --fix",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
     "test": "vitest run",
     "test:ci": "vitest run --coverage",
     "typecheck": "tsc --noEmit",
     "validate:packs": "tsx src/cli/validate-packs.ts"
   },
   "dependencies": {
-    "@topshelf/shared": "workspace:*",
     "@topshelf/deterministic-formatter": "workspace:*",
+    "@topshelf/shared": "workspace:*",
     "zod": "^3.22.4"
   },
   "devDependencies": {
@@ -36,6 +36,6 @@
     "ts-node": "^10.9.2",
     "tsup": "^8.0.1",
     "typescript": "^5.3.3",
-    "vitest": "^1.2.0"
+    "vitest": "^2.1.9"
   }
 }

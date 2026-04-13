@@ -1,18 +1,29 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowRight, Mail, Lock, Chrome } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
+import { supabase } from '@/lib/supabase';
 
 export default function LoginPage() {
   const { login } = useAuth();
+  const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    const authError = searchParams.get('error');
+
+    if (authError) {
+      setError(authError);
+    }
+  }, [searchParams]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -36,9 +47,26 @@ export default function LoginPage() {
     }
   };
 
-  const handleGoogleLogin = () => {
-    // TODO: Google OAuth not implemented on backend
-    setError('Google login is not yet available');
+  const handleGoogleLogin = async () => {
+    setError('');
+    setIsLoading(true);
+
+    try {
+      const redirectTo = new URL('/auth/callback', window.location.origin);
+      const { error: authError } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: redirectTo.toString(),
+        },
+      });
+
+      if (authError) {
+        throw authError;
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Google login failed.');
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -52,8 +80,9 @@ export default function LoginPage() {
         <Button
           variant="outline"
           className="w-full"
+          type="button"
           onClick={handleGoogleLogin}
-          disabled={isLoading}
+          loading={isLoading}
         >
           <Chrome className="mr-2 h-4 w-4" />
           Continue with Google

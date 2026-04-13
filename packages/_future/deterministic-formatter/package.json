@@ -21,8 +21,8 @@
     "build:wasm": "echo 'WASM build would go here - requires wasm-pack'",
     "clean": "rm -rf dist .turbo",
     "dev": "tsup --watch",
-    "lint": "eslint src --ext .ts",
-    "lint:fix": "eslint src --ext .ts --fix",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
     "test": "vitest run --passWithNoTests",
     "test:ci": "vitest run --coverage",
     "test:parity": "node --loader ts-node/esm src/tests/parity.test.ts",
@@ -35,6 +35,6 @@
     "@types/node": "^20.11.0",
     "tsup": "^8.0.1",
     "typescript": "^5.3.3",
-    "vitest": "^1.2.0"
+    "vitest": "^2.1.9"
   }
 }

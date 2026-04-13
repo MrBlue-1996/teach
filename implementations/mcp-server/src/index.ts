@@ -1,7 +1,11 @@
 import express, { Express, Request, Response } from 'express';
-import { TeachingMode, DeviceProfile } from './types.js';
-import { PedagogyEngine } from './pedagogy-engine.js';
-import { TriggerDetector } from './trigger-detector.js';
+import {
+  TeachingMode,
+  DeviceProfile,
+  PedagogyEngine,
+  TriggerDetector,
+  type TeachingContext,
+} from '@topshelf/engine';
 import { renderMvpPage } from './render-mvp-page.js';
 
 const app: Express = express();
@@ -18,7 +22,7 @@ app.get('/mvp', (_req: Request, res: Response) => {
 });
 
 // Store active teaching contexts
-const contexts = new Map<string, import('./types.js').TeachingContext>();
+const contexts = new Map<string, TeachingContext>();
 
 /**
  * Health check endpoint

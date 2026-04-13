@@ -72,6 +72,22 @@ export interface StartSessionResponse {
     overallMastery: number;
     currentBlockId: string;
   };
+  teaching?: {
+    mode: number;
+    deviceProfile: string;
+  };
+}
+
+/** Matches backend shape from POST /learner/session/:sessionId/teach */
+export interface TeachingGuidanceResponse {
+  shouldTeach: boolean;
+  content?: string;
+  mode: number;
+  filtered: boolean;
+  filterReason?: string;
+  triggers: string[];
+  suggestedMode: number;
+  currentMode: number;
 }
 
 /** Matches backend shape from POST /learner/session/:sessionId/event */
@@ -132,6 +148,16 @@ export const learnerApi = {
   /** POST /learner/session/:sessionId/end - End a learning session */
   endSession: (sessionId: string) =>
     api.post<EndSessionResponse>(`/learner/session/${sessionId}/end`),
+
+  /** POST /learner/session/:sessionId/teach - Get engine-backed teaching guidance */
+  getTeachingGuidance: (
+    sessionId: string,
+    opts?: { blockId?: string; content?: string }
+  ) =>
+    api.post<TeachingGuidanceResponse>(
+      `/learner/session/${sessionId}/teach`,
+      opts ?? {}
+    ),
 
   /** GET /session - List user's learning sessions (separate session route) */
   getRecentSessions: (limit?: number) =>
