@@ -12,6 +12,7 @@ Record architectural decisions and cross-agent agreements here so all agents sta
 -->
 
 ## Decision: Mode taxonomy kept dual
+
 **Date**: 2026-04-13
 **By**: user + engine-engineer
 **Decision**: DB `learningModeEnum` (L1_RECALL..L5_EXPERT) tracks learner competency. Engine `TeachingMode` (L0_SILENT..L4_TUTORIAL) tracks intervention depth. Both are kept.
@@ -19,6 +20,7 @@ Record architectural decisions and cross-agent agreements here so all agents sta
 **Affects**: db-engineer, api-engineer, engine-engineer, frontend-engineer
 
 ## Decision: Canonical app is web UI
+
 **Date**: 2026-04-13
 **By**: user
 **Decision**: The production app is Next.js web + Hono API. The MCP server is a regression harness only.

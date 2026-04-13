@@ -35,7 +35,9 @@ export class InMemoryAuditStorage implements AuditStorage {
   }
 
   getByLearnerId(learnerId: string, limit: number = 100): Promise<PolicyAuditRecord[]> {
-    return Promise.resolve(this.records.filter((r) => r.input.learnerId === learnerId).slice(-limit));
+    return Promise.resolve(
+      this.records.filter((r) => r.input.learnerId === learnerId).slice(-limit)
+    );
   }
 
   getByAuditId(auditId: string): Promise<PolicyAuditRecord | null> {

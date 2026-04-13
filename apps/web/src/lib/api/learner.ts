@@ -150,14 +150,8 @@ export const learnerApi = {
     api.post<EndSessionResponse>(`/learner/session/${sessionId}/end`),
 
   /** POST /learner/session/:sessionId/teach - Get engine-backed teaching guidance */
-  getTeachingGuidance: (
-    sessionId: string,
-    opts?: { blockId?: string; content?: string }
-  ) =>
-    api.post<TeachingGuidanceResponse>(
-      `/learner/session/${sessionId}/teach`,
-      opts ?? {}
-    ),
+  getTeachingGuidance: (sessionId: string, opts?: { blockId?: string; content?: string }) =>
+    api.post<TeachingGuidanceResponse>(`/learner/session/${sessionId}/teach`, opts ?? {}),
 
   /** GET /session - List user's learning sessions (separate session route) */
   getRecentSessions: (limit?: number) =>

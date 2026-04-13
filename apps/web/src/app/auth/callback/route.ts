@@ -6,7 +6,8 @@ export async function GET(request: Request) {
   const code = requestUrl.searchParams.get('code');
   const next = requestUrl.searchParams.get('next');
   const redirectPath = next?.startsWith('/') ? next : '/dashboard';
-  let errorMessage = requestUrl.searchParams.get('error_description') ?? 'Unable to sign in with Google.';
+  let errorMessage =
+    requestUrl.searchParams.get('error_description') ?? 'Unable to sign in with Google.';
 
   if (code) {
     const supabase = createSupabaseServerClient();

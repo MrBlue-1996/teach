@@ -119,8 +119,7 @@ function summarizeSignals(signals: EvaluateSignal[]): PolicySignalSummary {
   }
 
   return {
-    performanceAverage:
-      performanceWeight > 0 ? weightedPerformance / performanceWeight : undefined,
+    performanceAverage: performanceWeight > 0 ? weightedPerformance / performanceWeight : undefined,
     positiveAcademicSignals,
     negativeAcademicSignals,
     hasHelpRequest,
@@ -193,10 +192,7 @@ export function createPolicyRoutes(): Hono {
 
     if (typeof sessionId === 'string' && sessionId.length > 0) {
       const session = await db.query.learningSessions.findFirst({
-        where: and(
-          eq(learningSessions.id, sessionId),
-          eq(learningSessions.userId, userId)
-        ),
+        where: and(eq(learningSessions.id, sessionId), eq(learningSessions.userId, userId)),
       });
 
       if (session) {
@@ -268,7 +264,8 @@ export function createPolicyRoutes(): Hono {
         reasoning = `Low-confidence performance with active struggle triggers requires a step back to ${demotedMode}.`;
       } else {
         decision = 'defer';
-        reasoning = 'Struggle signals detected, but the learner is already at the minimum competency band.';
+        reasoning =
+          'Struggle signals detected, but the learner is already at the minimum competency band.';
       }
     } else if (triggers.length > 0) {
       decision = 'defer';
