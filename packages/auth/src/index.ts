@@ -5,7 +5,7 @@
  */
 
 import { SignJWT, jwtVerify } from 'jose';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 import { getConfig } from '@topshelf/config';
 
