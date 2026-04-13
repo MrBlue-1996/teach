@@ -5,7 +5,7 @@
  * and OAuth helpers.
  */
 
-import { describe, it, expect, beforeAll, vi, beforeEach } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 // Mock @topshelf/config before importing auth functions
 vi.mock('@topshelf/config', () => ({

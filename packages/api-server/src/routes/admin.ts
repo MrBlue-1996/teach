@@ -60,7 +60,6 @@ export function createAdminRoutes() {
   // GET /admin/users - List users
   // ---------------------------------------------------------------------------
   router.get('/users', async (c) => {
-    const userRole = c.get('userRole');
     const db = getDatabase();
 
     // System admins see all, others see only their org
@@ -149,7 +148,8 @@ export function createAdminRoutes() {
       const [updated] = await db
         .update(users)
         .set({
-          ...updates,
+          ...(updates.role !== undefined ? { role: updates.role } : {}),
+          ...(updates.isActive !== undefined ? { isActive: updates.isActive } : {}),
           updatedAt: new Date(),
         })
         .where(eq(users.id, userId))

@@ -5,7 +5,7 @@
  * and health check bypass.
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { Hono } from 'hono';
 import { rateLimiter } from './rate-limiter.js';
 

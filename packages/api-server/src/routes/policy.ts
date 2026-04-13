@@ -64,6 +64,10 @@ export function createPolicyRoutes() {
       })
       .returning();
 
+    if (!record) {
+      throw new Error('Insert failed');
+    }
+
     return c.json({
       evaluationId: record.id,
       ...evaluation,

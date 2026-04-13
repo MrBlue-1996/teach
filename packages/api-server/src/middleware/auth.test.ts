@@ -7,7 +7,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { Hono } from 'hono';
 import { authMiddleware, requireRole, requireOwnership, optionalAuth } from './auth.js';
-import { errorHandler, AppError } from './error-handler.js';
+import { errorHandler } from './error-handler.js';
 
 // Mock the @topshelf/auth module
 vi.mock('@topshelf/auth', () => ({

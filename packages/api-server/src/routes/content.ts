@@ -18,7 +18,7 @@ import {
   asc,
 } from '@topshelf/database';
 import { requireRole } from '../middleware/auth.js';
-import { notFound, badRequest } from '../middleware/error-handler.js';
+import { notFound } from '../middleware/error-handler.js';
 
 // =============================================================================
 // SCHEMAS

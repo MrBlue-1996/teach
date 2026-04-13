@@ -17,7 +17,7 @@ import {
   generateSecureToken,
 } from '@topshelf/auth';
 import { getDatabase, users, authSessions, eq, and, isNull } from '@topshelf/database';
-import { badRequest, unauthorized, conflict, notFound } from '../middleware/error-handler.js';
+import { badRequest, unauthorized, conflict, serverError } from '../middleware/error-handler.js';
 
 // =============================================================================
 // SCHEMAS
@@ -87,10 +87,12 @@ export function createAuthRoutes() {
       .values({
         email: email.toLowerCase(),
         passwordHash,
-        firstName,
-        lastName,
+        firstName: firstName ?? null,
+        lastName: lastName ?? null,
         displayName:
-          firstName && lastName ? `${firstName} ${lastName}` : firstName || email.split('@')[0],
+          firstName && lastName
+            ? `${firstName} ${lastName}`
+            : (firstName ?? email.split('@')[0] ?? email),
         role: 'learner',
         emailVerified: false,
       })
@@ -100,15 +102,20 @@ export function createAuthRoutes() {
         role: users.role,
       });
 
+    if (!newUser) {
+      throw serverError('Failed to create user record');
+    }
+
     // Generate session and tokens
     const sessionId = generateSessionId();
 
     await db.insert(authSessions).values({
       userId: newUser.id,
       token: sessionId,
-      userAgent: c.req.header('User-Agent'),
+      userAgent: c.req.header('User-Agent') ?? null,
       ipAddress:
-        c.req.header('X-Forwarded-For')?.split(',')[0]?.trim() || c.req.header('X-Real-IP'),
+        (c.req.header('X-Forwarded-For')?.split(',')[0]?.trim() || c.req.header('X-Real-IP')) ??
+        null,
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
     });
 
@@ -168,9 +175,10 @@ export function createAuthRoutes() {
     await db.insert(authSessions).values({
       userId: user.id,
       token: sessionId,
-      userAgent: c.req.header('User-Agent'),
+      userAgent: c.req.header('User-Agent') ?? null,
       ipAddress:
-        c.req.header('X-Forwarded-For')?.split(',')[0]?.trim() || c.req.header('X-Real-IP'),
+        (c.req.header('X-Forwarded-For')?.split(',')[0]?.trim() || c.req.header('X-Real-IP')) ??
+        null,
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     });
 
@@ -179,7 +187,7 @@ export function createAuthRoutes() {
       userId: user.id,
       email: user.email,
       role: user.role,
-      organizationId: user.organizationId || undefined,
+      ...(user.organizationId != null ? { organizationId: user.organizationId } : {}),
       sessionId,
     });
 
@@ -243,9 +251,10 @@ export function createAuthRoutes() {
     await db.insert(authSessions).values({
       userId: session.user.id,
       token: newSessionId,
-      userAgent: c.req.header('User-Agent'),
+      userAgent: c.req.header('User-Agent') ?? null,
       ipAddress:
-        c.req.header('X-Forwarded-For')?.split(',')[0]?.trim() || c.req.header('X-Real-IP'),
+        (c.req.header('X-Forwarded-For')?.split(',')[0]?.trim() || c.req.header('X-Real-IP')) ??
+        null,
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     });
 
@@ -254,7 +263,9 @@ export function createAuthRoutes() {
       userId: session.user.id,
       email: session.user.email,
       role: session.user.role,
-      organizationId: session.user.organizationId || undefined,
+      ...(session.user.organizationId != null
+        ? { organizationId: session.user.organizationId }
+        : {}),
       sessionId: newSessionId,
     });
 
@@ -333,7 +344,7 @@ export function createAuthRoutes() {
   // POST /auth/reset-password - Reset password with token
   // ---------------------------------------------------------------------------
   router.post('/reset-password', zValidator('json', ResetPasswordSchema), async (c) => {
-    const { token, password } = c.req.valid('json');
+    const { password } = c.req.valid('json');
 
     // Validate password strength
     const passwordCheck = validatePasswordStrength(password);

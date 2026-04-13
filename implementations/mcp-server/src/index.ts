@@ -2,7 +2,7 @@ import express, { Express, Request, Response } from 'express';
 import { TeachingMode, DeviceProfile } from './types.js';
 import { PedagogyEngine } from './pedagogy-engine.js';
 import { TriggerDetector } from './trigger-detector.js';
-import { renderMvpPage } from './mvp-page.js';
+import { renderMvpPage } from './render-mvp-page.js';
 
 const app: Express = express();
 

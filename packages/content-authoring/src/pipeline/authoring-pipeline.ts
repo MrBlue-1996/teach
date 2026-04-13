@@ -5,20 +5,22 @@
  * Author UI -> Schema Validation -> Parity Tests -> Human Review -> Sign -> Publish
  */
 
-import type {
-  ContentPackManifest,
-  ContentPackValidationResult,
-  TeachingBlock,
-} from '@topshelf/shared';
-import { nowISO, generateContentPackId, generateTeachingBlockId } from '@topshelf/shared';
 import { CanonicalFormatter } from '@topshelf/deterministic-formatter';
+import {
+  generateContentPackId,
+  generateTeachingBlockId,
+  nowISO,
+  type ContentPackManifest,
+  type ContentPackValidationResult,
+  type TeachingBlock,
+} from '@topshelf/shared';
 
-import { ContentPackValidator, type ValidationOptions } from '../validation/content-validator.js';
 import {
   ContentPackSigner,
   createSignedPack,
   type SigningConfig,
 } from '../signing/content-signer.js';
+import { ContentPackValidator, type ValidationOptions } from '../validation/content-validator.js';
 
 /** Pipeline stage */
 export type PipelineStage =
@@ -207,7 +209,7 @@ export class AuthoringPipeline {
 
     for (const block of blocks) {
       // Format block
-      const formatted = this.formatter.formatBlock(block as TeachingBlock);
+      const formatted = this.formatter.formatBlock(block);
       // In production, compare with LLM outputs
       // For now, just ensure formatter runs without error
       if (formatted.contentHash.length === 0) {

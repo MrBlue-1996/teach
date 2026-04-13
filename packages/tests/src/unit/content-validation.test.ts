@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { ContentPackValidator, validateContentPack } from '@topshelf/content-authoring';
+import { validateContentPack } from '@topshelf/content-authoring';
 import type { ContentPackManifest } from '@topshelf/shared';
 
 describe('ContentPackValidator', () => {
@@ -188,9 +188,16 @@ describe('Content Pack Schema', () => {
 
   it('should reject negative time budget', () => {
     const pack = createMinimalPack();
-    pack.teachingBlocks[0]!.timeBudgetSeconds = -10;
+    const mutableBlock = {
+      ...pack.teachingBlocks[0]!,
+      timeBudgetSeconds: -10,
+    };
+    const invalidPack: ContentPackManifest = {
+      ...pack,
+      teachingBlocks: [mutableBlock],
+    };
 
-    const result = validateContentPack(pack);
+    const result = validateContentPack(invalidPack);
 
     expect(result.valid).toBe(false);
   });

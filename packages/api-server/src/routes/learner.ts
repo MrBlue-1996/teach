@@ -135,6 +135,10 @@ export function createLearnerRoutes() {
       state = newState;
     }
 
+    if (!state) {
+      throw new Error('Insert failed');
+    }
+
     // Create new session
     const [session] = await db
       .insert(learningSessions)
@@ -146,6 +150,10 @@ export function createLearnerRoutes() {
         startedAt: new Date(),
       })
       .returning();
+
+    if (!session) {
+      throw new Error('Insert failed');
+    }
 
     // Update last activity
     await db
@@ -196,12 +204,16 @@ export function createLearnerRoutes() {
         learnerStateId: session.learnerStateId,
         blockId: eventData.blockId,
         eventType: eventData.eventType,
-        responseData: eventData.responseData,
-        correctness: eventData.correctness,
-        timeSpentSeconds: eventData.timeSpentSeconds,
+        responseData: eventData.responseData ?? null,
+        correctness: eventData.correctness ?? null,
+        timeSpentSeconds: eventData.timeSpentSeconds ?? null,
         occurredAt: new Date(),
       })
       .returning();
+
+    if (!event) {
+      throw new Error('Insert failed');
+    }
 
     // Update session stats if task completed
     if (eventData.eventType === 'completed') {
