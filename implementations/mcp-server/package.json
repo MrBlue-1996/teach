@@ -23,6 +23,7 @@
   "author": "top shelf service",
   "license": "MIT",
   "dependencies": {
+    "@topshelf/engine": "workspace:*",
     "express": "^4.18.2",
     "@modelcontextprotocol/sdk": "^1.25.2"
   },

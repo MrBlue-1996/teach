@@ -23,6 +23,7 @@
     "@topshelf/auth": "workspace:*",
     "@topshelf/config": "workspace:*",
     "@topshelf/database": "workspace:*",
+    "@topshelf/engine": "workspace:*",
     "@topshelf/observability": "workspace:*",
     "@topshelf/shared": "workspace:*",
     "hono": "^4.0.0",

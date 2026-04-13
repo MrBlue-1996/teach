@@ -299,6 +299,11 @@ export const learningSessions = pgTable(
       .references(() => learnerStates.id),
     status: sessionStatusEnum('status').notNull().default('active'),
     deviceInfo: jsonb('device_info'),
+    teachingMode: integer('teaching_mode').default(2), // TeachingMode enum (0-4), default L2_CONTEXTUAL
+    deviceProfile: varchar('device_profile', { length: 30 }).default('chromebook_standard'),
+    errorsEncountered: integer('errors_encountered').default(0),
+    problemsSolved: integer('problems_solved').default(0),
+    triggersFired: jsonb('triggers_fired').default([]),
     startedAt: timestamp('started_at').defaultNow().notNull(),
     endedAt: timestamp('ended_at'),
     pausedDurationSeconds: integer('paused_duration_seconds').default(0),

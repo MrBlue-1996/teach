@@ -7,11 +7,27 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
 import { zValidator } from '@hono/zod-validator';
-import { getDatabase, policyEvaluations, learnerStates, eq, and, desc } from '@topshelf/database';
+import {
+  getDatabase,
+  policyEvaluations,
+  learnerStates,
+  learningSessions,
+  eq,
+  and,
+  desc,
+} from '@topshelf/database';
+import {
+  TriggerDetector,
+  ConstraintEngine,
+  TeachingMode,
+  TriggerType,
+  type TeachingContext,
+} from '@topshelf/engine';
 import { notFound } from '../middleware/error-handler.js';
 
 const EvaluateSchema = z.object({
   contentPackId: z.string().uuid(),
+  sessionId: z.string().uuid().optional(),
   signals: z.array(
     z.object({
       type: z.string(),
@@ -27,7 +43,7 @@ export function createPolicyRoutes() {
   // POST /policy/evaluate - Request policy evaluation
   router.post('/evaluate', zValidator('json', EvaluateSchema), async (c) => {
     const userId = c.get('userId');
-    const { contentPackId, signals } = c.req.valid('json');
+    const { contentPackId, sessionId, signals } = c.req.valid('json');
     const db = getDatabase();
 
     // Get current learner state
@@ -39,13 +55,53 @@ export function createPolicyRoutes() {
       throw notFound('Learner state', contentPackId);
     }
 
-    // In production, this would call the policy engine
-    // For now, return a simulated evaluation
+    // Build teaching context from session if available
+    let decision: 'promote' | 'demote' | 'hold' | 'defer' = 'hold';
+    let toMode = state.currentMode;
+    let reasoning = 'Insufficient signals for promotion decision';
+    let triggers: TriggerType[] = [];
+
+    if (sessionId) {
+      const session = await db.query.learningSessions.findFirst({
+        where: and(
+          eq(learningSessions.id, sessionId),
+          eq(learningSessions.userId, userId)
+        ),
+      });
+
+      if (session) {
+        const deviceProfile = ConstraintEngine.inferProfile(
+          session.deviceInfo as Record<string, unknown> | null
+        );
+
+        const context: TeachingContext = {
+          mode: (session.teachingMode ?? TeachingMode.L2_CONTEXTUAL) as TeachingMode,
+          deviceProfile,
+          constraints: ConstraintEngine.getConstraints(deviceProfile),
+          triggers: [],
+          sessionStartTime: session.startedAt,
+          problemsSolved: session.problemsSolved ?? 0,
+          errorsEncountered: session.errorsEncountered ?? 0,
+        };
+
+        triggers = TriggerDetector.detectTriggers(context);
+        const suggestedMode = TriggerDetector.suggestModeElevation(context.mode, triggers);
+
+        if (suggestedMode > context.mode) {
+          decision = 'promote';
+          reasoning = `Triggers detected: ${triggers.join(', ')}. Elevating teaching mode.`;
+        } else if (triggers.length === 0 && context.problemsSolved > 5) {
+          decision = 'hold';
+          reasoning = 'No triggers detected and steady progress.';
+        }
+      }
+    }
+
     const evaluation = {
-      decision: 'hold' as const,
+      decision,
       fromMode: state.currentMode,
-      toMode: state.currentMode,
-      reasoning: 'Insufficient signals for promotion decision',
+      toMode,
+      reasoning,
       signals,
     };
 
