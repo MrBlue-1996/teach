@@ -6,14 +6,11 @@ import { ConstraintEngine } from './constraint-engine.js';
  * Core pedagogy engine implementing "Solve First, Teach Second"
  * Coordinates trigger detection, mode management, and constraint filtering
  */
-export class PedagogyEngine {
+export const PedagogyEngine = {
   /**
    * Process a teaching request
    */
-  static processTeachingRequest(
-    context: TeachingContext,
-    teachingContent?: string
-  ): TeachingResponse {
+  processTeachingRequest(context: TeachingContext, teachingContent?: string): TeachingResponse {
     // Detect current triggers
     const triggers = TriggerDetector.detectTriggers(context);
 
@@ -23,7 +20,7 @@ export class PedagogyEngine {
     // Determine if teaching should occur
     const shouldTeach = TriggerDetector.shouldTeach(context.mode, triggers);
 
-    if (!shouldTeach || !teachingContent) {
+    if (!shouldTeach || teachingContent === undefined || teachingContent.length === 0) {
       return {
         shouldTeach: false,
         mode: context.mode,
@@ -58,21 +55,23 @@ export class PedagogyEngine {
       mode: context.mode,
       filtered: wasModified,
     };
-  }
+  },
 
   /**
    * Format teaching content based on mode
    */
-  private static formatTeachingContent(content: string, mode: TeachingMode): string {
+  formatTeachingContent(content: string, mode: TeachingMode): string {
     const prefix = this.getModePrefix(mode);
     return `${prefix}\n\n${content}`;
-  }
+  },
 
   /**
    * Get prefix for teaching mode
    */
-  private static getModePrefix(mode: TeachingMode): string {
+  getModePrefix(mode: TeachingMode): string {
     switch (mode) {
+      case TeachingMode.L0_SILENT:
+        return '';
       case TeachingMode.L1_MINIMAL:
         return '💡 Hint:';
       case TeachingMode.L2_CONTEXTUAL:
@@ -84,12 +83,12 @@ export class PedagogyEngine {
       default:
         return '';
     }
-  }
+  },
 
   /**
    * Create initial teaching context
    */
-  static createContext(
+  createContext(
     mode: TeachingMode,
     deviceProfile: import('./types.js').DeviceProfile
   ): TeachingContext {
@@ -102,5 +101,5 @@ export class PedagogyEngine {
       problemsSolved: 0,
       errorsEncountered: 0,
     };
-  }
-}
+  },
+};

@@ -51,18 +51,18 @@ const DEVICE_PROFILES: Record<DeviceProfile, DeviceConstraints> = {
  * Constraint engine for filtering teaching suggestions
  * based on device capabilities
  */
-export class ConstraintEngine {
+export const ConstraintEngine = {
   /**
    * Get device constraints for a profile
    */
-  static getConstraints(profile: DeviceProfile): DeviceConstraints {
+  getConstraints(profile: DeviceProfile): DeviceConstraints {
     return DEVICE_PROFILES[profile];
-  }
+  },
 
   /**
    * Check if a suggestion is suitable for the device
    */
-  static isSuggestionSuitable(
+  isSuggestionSuitable(
     suggestion: string,
     profile: DeviceProfile
   ): { suitable: boolean; reason?: string } {
@@ -107,12 +107,12 @@ export class ConstraintEngine {
     }
 
     return { suitable: true };
-  }
+  },
 
   /**
    * Filter and optimize suggestion for device
    */
-  static filterSuggestion(
+  filterSuggestion(
     suggestion: string,
     profile: DeviceProfile
   ): { filtered: string; wasModified: boolean } {
@@ -122,12 +122,13 @@ export class ConstraintEngine {
 
     // Truncate if too large
     if (filtered.length > constraints.maxResponseSize) {
+      const safeTruncateLength = Math.max(0, constraints.maxResponseSize - 100);
       filtered =
-        filtered.substring(0, constraints.maxResponseSize - 100) +
+        filtered.substring(0, safeTruncateLength) +
         '\n\n[Response truncated for device constraints]';
       wasModified = true;
     }
 
     return { filtered, wasModified };
-  }
-}
+  },
+};

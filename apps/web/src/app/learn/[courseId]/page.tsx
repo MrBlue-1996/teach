@@ -89,6 +89,8 @@ function normalizeAnswer(value: string) {
 
 function getSupportLevelLabel(mode: number | null) {
   switch (mode) {
+    case null:
+      return 'Standard';
     case 0:
       return 'Quiet';
     case 1:
@@ -106,6 +108,8 @@ function getSupportLevelLabel(mode: number | null) {
 
 function getSupportLevelNote(mode: number | null) {
   switch (mode) {
+    case null:
+      return 'Help is available when you ask.';
     case 0:
       return 'Help stays quiet unless you need it.';
     case 1:
@@ -123,6 +127,8 @@ function getSupportLevelNote(mode: number | null) {
 
 function getDeviceProfileLabel(profile: string | null) {
   switch (profile) {
+    case null:
+      return 'Web';
     case 'chromebook_low':
       return 'Chromebook low';
     case 'chromebook_standard':
@@ -297,9 +303,12 @@ export default function LearnPage({ params }: { params: { courseId: string } }) 
     } | null
   ) {
     const blocks = packData.pack.blocks;
-    const fallbackIndex = Math.min(packData.learnerProgress?.blocksCompleted ?? 0, blocks.length - 1);
+    const fallbackIndex = Math.min(
+      packData.learnerProgress?.blocksCompleted ?? 0,
+      blocks.length - 1
+    );
     const blockSummary = nextData?.nextBlock
-      ? blocks.find((block) => block.blockId === nextData.nextBlock?.blockId) ?? {
+      ? (blocks.find((block) => block.blockId === nextData.nextBlock?.blockId) ?? {
           id: nextData.nextBlock.id,
           blockId: nextData.nextBlock.blockId,
           title: nextData.nextBlock.title,
@@ -307,7 +316,7 @@ export default function LearnPage({ params }: { params: { courseId: string } }) 
           targetMode: nextData.nextBlock.targetMode,
           sequenceOrder: nextData.nextBlock.sequenceOrder,
           timeBudgetSeconds: 0,
-        }
+        })
       : blocks[fallbackIndex];
 
     if (!blockSummary) {
@@ -436,7 +445,9 @@ export default function LearnPage({ params }: { params: { courseId: string } }) 
       if (sessionContext.sessionId) {
         const response = await learnerApi.getTeachingGuidance(sessionContext.sessionId, {
           blockId: lesson.id,
-          content: [lesson.content.question, lesson.content.explanation].filter(Boolean).join('\n\n'),
+          content: [lesson.content.question, lesson.content.explanation]
+            .filter(Boolean)
+            .join('\n\n'),
         });
 
         setSessionContext((current) => ({
@@ -444,7 +455,7 @@ export default function LearnPage({ params }: { params: { courseId: string } }) 
           teachingMode:
             response.suggestedMode > (current.teachingMode ?? response.currentMode)
               ? response.suggestedMode
-              : current.teachingMode ?? response.currentMode,
+              : (current.teachingMode ?? response.currentMode),
         }));
 
         if (response.shouldTeach && response.content) {
@@ -460,12 +471,18 @@ export default function LearnPage({ params }: { params: { courseId: string } }) 
 
       if (staticFallback) {
         setGuidance(staticFallback.guidance);
-        setHintIndex(staticFallback.nextHintIndex + (reason === 'hint' && staticFallback.guidance.kind === 'static' ? 1 : 0));
+        setHintIndex(
+          staticFallback.nextHintIndex +
+            (reason === 'hint' && staticFallback.guidance.kind === 'static' ? 1 : 0)
+        );
       }
     } catch {
       if (staticFallback) {
         setGuidance(staticFallback.guidance);
-        setHintIndex(staticFallback.nextHintIndex + (reason === 'hint' && staticFallback.guidance.kind === 'static' ? 1 : 0));
+        setHintIndex(
+          staticFallback.nextHintIndex +
+            (reason === 'hint' && staticFallback.guidance.kind === 'static' ? 1 : 0)
+        );
       }
     } finally {
       setIsHintLoading(false);
@@ -697,7 +714,9 @@ export default function LearnPage({ params }: { params: { courseId: string } }) 
                   <p className="mt-1 text-lg font-semibold">{completion.blocksCompleted}</p>
                 </div>
                 <div>
-                  <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Session time</p>
+                  <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+                    Session time
+                  </p>
                   <p className="mt-1 text-lg font-semibold">{formatTime(elapsedTime)}</p>
                 </div>
               </div>
@@ -834,7 +853,8 @@ export default function LearnPage({ params }: { params: { courseId: string } }) 
 
               {learnerContext?.inProbation && (
                 <div className="rounded-xl border border-warning/40 bg-warning/10 px-4 py-3 text-sm text-ts-mist">
-                  Stay with this block until it feels stable. Progress on this pack is being held for consistency.
+                  Stay with this block until it feels stable. Progress on this pack is being held
+                  for consistency.
                 </div>
               )}
 
@@ -923,7 +943,8 @@ export default function LearnPage({ params }: { params: { courseId: string } }) 
                     <p className="text-sm text-ts-mist">{lesson.content.explanation}</p>
                     {lesson.content.correctAnswer && (
                       <div className="mt-3 rounded-lg bg-ts-black/50 p-3 font-mono text-sm">
-                        Correct answer: <span className="text-success">{lesson.content.correctAnswer}</span>
+                        Correct answer:{' '}
+                        <span className="text-success">{lesson.content.correctAnswer}</span>
                       </div>
                     )}
                   </div>
@@ -961,7 +982,11 @@ export default function LearnPage({ params }: { params: { courseId: string } }) 
                         </Button>
                       )}
                       {isCorrect && (
-                        <Button className="flex-1" onClick={advanceToNextBlock} loading={isAdvancing}>
+                        <Button
+                          className="flex-1"
+                          onClick={advanceToNextBlock}
+                          loading={isAdvancing}
+                        >
                           Continue
                           <ChevronRight className="ml-2 h-4 w-4" />
                         </Button>
@@ -979,7 +1004,9 @@ export default function LearnPage({ params }: { params: { courseId: string } }) 
               <p className="font-medium text-success">
                 {lesson.content.correctAnswer ? 'Correct.' : 'Response saved.'}
               </p>
-              <p className="text-sm text-muted-foreground">Block time: {formatTime(getBlockElapsedSeconds())}</p>
+              <p className="text-sm text-muted-foreground">
+                Block time: {formatTime(getBlockElapsedSeconds())}
+              </p>
             </div>
           )}
         </div>

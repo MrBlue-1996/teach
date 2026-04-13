@@ -1,3 +1,4 @@
+import type { Server } from 'node:http';
 import express, { Express, Request, Response } from 'express';
 import {
   TeachingMode,
@@ -7,6 +8,40 @@ import {
   type TeachingContext,
 } from '@topshelf/engine';
 import { renderMvpPage } from './render-mvp-page.js';
+
+interface SessionInitBody {
+  sessionId?: string;
+  mode?: TeachingMode;
+  deviceProfile?: DeviceProfile;
+}
+
+interface TeachBody {
+  sessionId?: string;
+  content?: string;
+  errorCount?: number;
+  problemsSolved?: number;
+}
+
+interface DetectTriggersBody {
+  sessionId?: string;
+}
+
+interface SessionModeBody {
+  sessionId?: string;
+  mode?: TeachingMode;
+}
+
+interface SessionParams {
+  sessionId: string;
+}
+
+function isTeachingMode(value: unknown): value is TeachingMode {
+  return typeof value === 'number' && Object.values(TeachingMode).includes(value);
+}
+
+function isDeviceProfile(value: unknown): value is DeviceProfile {
+  return typeof value === 'string' && Object.values(DeviceProfile).includes(value as DeviceProfile);
+}
 
 const app: Express = express();
 
@@ -34,113 +69,140 @@ app.get('/health', (_req: Request, res: Response) => {
 /**
  * Initialize teaching session
  */
-app.post('/api/session/init', (req: Request, res: Response): void => {
-  const {
-    sessionId,
-    mode = TeachingMode.L2_CONTEXTUAL,
-    deviceProfile = DeviceProfile.CHROMEBOOK_STANDARD,
-  } = req.body;
+app.post(
+  '/api/session/init',
+  (req: Request<Record<string, never>, unknown, SessionInitBody>, res: Response): void => {
+    const {
+      sessionId,
+      mode = TeachingMode.L2_CONTEXTUAL,
+      deviceProfile = DeviceProfile.CHROMEBOOK_STANDARD,
+    } = req.body;
 
-  if (!sessionId) {
-    res.status(400).json({ error: 'sessionId is required' });
-    return;
+    if (sessionId === undefined || sessionId.length === 0) {
+      res.status(400).json({ error: 'sessionId is required' });
+      return;
+    }
+
+    if (!isTeachingMode(mode)) {
+      res.status(400).json({ error: 'mode is invalid' });
+      return;
+    }
+
+    if (!isDeviceProfile(deviceProfile)) {
+      res.status(400).json({ error: 'deviceProfile is invalid' });
+      return;
+    }
+
+    const context = PedagogyEngine.createContext(mode, deviceProfile);
+    contexts.set(sessionId, context);
+
+    res.json({
+      sessionId,
+      mode: context.mode,
+      deviceProfile: context.deviceProfile,
+      constraints: context.constraints,
+    });
   }
-
-  const context = PedagogyEngine.createContext(mode, deviceProfile);
-  contexts.set(sessionId, context);
-
-  res.json({
-    sessionId,
-    mode: context.mode,
-    deviceProfile: context.deviceProfile,
-    constraints: context.constraints,
-  });
-});
+);
 
 /**
  * Process teaching request
  */
-app.post('/api/teach', (req: Request, res: Response): void => {
-  const { sessionId, content, errorCount, problemsSolved } = req.body;
+app.post(
+  '/api/teach',
+  (req: Request<Record<string, never>, unknown, TeachBody>, res: Response): void => {
+    const { sessionId, content, errorCount, problemsSolved } = req.body;
 
-  if (!sessionId) {
-    res.status(400).json({ error: 'sessionId is required' });
-    return;
+    if (sessionId === undefined || sessionId.length === 0) {
+      res.status(400).json({ error: 'sessionId is required' });
+      return;
+    }
+
+    const context = contexts.get(sessionId);
+    if (!context) {
+      res.status(404).json({ error: 'Session not found. Initialize session first.' });
+      return;
+    }
+
+    // Update context with new metrics
+    if (typeof errorCount === 'number') {
+      context.errorsEncountered = errorCount;
+    }
+    if (typeof problemsSolved === 'number') {
+      context.problemsSolved = problemsSolved;
+    }
+
+    // Process teaching request
+    const response = PedagogyEngine.processTeachingRequest(context, content);
+
+    res.json(response);
   }
-
-  const context = contexts.get(sessionId);
-  if (!context) {
-    res.status(404).json({ error: 'Session not found. Initialize session first.' });
-    return;
-  }
-
-  // Update context with new metrics
-  if (typeof errorCount === 'number') {
-    context.errorsEncountered = errorCount;
-  }
-  if (typeof problemsSolved === 'number') {
-    context.problemsSolved = problemsSolved;
-  }
-
-  // Process teaching request
-  const response = PedagogyEngine.processTeachingRequest(context, content);
-
-  res.json(response);
-});
+);
 
 /**
  * Trigger evaluation endpoint
  */
-app.post('/api/triggers/detect', (req: Request, res: Response): void => {
-  const { sessionId } = req.body;
+app.post(
+  '/api/triggers/detect',
+  (req: Request<Record<string, never>, unknown, DetectTriggersBody>, res: Response): void => {
+    const { sessionId } = req.body;
 
-  if (!sessionId) {
-    res.status(400).json({ error: 'sessionId is required' });
-    return;
+    if (sessionId === undefined || sessionId.length === 0) {
+      res.status(400).json({ error: 'sessionId is required' });
+      return;
+    }
+
+    const context = contexts.get(sessionId);
+    if (!context) {
+      res.status(404).json({ error: 'Session not found' });
+      return;
+    }
+
+    const triggers = TriggerDetector.detectTriggers(context);
+    const suggestedMode = TriggerDetector.suggestModeElevation(context.mode, triggers);
+
+    res.json({
+      currentMode: context.mode,
+      suggestedMode,
+      triggers,
+      shouldElevate: suggestedMode > context.mode,
+    });
   }
-
-  const context = contexts.get(sessionId);
-  if (!context) {
-    res.status(404).json({ error: 'Session not found' });
-    return;
-  }
-
-  const triggers = TriggerDetector.detectTriggers(context);
-  const suggestedMode = TriggerDetector.suggestModeElevation(context.mode, triggers);
-
-  res.json({
-    currentMode: context.mode,
-    suggestedMode,
-    triggers,
-    shouldElevate: suggestedMode > context.mode,
-  });
-});
+);
 
 /**
  * Update teaching mode
  */
-app.post('/api/session/mode', (req: Request, res: Response): void => {
-  const { sessionId, mode } = req.body;
+app.post(
+  '/api/session/mode',
+  (req: Request<Record<string, never>, unknown, SessionModeBody>, res: Response): void => {
+    const { sessionId, mode } = req.body;
 
-  if (!sessionId || mode === undefined) {
-    res.status(400).json({ error: 'sessionId and mode are required' });
-    return;
+    if (sessionId === undefined || sessionId.length === 0 || mode === undefined) {
+      res.status(400).json({ error: 'sessionId and mode are required' });
+      return;
+    }
+
+    if (!isTeachingMode(mode)) {
+      res.status(400).json({ error: 'mode is invalid' });
+      return;
+    }
+
+    const context = contexts.get(sessionId);
+    if (!context) {
+      res.status(404).json({ error: 'Session not found' });
+      return;
+    }
+
+    context.mode = mode;
+    res.json({ sessionId, mode: context.mode });
   }
-
-  const context = contexts.get(sessionId);
-  if (!context) {
-    res.status(404).json({ error: 'Session not found' });
-    return;
-  }
-
-  context.mode = mode;
-  res.json({ sessionId, mode: context.mode });
-});
+);
 
 /**
  * Get session status
  */
-app.get('/api/session/:sessionId', (req: Request, res: Response): void => {
+app.get('/api/session/:sessionId', (req: Request<SessionParams>, res: Response): void => {
   const { sessionId } = req.params;
 
   const context = contexts.get(sessionId);
@@ -163,7 +225,7 @@ app.get('/api/session/:sessionId', (req: Request, res: Response): void => {
 /**
  * Cleanup session
  */
-app.delete('/api/session/:sessionId', (req: Request, res: Response) => {
+app.delete('/api/session/:sessionId', (req: Request<SessionParams>, res: Response): void => {
   const { sessionId } = req.params;
 
   if (contexts.delete(sessionId)) {
@@ -176,11 +238,11 @@ app.delete('/api/session/:sessionId', (req: Request, res: Response) => {
 /**
  * Start server
  */
-export function startServer(port = Number(process.env.PORT ?? 3000)) {
+export function startServer(port = Number(process.env.PORT ?? 3000)): Server {
   return app.listen(port, () => {
-    console.log(`🎓 TopShelf Teaching MCP Server running on port ${port}`);
-    console.log(`📚 Enforce "Solve First, Teach Second" pedagogy`);
-    console.log(`💻 Chromebook-first with device constraints`);
+    console.info(`🎓 TopShelf Teaching MCP Server running on port ${port}`);
+    console.info(`📚 Enforce "Solve First, Teach Second" pedagogy`);
+    console.info(`💻 Chromebook-first with device constraints`);
   });
 }
 

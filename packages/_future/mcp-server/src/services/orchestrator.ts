@@ -183,7 +183,7 @@ export class MCPOrchestrator {
    * Process task completion
    */
   async processTaskCompletion(request: TaskCompletionRequest): Promise<PolicyEvaluationOutput> {
-    const { learnerId, blockId, completion, events, nonce: _ } = request;
+    const { learnerId, blockId, completion, events } = request;
 
     const state = await this.learnerStateManager.getState(learnerId);
     if (state === null) {

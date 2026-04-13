@@ -169,6 +169,9 @@ importers:
       autoprefixer:
         specifier: ^10.4.17
         version: 10.4.27(postcss@8.5.9)
+      eslint:
+        specifier: ^9.39.4
+        version: 9.39.4
       jsdom:
         specifier: ^29.0.1
         version: 29.0.2

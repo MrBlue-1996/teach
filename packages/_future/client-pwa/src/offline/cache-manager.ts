@@ -354,7 +354,7 @@ export class OfflineCacheManager {
   private promisifyRequest<T>(request: IDBRequest): Promise<T> {
     return new Promise((resolve, reject) => {
       request.onsuccess = (): void => resolve(request.result as T);
-      request.onerror = (): void => reject(request.error);
+      request.onerror = (): void => reject(request.error ?? new Error('IndexedDB request failed'));
     });
   }
 }

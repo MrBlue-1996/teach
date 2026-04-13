@@ -140,9 +140,7 @@ export class LayeredPolicyEvaluator {
           if (result.terminal) {
             return result;
           }
-          if (lastNonTerminalResult === null) {
-            lastNonTerminalResult = result;
-          }
+          lastNonTerminalResult ??= result;
         }
       }
     }

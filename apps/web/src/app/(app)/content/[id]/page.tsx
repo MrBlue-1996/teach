@@ -39,7 +39,7 @@ export default function CourseDetailPage({ params }: { params: { id: string } })
       // Start a learning session, which creates the learner state on the backend
       await learnerApi.startSession(params.id);
       router.push(`/learn/${params.id}`);
-    } catch (err) {
+    } catch {
       setIsEnrolling(false);
       // If session start fails, still navigate as a fallback
       router.push(`/learn/${params.id}`);

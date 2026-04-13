@@ -21,10 +21,10 @@ import {
  */
 export async function probeDeviceCapabilities(): Promise<DeviceCapabilities> {
   const [webGL, webGPU, wasm, network, battery, storage] = await Promise.all([
-    probeWebGL(),
+    Promise.resolve(probeWebGL()),
     probeWebGPU(),
-    probeWasm(),
-    probeNetwork(),
+    Promise.resolve(probeWasm()),
+    Promise.resolve(probeNetwork()),
     probeBattery(),
     probeStorage(),
   ]);

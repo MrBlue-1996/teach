@@ -21,6 +21,32 @@ import {
 
 const CONTENT_PACKS_DIR = join(__dirname, '../../../../content-packs');
 
+type LooseTeachingBlock = {
+  id?: unknown;
+  mode?: unknown;
+  surfaceVariants?: readonly unknown[];
+  timeBudgetSeconds?: unknown;
+  prerequisites?: readonly unknown[];
+};
+
+type LooseContentPack = {
+  id?: unknown;
+  name?: unknown;
+  version?: unknown;
+  difficulty?: unknown;
+  teachingBlocks?: readonly LooseTeachingBlock[];
+  tags?: readonly unknown[];
+  roleMappings?: readonly unknown[];
+};
+
+function asLooseContentPack(value: unknown): LooseContentPack | null {
+  if (typeof value !== 'object' || value === null) {
+    return null;
+  }
+
+  return value as LooseContentPack;
+}
+
 function loadContentPack(filename: string): unknown {
   const filePath = join(CONTENT_PACKS_DIR, filename);
   const raw = readFileSync(filePath, 'utf-8');
@@ -32,10 +58,10 @@ function loadContentPack(filename: string): unknown {
 // =============================================================================
 
 describe('Linux Fundamentals Content Pack (content_pack_linux_v1.json)', () => {
-  let pack: any;
+  let pack: LooseContentPack | null;
 
   try {
-    pack = loadContentPack('content_pack_linux_v1.json');
+    pack = asLooseContentPack(loadContentPack('content_pack_linux_v1.json'));
   } catch {
     pack = null;
   }
@@ -46,77 +72,78 @@ describe('Linux Fundamentals Content Pack (content_pack_linux_v1.json)', () => {
   });
 
   it('should have a valid content pack ID', () => {
-    if (!pack) return;
+    if (pack === null) return;
     expect(contentPackIdSchema.safeParse(pack.id).success).toBe(true);
   });
 
   it('should have a valid semantic version', () => {
-    if (!pack) return;
+    if (pack === null) return;
     expect(semanticVersionSchema.safeParse(pack.version).success).toBe(true);
   });
 
   it('should have a valid difficulty level', () => {
-    if (!pack) return;
+    if (pack === null) return;
     expect(difficultyLevelSchema.safeParse(pack.difficulty).success).toBe(true);
   });
 
   it('should have at least one teaching block', () => {
-    if (!pack) return;
+    if (pack === null) return;
     expect(Array.isArray(pack.teachingBlocks)).toBe(true);
-    expect(pack.teachingBlocks.length).toBeGreaterThan(0);
+    expect((pack.teachingBlocks ?? []).length).toBeGreaterThan(0);
   });
 
   it('should have unique teaching block IDs', () => {
-    if (!pack) return;
-    const blockIds = pack.teachingBlocks.map((b: any) => b.id);
+    if (pack === null) return;
+    const blockIds = (pack.teachingBlocks ?? []).map((block) => block.id);
     const uniqueIds = new Set(blockIds);
     expect(uniqueIds.size).toBe(blockIds.length);
   });
 
   it('each teaching block should have a valid ID format', () => {
-    if (!pack) return;
-    for (const block of pack.teachingBlocks) {
+    if (pack === null) return;
+    for (const block of pack.teachingBlocks ?? []) {
       expect(teachingBlockIdSchema.safeParse(block.id).success).toBe(true);
     }
   });
 
   it('each teaching block should have a valid learning mode', () => {
-    if (!pack) return;
-    for (const block of pack.teachingBlocks) {
+    if (pack === null) return;
+    for (const block of pack.teachingBlocks ?? []) {
       expect(learningModeSchema.safeParse(block.mode).success).toBe(true);
     }
   });
 
   it('each teaching block should have at least 2 surface variants', () => {
-    if (!pack) return;
-    for (const block of pack.teachingBlocks) {
+    if (pack === null) return;
+    for (const block of pack.teachingBlocks ?? []) {
       expect(Array.isArray(block.surfaceVariants)).toBe(true);
-      expect(block.surfaceVariants.length).toBeGreaterThanOrEqual(2);
+      expect((block.surfaceVariants ?? []).length).toBeGreaterThanOrEqual(2);
     }
   });
 
   it('each teaching block should have valid time budget', () => {
-    if (!pack) return;
-    for (const block of pack.teachingBlocks) {
+    if (pack === null) return;
+    for (const block of pack.teachingBlocks ?? []) {
       expect(block.timeBudgetSeconds).toBeGreaterThanOrEqual(30);
       expect(block.timeBudgetSeconds).toBeLessThanOrEqual(7200);
     }
   });
 
   it('prerequisites should reference existing blocks', () => {
-    if (!pack) return;
-    const blockIds = new Set(pack.teachingBlocks.map((b: any) => b.id));
-    for (const block of pack.teachingBlocks) {
-      for (const prereq of block.prerequisites) {
+    if (pack === null) return;
+    const teachingBlocks = pack.teachingBlocks ?? [];
+    const blockIds = new Set(teachingBlocks.map((block) => block.id));
+    for (const block of teachingBlocks) {
+      for (const prereq of block.prerequisites ?? []) {
         expect(blockIds.has(prereq)).toBe(true);
       }
     }
   });
 
   it('should have required role mappings when tagged as required', () => {
-    if (!pack) return;
-    if (pack.tags.includes('required')) {
-      expect(pack.roleMappings.length).toBeGreaterThan(0);
+    if (pack === null) return;
+    if ((pack.tags ?? []).includes('required')) {
+      expect((pack.roleMappings ?? []).length).toBeGreaterThan(0);
     }
   });
 });
@@ -126,10 +153,10 @@ describe('Linux Fundamentals Content Pack (content_pack_linux_v1.json)', () => {
 // =============================================================================
 
 describe('Network+ Content Pack (content_pack_networkplus_v1.json)', () => {
-  let pack: any;
+  let pack: LooseContentPack | null;
 
   try {
-    pack = loadContentPack('content_pack_networkplus_v1.json');
+    pack = asLooseContentPack(loadContentPack('content_pack_networkplus_v1.json'));
   } catch {
     pack = null;
   }
@@ -140,26 +167,26 @@ describe('Network+ Content Pack (content_pack_networkplus_v1.json)', () => {
   });
 
   it('should have a valid content pack ID', () => {
-    if (!pack) return;
+    if (pack === null) return;
     expect(contentPackIdSchema.safeParse(pack.id).success).toBe(true);
   });
 
   it('should have a valid semantic version', () => {
-    if (!pack) return;
+    if (pack === null) return;
     expect(semanticVersionSchema.safeParse(pack.version).success).toBe(true);
   });
 
   it('should have unique teaching block IDs', () => {
-    if (!pack) return;
-    const blockIds = pack.teachingBlocks.map((b: any) => b.id);
+    if (pack === null) return;
+    const blockIds = (pack.teachingBlocks ?? []).map((block) => block.id);
     const uniqueIds = new Set(blockIds);
     expect(uniqueIds.size).toBe(blockIds.length);
   });
 
   it('each teaching block should have at least 2 surface variants', () => {
-    if (!pack) return;
-    for (const block of pack.teachingBlocks) {
-      expect(block.surfaceVariants.length).toBeGreaterThanOrEqual(2);
+    if (pack === null) return;
+    for (const block of pack.teachingBlocks ?? []) {
+      expect((block.surfaceVariants ?? []).length).toBeGreaterThanOrEqual(2);
     }
   });
 });
@@ -169,10 +196,10 @@ describe('Network+ Content Pack (content_pack_networkplus_v1.json)', () => {
 // =============================================================================
 
 describe('Template Content Pack (template_content_pack.json)', () => {
-  let pack: any;
+  let pack: LooseContentPack | null;
 
   try {
-    pack = loadContentPack('template_content_pack.json');
+    pack = asLooseContentPack(loadContentPack('template_content_pack.json'));
   } catch {
     pack = null;
   }
@@ -182,7 +209,7 @@ describe('Template Content Pack (template_content_pack.json)', () => {
   });
 
   it('should have a valid structure', () => {
-    if (!pack) return;
+    if (pack === null) return;
     expect(pack.id).toBeDefined();
     expect(pack.name).toBeDefined();
     expect(pack.version).toBeDefined();
@@ -244,7 +271,7 @@ describe('Content Pack Schema Edge Cases', () => {
   });
 });
 
-function createMinimalBlock() {
+function createMinimalBlock(): Record<string, unknown> {
   return {
     id: 'tb-min-001',
     concept: 'Minimal Concept',

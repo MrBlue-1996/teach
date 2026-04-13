@@ -2,12 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { PedagogyEngine } from './pedagogy-engine.js';
 import { TriggerDetector } from './trigger-detector.js';
 import { ConstraintEngine } from './constraint-engine.js';
-import {
-  TeachingMode,
-  DeviceProfile,
-  TriggerType,
-  type TeachingContext,
-} from './types.js';
+import { TeachingMode, DeviceProfile, TriggerType, type TeachingContext } from './types.js';
 
 function makeContext(overrides: Partial<TeachingContext> = {}): TeachingContext {
   return {
@@ -122,9 +117,7 @@ describe('TriggerDetector', () => {
 
     it('elevates to CONTEXTUAL on one severe trigger', () => {
       expect(
-        TriggerDetector.suggestModeElevation(TeachingMode.L1_MINIMAL, [
-          TriggerType.ERROR_REPEATED,
-        ])
+        TriggerDetector.suggestModeElevation(TeachingMode.L1_MINIMAL, [TriggerType.ERROR_REPEATED])
       ).toBe(TeachingMode.L2_CONTEXTUAL);
     });
 
@@ -139,9 +132,7 @@ describe('TriggerDetector', () => {
 
     it('does not elevate without severe triggers', () => {
       expect(
-        TriggerDetector.suggestModeElevation(TeachingMode.L1_MINIMAL, [
-          TriggerType.TIME_THRESHOLD,
-        ])
+        TriggerDetector.suggestModeElevation(TeachingMode.L1_MINIMAL, [TriggerType.TIME_THRESHOLD])
       ).toBe(TeachingMode.L1_MINIMAL);
     });
   });
@@ -163,7 +154,10 @@ describe('ConstraintEngine', () => {
 
   describe('isSuggestionSuitable', () => {
     it('accepts small text on Chromebook low', () => {
-      const result = ConstraintEngine.isSuggestionSuitable('Use ls to list files', DeviceProfile.CHROMEBOOK_LOW);
+      const result = ConstraintEngine.isSuggestionSuitable(
+        'Use ls to list files',
+        DeviceProfile.CHROMEBOOK_LOW
+      );
       expect(result.suitable).toBe(true);
     });
 
@@ -214,12 +208,10 @@ describe('ConstraintEngine', () => {
     });
 
     it('never uses a negative truncation length for tight device limits', () => {
-      const getConstraintsSpy = vi
-        .spyOn(ConstraintEngine, 'getConstraints')
-        .mockReturnValue({
-          ...ConstraintEngine.getConstraints(DeviceProfile.CHROMEBOOK_LOW),
-          maxResponseSize: 50,
-        });
+      const getConstraintsSpy = vi.spyOn(ConstraintEngine, 'getConstraints').mockReturnValue({
+        ...ConstraintEngine.getConstraints(DeviceProfile.CHROMEBOOK_LOW),
+        maxResponseSize: 50,
+      });
 
       const { filtered, wasModified } = ConstraintEngine.filterSuggestion(
         'x'.repeat(200),
@@ -240,9 +232,9 @@ describe('ConstraintEngine', () => {
     });
 
     it('detects CrOS as Chromebook', () => {
-      expect(
-        ConstraintEngine.inferProfile({ userAgent: 'Mozilla/5.0 (X11; CrOS x86_64)' })
-      ).toBe(DeviceProfile.CHROMEBOOK_STANDARD);
+      expect(ConstraintEngine.inferProfile({ userAgent: 'Mozilla/5.0 (X11; CrOS x86_64)' })).toBe(
+        DeviceProfile.CHROMEBOOK_STANDARD
+      );
     });
 
     it('detects low-memory Chromebook', () => {
