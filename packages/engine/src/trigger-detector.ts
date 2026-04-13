@@ -26,7 +26,8 @@ export class TriggerDetector {
 
     // Detect stuck state (time spent without progress)
     const timeElapsed = Date.now() - context.sessionStartTime.getTime();
-    const progressRate = context.problemsSolved / (timeElapsed / 60000); // problems per minute
+    const elapsedMinutes = Math.max(timeElapsed / 60000, 0.01);
+    const progressRate = context.problemsSolved / elapsedMinutes; // problems per minute
 
     if (timeElapsed > this.STUCK_TIME_THRESHOLD_MS && progressRate < 0.1) {
       triggers.push(TriggerType.STUCK_DETECTED);

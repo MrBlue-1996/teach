@@ -119,8 +119,9 @@ export class ConstraintEngine {
     let wasModified = false;
 
     if (filtered.length > constraints.maxResponseSize) {
+      const safeTruncateLength = Math.max(0, constraints.maxResponseSize - 100);
       filtered =
-        filtered.substring(0, constraints.maxResponseSize - 100) +
+        filtered.substring(0, safeTruncateLength) +
         '\n\n[Response truncated for device constraints]';
       wasModified = true;
     }

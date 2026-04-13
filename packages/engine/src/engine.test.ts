@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { PedagogyEngine } from './pedagogy-engine.js';
 import { TriggerDetector } from './trigger-detector.js';
 import { ConstraintEngine } from './constraint-engine.js';
@@ -61,6 +61,16 @@ describe('TriggerDetector', () => {
       const triggers = TriggerDetector.detectTriggers(ctx);
       expect(triggers).toContain(TriggerType.TIME_THRESHOLD);
       expect(triggers).not.toContain(TriggerType.STUCK_DETECTED);
+    });
+
+    it('handles trigger checks at session start without dividing by zero', () => {
+      const ctx = makeContext({
+        sessionStartTime: new Date(),
+        problemsSolved: 1,
+      });
+
+      expect(() => TriggerDetector.detectTriggers(ctx)).not.toThrow();
+      expect(TriggerDetector.detectTriggers(ctx)).toEqual([]);
     });
   });
 
@@ -201,6 +211,25 @@ describe('ConstraintEngine', () => {
       expect(wasModified).toBe(true);
       expect(filtered.length).toBeLessThan(huge.length);
       expect(filtered).toContain('[Response truncated');
+    });
+
+    it('never uses a negative truncation length for tight device limits', () => {
+      const getConstraintsSpy = vi
+        .spyOn(ConstraintEngine, 'getConstraints')
+        .mockReturnValue({
+          ...ConstraintEngine.getConstraints(DeviceProfile.CHROMEBOOK_LOW),
+          maxResponseSize: 50,
+        });
+
+      const { filtered, wasModified } = ConstraintEngine.filterSuggestion(
+        'x'.repeat(200),
+        DeviceProfile.CHROMEBOOK_LOW
+      );
+
+      expect(wasModified).toBe(true);
+      expect(filtered).toBe('\n\n[Response truncated for device constraints]');
+
+      getConstraintsSpy.mockRestore();
     });
   });
 
