@@ -10,10 +10,6 @@ function isNumericSegment(value: string): boolean {
   return value.length > 0 && /^[0-9]+$/.test(value);
 }
 
-function isAlphanumericSegment(value: string): boolean {
-  return value.length > 0 && /^[a-zA-Z0-9]+$/.test(value);
-}
-
 // === ID Generation ===
 
 /**
@@ -157,6 +153,10 @@ export function percentileRank(value: number, sortedValues: readonly number[]): 
  * Chunk an array into smaller arrays of specified size
  */
 export function chunk<T>(array: readonly T[], size: number): T[][] {
+  if (!Number.isFinite(size) || size <= 0) {
+    throw new RangeError('Chunk size must be greater than 0');
+  }
+
   const result: T[][] = [];
   for (let i = 0; i < array.length; i += size) {
     result.push(array.slice(i, i + size));
@@ -170,7 +170,8 @@ export function chunk<T>(array: readonly T[], size: number): T[][] {
  * Check if a string is a valid semantic version
  */
 export function isValidSemver(version: string): boolean {
-  const [core, prerelease] = version.split('-', 2);
+  const [core, ...prereleaseParts] = version.split('-');
+  const prerelease = prereleaseParts.length > 0 ? prereleaseParts.join('-') : undefined;
   const parts = core?.split('.') ?? [];
 
   if (parts.length !== 3 || parts.some((part) => !isNumericSegment(part))) {
@@ -181,7 +182,7 @@ export function isValidSemver(version: string): boolean {
     return true;
   }
 
-  return prerelease.split('.').every((part) => isAlphanumericSegment(part));
+  return prerelease.split('.').every((part) => /^[a-zA-Z0-9-]+$/.test(part));
 }
 
 /**
@@ -247,6 +248,11 @@ export function truncate(str: string, maxLength: number): string {
   if (str.length <= maxLength) {
     return str;
   }
+
+  if (maxLength <= 3) {
+    return '...'.slice(0, Math.max(0, maxLength));
+  }
+
   return str.slice(0, maxLength - 3) + '...';
 }
 
