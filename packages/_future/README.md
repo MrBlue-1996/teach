@@ -11,6 +11,10 @@ They remain in the pnpm workspace (via `packages/_future/*`) so they continue to
 **Progressive Web App shell with offline support.**
 Duplicates the functionality in `apps/web`. Integration work needed: consolidate with the main web app or replace it, wire up service worker registration, and connect to the live API layer.
 
+### mcp-server
+
+**MCP (Model Context Protocol) integration stub for stateless orchestration and policy evaluation.**
+Integration work needed: wire MCP endpoints into the API server's route tree, connect to the policy-engine and nlp packages it depends on, and add authentication middleware.
 
 ### policy-engine
 

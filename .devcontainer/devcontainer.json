@@ -10,9 +10,10 @@
   },
   "postCreateCommand": "bash .devcontainer/post-create.sh",
   "remoteUser": "node",
-  "forwardPorts": [3000, 5432, 6379, 9090],
+  "forwardPorts": [3000, 3001, 5432, 6379, 9090],
   "portsAttributes": {
     "3000": { "label": "API Server" },
+    "3001": { "label": "Web App" },
     "5432": { "label": "PostgreSQL" },
     "6379": { "label": "Redis" },
     "9090": { "label": "Metrics" }

@@ -1,0 +1,156 @@
+{
+  "generatedAt": "2026-04-05T12:54:49.772Z",
+  "repoRoot": "/home/patrick/projects/active/teach",
+  "exitCode": 20,
+  "summary": {
+    "counts": {
+      "PASS": 6,
+      "INFO": 0,
+      "SKIP": 0,
+      "WARN": 3,
+      "ERROR": 3,
+      "FATAL": 0
+    },
+    "duration": "86.78s"
+  },
+  "results": [
+    {
+      "checkpointId": "preflight.repo-root",
+      "title": "Validate repo root",
+      "level": "PASS",
+      "code": "TSS-BS-P000",
+      "message": "Repo root verified at /home/patrick/projects/active/teach",
+      "durationMs": 0,
+      "blocking": true,
+      "details": {}
+    },
+    {
+      "checkpointId": "preflight.node-version",
+      "title": "Check Node version",
+      "level": "PASS",
+      "code": "TSS-BS-P001",
+      "message": "Node 20.20.2 satisfies repo requirement",
+      "durationMs": 0,
+      "blocking": true,
+      "details": {}
+    },
+    {
+      "checkpointId": "preflight.pnpm",
+      "title": "Check pnpm availability",
+      "level": "PASS",
+      "code": "TSS-BS-P003",
+      "message": "pnpm 8.14.0 matches packageManager pin",
+      "durationMs": 339,
+      "blocking": true,
+      "details": {}
+    },
+    {
+      "checkpointId": "install.dependencies",
+      "title": "Install dependencies",
+      "level": "PASS",
+      "code": "TSS-BS-P004",
+      "message": "Dependencies installed successfully via pnpm install --frozen-lockfile",
+      "durationMs": 2168,
+      "blocking": true,
+      "details": {}
+    },
+    {
+      "checkpointId": "quality.format",
+      "title": "Check formatting",
+      "level": "WARN",
+      "code": "TSS-BS-E102",
+      "message": "Script \"format:check\" failed",
+      "durationMs": 4498,
+      "blocking": false,
+      "details": {
+        "stderrTail": "[\u001b[33mwarn\u001b[39m] .bootstrap/latest.json\n[\u001b[33mwarn\u001b[39m] docs/5-api/README.md\n[\u001b[33mwarn\u001b[39m] governance/standards/brand/README.md\n[\u001b[33mwarn\u001b[39m] governance/standards/README.md\n[\u001b[33mwarn\u001b[39m] implementations/mcp-server/src/index.ts\n[\u001b[33mwarn\u001b[39m] implementations/mcp-server/src/mvp-page.ts\n[\u001b[33mwarn\u001b[39m] implementations/mcp-server/tests/api.test.ts\n[\u001b[33mwarn\u001b[39m] packages/README.md\n[\u001b[33mwarn\u001b[39m] Code style issues found in 8 files. Run Prettier with --write to fix.",
+        "stdoutTail": "> topshelf-teaching@1.0.0 format:check /home/patrick/projects/active/teach\n> prettier --check .\nChecking formatting...\n\u001b[41m\u001b[30m ELIFECYCLE \u001b[39m\u001b[49m \u001b[31mCommand failed with exit code 1.\u001b[39m"
+      }
+    },
+    {
+      "checkpointId": "quality.lint",
+      "title": "Run lint",
+      "level": "ERROR",
+      "code": "TSS-BS-E103",
+      "message": "Script \"lint\" failed",
+      "durationMs": 59233,
+      "blocking": true,
+      "details": {
+        "stderrTail": "• turbo 2.8.1\n\u001b[34m@topshelf/nlp:lint: \u001b[0mERROR: command finished with error: command (/home/patrick/projects/active/teach/packages/_future/nlp) /usr/bin/pnpm run lint exited (1)\n@topshelf/nlp#lint: command (/home/patrick/projects/active/teach/packages/_future/nlp) /usr/bin/pnpm run lint exited (1)\n\u001b[31;40m ERROR \u001b[0m \u001b[31;49mrun failed: command  exited (1)\u001b[0m",
+        "stdoutTail": "\u001b[34m@topshelf/deterministic-formatter:lint: \u001b[0m\n\u001b[33m@topshelf/policy-engine:lint: \u001b[0m\n\u001b[33m@topshelf/policy-engine:lint: \u001b[0m> @topshelf/policy-engine@0.1.0 lint /home/patrick/projects/active/teach/packages/_future/policy-engine\n\u001b[33m@topshelf/policy-engine:lint: \u001b[0m> eslint src --ext .ts\n\u001b[33m@topshelf/policy-engine:lint: \u001b[0m\n\u001b[32m@topshelf/mcp-server:lint: \u001b[0m\n\u001b[32m@topshelf/mcp-server:lint: \u001b[0m> @topshelf/mcp-server@0.1.0 lint /home/patrick/projects/active/teach/packages/_future/mcp-server\n\u001b[32m@topshelf/mcp-server:lint: \u001b[0m> eslint src --ext .ts\n\u001b[32m@topshelf/mcp-server:lint: \u001b[0m\n\u001b[36m@topshelf/shared:lint: \u001b[0m\n\u001b[36m@topshelf/shared:lint: \u001b[0m> @topshelf/shared@0.1.0 lint /home/patrick/projects/active/teach/packages/shared\n\u001b[36m@topshelf/shared:lint: \u001b[0m> eslint src --ext .ts,.tsx\n\u001b[36m@topshelf/shared:lint: \u001b[0m\n\u001b[34m@topshelf/nlp:lint: \u001b[0mKilled\n\u001b[34m@topshelf/nlp:lint: \u001b[0m ELIFECYCLE  Command failed with exit code 137.\n\u001b[1m Tasks:    \u001b[32m\u001b[1m11 successful\u001b[0m, 19 total\u001b[0m\n\u001b[1mCached:    \u001b[1m11 cached\u001b[0m, 19 total\u001b[0m\n\u001b[1m  Time:    \u001b[1m58.527s\u001b[0m \u001b[0m\n\u001b[1mFailed:    \u001b[31m\u001b[1m@topshelf/nlp#lint\u001b[0m\u001b[0m\n\u001b[41m\u001b[30m ELIFECYCLE \u001b[39m\u001b[49m \u001b[31mCommand failed with exit code 1.\u001b[39m"
+      }
+    },
+    {
+      "checkpointId": "quality.typecheck",
+      "title": "Run typecheck",
+      "level": "ERROR",
+      "code": "TSS-BS-E104",
+      "message": "Script \"typecheck\" failed",
+      "durationMs": 12021,
+      "blocking": true,
+      "details": {
+        "stderrTail": "• turbo 2.8.1\n\u001b[34m@topshelf/deterministic-formatter:typecheck: \u001b[0mERROR: command finished with error: command (/home/patrick/projects/active/teach/packages/_future/deterministic-formatter) /usr/bin/pnpm run typecheck exited (1)\n@topshelf/deterministic-formatter#typecheck: command (/home/patrick/projects/active/teach/packages/_future/deterministic-formatter) /usr/bin/pnpm run typecheck exited (1)\n\u001b[31;40m ERROR \u001b[0m \u001b[31;49mrun failed: command  exited (1)\u001b[0m",
+        "stdoutTail": "\u001b[34m@topshelf/content-authoring:build: \u001b[0m> tsup\n\u001b[34m@topshelf/content-authoring:build: \u001b[0m\n\u001b[34m@topshelf/content-authoring:build: \u001b[0mCLI Building entry: {\"index\":\"src/index.ts\"}\n\u001b[34m@topshelf/content-authoring:build: \u001b[0mCLI Using tsconfig: tsconfig.json\n\u001b[34m@topshelf/content-authoring:build: \u001b[0mCLI tsup v8.5.1\n\u001b[34m@topshelf/content-authoring:build: \u001b[0mCLI Using tsup config: /home/patrick/projects/active/teach/packages/content-authoring/tsup.config.ts\n\u001b[34m@topshelf/content-authoring:build: \u001b[0mCLI Target: es2022\n\u001b[34m@topshelf/content-authoring:build: \u001b[0mCLI Cleaning output folder\n\u001b[34m@topshelf/content-authoring:build: \u001b[0mESM Build start\n\u001b[34m@topshelf/content-authoring:build: \u001b[0mESM dist/index.js     16.19 KB\n\u001b[34m@topshelf/content-authoring:build: \u001b[0mESM dist/index.js.map 41.20 KB\n\u001b[34m@topshelf/content-authoring:build: \u001b[0mESM ⚡️ Build success in 999ms\n\u001b[34m@topshelf/content-authoring:build: \u001b[0mDTS Build start\n\u001b[34m@topshelf/content-authoring:build: \u001b[0mDTS ⚡️ Build success in 8635ms\n\u001b[34m@topshelf/content-authoring:build: \u001b[0mDTS dist/index.d.ts 7.95 KB\n\u001b[1m Tasks:    \u001b[32m\u001b[1m9 successful\u001b[0m, 22 total\u001b[0m\n\u001b[1mCached:    \u001b[1m9 cached\u001b[0m, 22 total\u001b[0m\n\u001b[1m  Time:    \u001b[1m10.363s\u001b[0m \u001b[0m\n\u001b[1mFailed:    \u001b[31m\u001b[1m@topshelf/deterministic-formatter#typecheck\u001b[0m\u001b[0m\n\u001b[41m\u001b[30m ELIFECYCLE \u001b[39m\u001b[49m \u001b[31mCommand failed with exit code 1.\u001b[39m"
+      }
+    },
+    {
+      "checkpointId": "quality.test",
+      "title": "Run tests",
+      "level": "ERROR",
+      "code": "TSS-BS-E105",
+      "message": "Script \"test:ci\" failed",
+      "durationMs": 5896,
+      "blocking": true,
+      "details": {
+        "stderrTail": "• turbo 2.8.1\n\u001b[34m@topshelf/nlp:test:ci: \u001b[0mERROR: command finished with error: command (/home/patrick/projects/active/teach/packages/_future/nlp) /usr/bin/pnpm run test:ci exited (1)\n@topshelf/nlp#test:ci: command (/home/patrick/projects/active/teach/packages/_future/nlp) /usr/bin/pnpm run test:ci exited (1)\n\u001b[31;40m ERROR \u001b[0m \u001b[31;49mrun failed: command  exited (1)\u001b[0m",
+        "stdoutTail": "\u001b[35m@topshelf/mcp-server:build: \u001b[0mCLI Using tsconfig: tsconfig.json\n\u001b[35m@topshelf/mcp-server:build: \u001b[0mCLI tsup v8.5.1\n\u001b[35m@topshelf/mcp-server:build: \u001b[0mCLI Using tsup config: /home/patrick/projects/active/teach/packages/_future/mcp-server/tsup.config.ts\n\u001b[35m@topshelf/mcp-server:build: \u001b[0mCLI Target: es2022\n\u001b[35m@topshelf/mcp-server:build: \u001b[0mCLI Cleaning output folder\n\u001b[35m@topshelf/mcp-server:build: \u001b[0mESM Build start\n\u001b[35m@topshelf/mcp-server:build: \u001b[0mESM dist/index.js     7.67 KB\n\u001b[35m@topshelf/mcp-server:build: \u001b[0mESM dist/index.js.map 17.99 KB\n\u001b[35m@topshelf/mcp-server:build: \u001b[0mESM ⚡️ Build success in 1251ms\n\u001b[35m@topshelf/mcp-server:build: \u001b[0mDTS Build start\n\u001b[35m@topshelf/mcp-server:build: \u001b[0mDTS ⚡️ Build success in 16007ms\n\u001b[35m@topshelf/mcp-server:build: \u001b[0mDTS dist/index.d.ts 3.29 KB\n\u001b[34m@topshelf/content-authoring:test:ci: \u001b[0mcache miss, executing \u001b[2m2c5c6de4992afba8\u001b[0m\n\u001b[36m@topshelf/client-pwa:test:ci: \u001b[0mcache miss, executing \u001b[2m31fed74a04e338bf\u001b[0m\n\u001b[32m@topshelf/api-server:test:ci: \u001b[0mcache miss, executing \u001b[2m5f723ee27d7d43a2\u001b[0m\n\u001b[1m Tasks:    \u001b[32m\u001b[1m16 successful\u001b[0m, 29 total\u001b[0m\n\u001b[1mCached:    \u001b[1m16 cached\u001b[0m, 29 total\u001b[0m\n\u001b[1m  Time:    \u001b[1m4.81s\u001b[0m \u001b[0m\n\u001b[1mFailed:    \u001b[31m\u001b[1m@topshelf/nlp#test:ci\u001b[0m\u001b[0m\n\u001b[41m\u001b[30m ELIFECYCLE \u001b[39m\u001b[49m \u001b[31mCommand failed with exit code 1.\u001b[39m"
+      }
+    },
+    {
+      "checkpointId": "quality.build",
+      "title": "Run build",
+      "level": "PASS",
+      "code": "TSS-BS-P005",
+      "message": "Script \"build\" passed",
+      "durationMs": 823,
+      "blocking": true,
+      "details": {}
+    },
+    {
+      "checkpointId": "domain.content-packs",
+      "title": "Validate content packs",
+      "level": "WARN",
+      "code": "TSS-BS-W202",
+      "message": "Script \"validate:content-packs\" failed",
+      "durationMs": 983,
+      "blocking": false,
+      "details": {
+        "stderrTail": "(node:23604) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:\n--import 'data:text/javascript,import { register } from \"node:module\"; import { pathToFileURL } from \"node:url\"; register(\"ts-node/esm\", pathToFileURL(\"./\"));'\n(Use `node --trace-warnings ...` to show where the warning was created)\nnode:internal/modules/run_main:123\n    triggerUncaughtException(\n    ^\nError: Cannot find module '/home/patrick/projects/active/teach/packages/content-authoring/src/cli/validate-packs.ts' imported from /home/patrick/projects/active/teach/packages/content-authoring/\n    at finalizeResolution (/home/patrick/projects/active/teach/node_modules/\u001b[4m.pnpm\u001b[24m/ts-node@10.9.2_@types+node@20.19.30_typescript@5.9.3/node_modules/\u001b[4mts-node\u001b[24m/dist-raw/node-internal-modules-esm-resolve.js:366:11)\n    at moduleResolve (/home/patrick/projects/active/teach/node_modules/\u001b[4m.pnpm\u001b[24m/ts-node@10.9.2_@types+node@20.19.30_typescript@5.9.3/node_modules/\u001b[4mts-node\u001b[24m/dist-raw/node-internal-modules-esm-resolve.js:801:10)\n    at Object.defaultResolve (/home/patrick/projects/active/teach/node_modules/\u001b[4m.pnpm\u001b[24m/ts-node@10.9.2_@types+node@20.19.30_typescript@5.9.3/node_modules/\u001b[4mts-node\u001b[24m/dist-raw/node-internal-modules-esm-resolve.js:912:11)\n    at /home/patrick/projects/active/teach/node_modules/\u001b[4m.pnpm\u001b[24m/ts-node@10.9.2_@types+node@20.19.30_typescript@5.9.3/node_modules/\u001b[4mts-node\u001b[24m/src/esm.ts:218:35\n    at entrypointFallback (/home/patrick/projects/active/teach/node_modules/\u001b[4m.pnpm\u001b[24m/ts-node@10.9.2_@types+node@20.19.30_typescript@5.9.3/node_modules/\u001b[4mts-node\u001b[24m/src/esm.ts:168:34)\n    at /home/patrick/projects/active/teach/node_modules/\u001b[4m.pnpm\u001b[24m/ts-node@10.9.2_@types+node@20.19.30_typescript@5.9.3/node_modules/\u001b[4mts-node\u001b[24m/src/esm.ts:217:14\n    at addShortCircuitFlag (/home/patrick/projects/active/teach/node_modules/\u001b[4m.pnpm\u001b[24m/ts-node@10.9.2_@types+node@20.19.30_typescript@5.9.3/node_modules/\u001b[4mts-node\u001b[24m/src/esm.ts:409:21)\n    at resolve (/home/patrick/projects/active/teach/node_modules/\u001b[4m.pnpm\u001b[24m/ts-node@10.9.2_@types+node@20.19.30_typescript@5.9.3/node_modules/\u001b[4mts-node\u001b[24m/src/esm.ts:197:12)\n\u001b[90m    at nextResolve (node:internal/modules/esm/hooks:864:28)\u001b[39m\n\u001b[90m    at Hooks.resolve (node:internal/modules/esm/hooks:306:30)\u001b[39m\nNode.js v20.20.2",
+        "stdoutTail": "> topshelf-teaching@1.0.0 validate:content-packs /home/patrick/projects/active/teach\n> pnpm --filter @topshelf/content-authoring run validate:packs\n> @topshelf/content-authoring@0.1.0 validate:packs /home/patrick/projects/active/teach/packages/content-authoring\n> node --loader ts-node/esm src/cli/validate-packs.ts\n/home/patrick/projects/active/teach/packages/content-authoring:\n\u001b[41m\u001b[30m ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL \u001b[39m\u001b[49m \u001b[31m@topshelf/content-authoring@0.1.0 validate:packs: `node --loader ts-node/esm src/cli/validate-packs.ts`\u001b[39m\n\u001b[31mExit status 1\u001b[39m\n\u001b[41m\u001b[30m ELIFECYCLE \u001b[39m\u001b[49m \u001b[31mCommand failed with exit code 1.\u001b[39m"
+      }
+    },
+    {
+      "checkpointId": "domain.policies",
+      "title": "Validate policies",
+      "level": "WARN",
+      "code": "TSS-BS-W202",
+      "message": "Script \"validate:policies\" failed",
+      "durationMs": 800,
+      "blocking": false,
+      "details": {
+        "stderrTail": "(node:23642) ExperimentalWarning: `--experimental-loader` may be removed in the future; instead use `register()`:\n--import 'data:text/javascript,import { register } from \"node:module\"; import { pathToFileURL } from \"node:url\"; register(\"ts-node/esm\", pathToFileURL(\"./\"));'\n(Use `node --trace-warnings ...` to show where the warning was created)\nnode:internal/modules/run_main:123\n    triggerUncaughtException(\n    ^\nError: Cannot find module '/home/patrick/projects/active/teach/packages/_future/policy-engine/src/cli/validate.ts' imported from /home/patrick/projects/active/teach/packages/_future/policy-engine/\n    at finalizeResolution (/home/patrick/projects/active/teach/node_modules/\u001b[4m.pnpm\u001b[24m/ts-node@10.9.2_@types+node@20.19.30_typescript@5.9.3/node_modules/\u001b[4mts-node\u001b[24m/dist-raw/node-internal-modules-esm-resolve.js:366:11)\n    at moduleResolve (/home/patrick/projects/active/teach/node_modules/\u001b[4m.pnpm\u001b[24m/ts-node@10.9.2_@types+node@20.19.30_typescript@5.9.3/node_modules/\u001b[4mts-node\u001b[24m/dist-raw/node-internal-modules-esm-resolve.js:801:10)\n    at Object.defaultResolve (/home/patrick/projects/active/teach/node_modules/\u001b[4m.pnpm\u001b[24m/ts-node@10.9.2_@types+node@20.19.30_typescript@5.9.3/node_modules/\u001b[4mts-node\u001b[24m/dist-raw/node-internal-modules-esm-resolve.js:912:11)\n    at /home/patrick/projects/active/teach/node_modules/\u001b[4m.pnpm\u001b[24m/ts-node@10.9.2_@types+node@20.19.30_typescript@5.9.3/node_modules/\u001b[4mts-node\u001b[24m/src/esm.ts:218:35\n    at entrypointFallback (/home/patrick/projects/active/teach/node_modules/\u001b[4m.pnpm\u001b[24m/ts-node@10.9.2_@types+node@20.19.30_typescript@5.9.3/node_modules/\u001b[4mts-node\u001b[24m/src/esm.ts:168:34)\n    at /home/patrick/projects/active/teach/node_modules/\u001b[4m.pnpm\u001b[24m/ts-node@10.9.2_@types+node@20.19.30_typescript@5.9.3/node_modules/\u001b[4mts-node\u001b[24m/src/esm.ts:217:14\n    at addShortCircuitFlag (/home/patrick/projects/active/teach/node_modules/\u001b[4m.pnpm\u001b[24m/ts-node@10.9.2_@types+node@20.19.30_typescript@5.9.3/node_modules/\u001b[4mts-node\u001b[24m/src/esm.ts:409:21)\n    at resolve (/home/patrick/projects/active/teach/node_modules/\u001b[4m.pnpm\u001b[24m/ts-node@10.9.2_@types+node@20.19.30_typescript@5.9.3/node_modules/\u001b[4mts-node\u001b[24m/src/esm.ts:197:12)\n\u001b[90m    at nextResolve (node:internal/modules/esm/hooks:864:28)\u001b[39m\n\u001b[90m    at Hooks.resolve (node:internal/modules/esm/hooks:306:30)\u001b[39m\nNode.js v20.20.2",
+        "stdoutTail": "> topshelf-teaching@1.0.0 validate:policies /home/patrick/projects/active/teach\n> pnpm --filter @topshelf/policy-engine run validate:policies\n> @topshelf/policy-engine@0.1.0 validate:policies /home/patrick/projects/active/teach/packages/_future/policy-engine\n> node --loader ts-node/esm src/cli/validate.ts\n/home/patrick/projects/active/teach/packages/_future/policy-engine:\n\u001b[41m\u001b[30m ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL \u001b[39m\u001b[49m \u001b[31m@topshelf/policy-engine@0.1.0 validate:policies: `node --loader ts-node/esm src/cli/validate.ts`\u001b[39m\n\u001b[31mExit status 1\u001b[39m\n\u001b[41m\u001b[30m ELIFECYCLE \u001b[39m\u001b[49m \u001b[31mCommand failed with exit code 1.\u001b[39m"
+      }
+    },
+    {
+      "checkpointId": "verify.artifacts",
+      "title": "Verify build artifacts",
+      "level": "PASS",
+      "code": "TSS-BS-P006",
+      "message": "Verified build output under apps/web/.next",
+      "durationMs": 0,
+      "blocking": true,
+      "details": {}
+    }
+  ]
+}

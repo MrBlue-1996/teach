@@ -10,8 +10,17 @@ TopShelf Teaching is a device-aware AI teaching kernel that enforces "Solve Firs
 - **Trigger-Based Teaching**: Automatic detection of when students need help
 - **Device-Aware**: Constraint engine for Chromebook and low-resource devices
 - **Offline-First**: Full offline capability for resource-constrained environments
+- **TypeScript MCP Server**: Express-based server with strict typing
 
 ## Quick Start
+
+```bash
+cd implementations/mcp-server
+npm install
+npm run dev
+```
+
+The server will start on port 3000 with the teaching kernel ready.
 
 ## Core Concepts
 
@@ -37,8 +46,9 @@ All teaching suggestions are filtered based on device capabilities:
 
 ```
 ┌─────────────────────────────────────┐
-│  Pedagogy Engine                    │
+│     Express MCP Server              │
 ├─────────────────────────────────────┤
+│  Pedagogy Engine                    │
 │  ├─ Trigger Detector                │
 │  ├─ Mode Manager (L0-L4)            │
 │  └─ Constraint Engine               │

@@ -1,6 +1,6 @@
 # TopShelf Teaching
 
-TopShelf Teaching is a pnpm monorepo for the teaching platform, supporting packages, apps, governance artifacts, content packs, and implementation prototypes.
+TopShelf Teaching is a pnpm monorepo for the teaching platform, supporting packages, apps, governance artifacts, content packs, and implementation prototypes including the MCP MVP.
 
 ## Start Here
 
@@ -8,6 +8,7 @@ TopShelf Teaching is a pnpm monorepo for the teaching platform, supporting packa
 - Documentation hub: [docs/README.md](docs/README.md)
 - Apps overview: [apps/README.md](apps/README.md)
 - Packages overview: [packages/README.md](packages/README.md)
+- MCP MVP: [implementations/mcp-server/README.md](implementations/mcp-server/README.md)
 
 ## Quick Start
 
@@ -16,6 +17,16 @@ pnpm install
 pnpm test
 pnpm build
 ```
+
+## MVP Quick Start
+
+```bash
+pnpm --dir implementations/mcp-server test
+pnpm --dir implementations/mcp-server build
+pnpm --dir implementations/mcp-server start
+```
+
+Then open `http://localhost:3000/mvp` to click through the teaching MVP in a browser.
 
 ## Repository Groups
 

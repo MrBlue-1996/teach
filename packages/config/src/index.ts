@@ -113,7 +113,7 @@ const LLMConfigSchema = z.object({
   anthropic: z
     .object({
       apiKey: z.string().optional(),
-      model: z.string().default('gpt-4o'),
+      model: z.string().default('claude-sonnet-4-20250514'),
       maxTokens: z.coerce.number().default(4096),
     })
     .default({}),

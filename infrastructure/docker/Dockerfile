@@ -21,6 +21,7 @@ COPY packages/auth/package.json ./packages/auth/
 COPY packages/observability/package.json ./packages/observability/
 COPY packages/policy-engine/package.json ./packages/policy-engine/
 COPY packages/nlp/package.json ./packages/nlp/
+COPY packages/mcp-server/package.json ./packages/mcp-server/
 COPY packages/api-server/package.json ./packages/api-server/
 
 # Install dependencies

@@ -8,8 +8,8 @@ TopShelf Teaching is a pnpm monorepo implementing a device-aware AI teaching ker
 
 **Structure:**
 - `apps/` — User-facing products (Next.js web app)
-- `packages/` — Reusable platform building blocks (engine, api-server, shared, database, auth)
-- `implementations/` — Focused prototypes
+- `packages/` — Reusable platform building blocks (engine, api-server, shared, database)
+- `implementations/` — Focused prototypes (MCP server MVP)
 - `governance/` — Policies, standards, schemas
 - `content/` — Teaching materials and definitions
 
@@ -18,8 +18,6 @@ TopShelf Teaching is a pnpm monorepo implementing a device-aware AI teaching ker
 ```bash
 # Install
 pnpm install
-pnpm install <pkg> -w                        # Add to root
-pnpm --filter @topshelf/<name> add <pkg>     # Add to specific package
 
 # Build
 pnpm build              # All packages via Turbo
@@ -36,6 +34,7 @@ pnpm test:e2e           # End-to-end tests
 
 # Single package test
 pnpm --filter @topshelf/engine test
+pnpm --dir implementations/mcp-server test
 
 # Single test file (within a package)
 pnpm --filter @topshelf/engine test -- src/engine.test.ts
@@ -54,6 +53,9 @@ pnpm validate
 pnpm db:migrate
 pnpm db:generate
 pnpm db:studio
+
+# MCP Server
+pnpm --dir implementations/mcp-server start   # http://localhost:3000/mvp
 ```
 
 ## Architecture
@@ -78,15 +80,6 @@ The core of the system. Three collaborating classes:
 
 **Device profiles:** `CHROMEBOOK_LOW`, `CHROMEBOOK_STANDARD`, `DESKTOP_LOW`, `DESKTOP_STANDARD`, `DESKTOP_HIGH`. Chromebook profiles block heavy frameworks and large assets.
 
-### Two Separate Enum Taxonomies — Do Not Conflate
-
-| Enum | Location | Values | Meaning |
-|---|---|---|---|
-| `TeachingMode` | `packages/engine/src/types.ts` | L0_SILENT..L4_TUTORIAL (int 0–4) | Intervention depth (how much the engine helps) |
-| `learningModeEnum` | `packages/database/src/schema/index.ts` | L1_RECALL..L5_EXPERT | Learner competency level (what the learner can do) |
-
-These are orthogonal — a L5_EXPERT learner might still receive L4_TUTORIAL help on new content.
-
 ### Session Lifecycle
 
 1. `POST /api/session/init` — creates `TeachingContext` (mode, deviceProfile, constraints, empty triggers[], timestamps, counters)
@@ -94,15 +87,17 @@ These are orthogonal — a L5_EXPERT learner might still receive L4_TUTORIAL hel
 3. `GET /api/session/:id` — retrieve current context
 4. `POST /api/triggers/detect` — detect triggers without committing a teach response
 
+### MCP Server (`implementations/mcp-server/`)
+
+Express.js prototype. Stores `TeachingContext` in-memory (`Map<sessionId, TeachingContext>`). The `/mvp` page provides a browser click-through UI for manual testing.
+
 ### API Server (`packages/api-server/`)
 
 Hono framework. Auth, learner, content, session, policy, badge, and admin routes — all protected except `/auth`, `/health`, `/ready`. Drizzle ORM + Postgres.
 
-### Shared / Database / Auth Packages
+### Shared / Database Packages
 
-- `packages/shared/` — Central export for cross-package types and Zod schemas. Workspace dependency: `"@topshelf/shared": "workspace:*"`.
-- `packages/database/` — Drizzle schema and migration tooling.
-- `packages/auth/` — Authentication package (tsup build).
+`packages/shared/` is the central export point for cross-package types and Zod schemas. `packages/database/` owns the Drizzle schema and migration tooling.
 
 ## Key Conventions
 
@@ -115,38 +110,10 @@ Hono framework. Auth, learner, content, session, policy, badge, and admin routes
  */
 ```
 
-**TypeScript:** Strict mode with `exactOptionalPropertyTypes` enabled. For optional properties, use the spread pattern:
-```typescript
-return { required, ...(opt ? { opt } : {}) };
-```
-ES2022 target, ESNext modules.
+**TypeScript:** strict mode with `exactOptionalPropertyTypes` enabled (see `tsconfig.base.json`). ES2022 target, ESNext modules.
 
-**Build tooling:** `tsup` for library packages, Next.js for web app, Turbo for monorepo task orchestration.
+**Build tooling:** `tsup` for library packages, `tsc` for MCP server, Next.js for web app, Turbo for monorepo task orchestration.
 
 **Tests:** Vitest with globals enabled. Tests live alongside source as `src/**/*.test.ts`. Coverage via v8.
 
-## Integration Boundaries (Hotspots)
-
-When your change touches one of these tags, read the corresponding files before editing:
-
-| Tag | Files to read first |
-|---|---|
-| `schema` | `packages/database/src/schema/index.ts` |
-| `types` | `packages/engine/src/types.ts`, `packages/shared/src/types/` |
-| `api` / `contracts` | `packages/api-server/src/routes/learner.ts` + `apps/web/src/lib/api/` |
-| `config` | `packages/config/src/index.ts`, `.env.example` |
-| `infra` | `infrastructure/docker/docker-compose.yml` |
-| `policy` | `governance/policies/promotion_policy_config.json` |
-| `pedagogy` | `packages/engine/src/pedagogy-engine.ts` |
-
-## Agent Blackboard Protocol
-
-This repo uses a blackboard architecture for multi-agent coordination. When operating as a specialized agent:
-
-- **Before starting:** Read `.github/state/board.md`, `.github/state/decisions.md`, and `.github/state/blockers.md`.
-- **After completing:** Append a timestamped entry to your section in `board.md`. Include which tags your changes affect.
-- **Never delete or overwrite another agent's entries** — only append.
-- File blockers in `.github/state/blockers.md`; resolve and mark `[RESOLVED]` when done.
-- Record architectural decisions in `.github/state/decisions.md`.
-
-See `.github/instructions/agent-comms.instructions.md` for the full protocol and tag definitions.
+See `.github/instructions/workspace.instructions.md` for full monorepo conventions, and `.github/instructions/agent-comms.instructions.md` for agent communication standards.

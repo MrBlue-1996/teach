@@ -1,7 +1,8 @@
 /**
  * API Types (TS-ARCH-003)
  *
- * Types for API endpoints, request/response contracts, and error handling.
+ * Types for MCP server endpoints, request/response contracts,
+ * and error handling.
  */
 
 import type { Badge, EmployerArtifact } from './badge.js';

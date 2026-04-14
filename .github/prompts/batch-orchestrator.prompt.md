@@ -66,7 +66,7 @@ Coordinator reads updated board.md, resolves blockers, advances to next batch
 Run these simultaneously — they touch non-overlapping files:
 
 1. **db-engineer**: Generate migration for teaching context columns, create content seed script
-2. **engine-engineer**: Port unit tests from engine references, add promotion policy logic
+2. **engine-engineer**: Port unit tests from MCP server, add promotion policy logic
 3. **infra-engineer**: Set up `.env.example`, Docker Compose with Postgres + API + web
 
 ### Batch 2: Integration (parallel after Batch 1)
@@ -107,7 +107,7 @@ Invoke agents directly and manage the blackboard yourself:
 ```
 @db-engineer Generate a Drizzle migration for the current schema and create a seed script for content_pack_linux_v1.json. Read .github/state/board.md first for context, and update your section when done.
 
-@engine-engineer Port all unit tests into packages/engine/. Read .github/state/board.md first, update when done.
+@engine-engineer Port all unit tests from implementations/mcp-server/tests/ to packages/engine/. Read .github/state/board.md first, update when done.
 
 @infra-engineer Create .env with all required vars and update docker-compose.yml. Read .github/state/board.md first, update when done.
 ```

@@ -117,7 +117,7 @@ Runbooks for handling common incidents in TopShelf Teaching platform.
 
    ```bash
    # Server-side sync error logs
-   grep "SYNC_ERROR" /var/log/topshelf/app.log | tail -100
+   grep "SYNC_ERROR" /var/log/topshelf/mcp-server.log | tail -100
    ```
 
 4. **Check for event validation failures**

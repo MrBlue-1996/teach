@@ -46,6 +46,8 @@ coverage/
 # Turbo
 .turbo/
 
+# Claude Code
+.claude/
 
 # Auto-generated
 next-env.d.ts
