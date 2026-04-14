@@ -2,7 +2,7 @@
 
 ## Overview
 
-Deploy TopShelf Teaching MCP Server to various environments with confidence.
+Deploy TopShelf Teaching to various environments with confidence.
 
 ## Prerequisites
 
@@ -11,23 +11,6 @@ Deploy TopShelf Teaching MCP Server to various environments with confidence.
 - Port 3000 available (or configure custom port)
 
 ## Local Development
-
-```bash
-cd implementations/mcp-server
-npm install
-npm run dev
-```
-
-Server runs with hot-reload on `http://localhost:3000`
-
-## Production Build
-
-```bash
-cd implementations/mcp-server
-npm install --production
-npm run build
-npm start
-```
 
 ## Environment Variables
 
@@ -48,10 +31,10 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-COPY implementations/mcp-server/package*.json ./
+COPY package*.json ./
 RUN npm ci --production
 
-COPY implementations/mcp-server/dist ./dist
+COPY dist ./dist
 
 EXPOSE 3000
 
@@ -77,7 +60,7 @@ docker run -p 3000:3000 topshelf-teach
 
 ```bash
 npm install -g pm2
-pm2 start dist/index.js --name teach-mcp
+pm2 start dist/index.js --name teach-app
 pm2 save
 pm2 startup
 ```
@@ -86,14 +69,14 @@ pm2 startup
 
 ```bash
 # Procfile
-web: cd implementations/mcp-server && node dist/index.js
+web: node dist/index.js
 ```
 
 ### Google Cloud Run
 
 ```bash
-gcloud run deploy teach-mcp \
-  --source implementations/mcp-server \
+gcloud run deploy teach-app \
+  --source . \
   --platform managed \
   --region us-central1
 ```
@@ -128,7 +111,7 @@ curl http://localhost:3000/health
 
 ```bash
 # PM2 logs
-pm2 logs teach-mcp
+pm2 logs teach-app
 
 # Docker logs
 docker logs <container-id>

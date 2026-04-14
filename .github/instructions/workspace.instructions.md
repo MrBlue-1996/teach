@@ -28,7 +28,6 @@ applyTo: '**'
 | Database   | `packages/database/`          | tsup  |
 | Auth       | `packages/auth/`              | tsup  |
 | Web App    | `apps/web/`                   | next  |
-| MCP Server | `implementations/mcp-server/` | tsc   |
 
 ## Commands
 

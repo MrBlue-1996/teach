@@ -35,19 +35,12 @@ jobs:
       - name: Build engine package
         run: pnpm --filter @topshelf/engine run build
 
-      - name: Type check
-        working-directory: implementations/mcp-server
-        run: pnpm run type-check
+      - name: Build workspace
+        run: pnpm build
 
-      - name: Build
-        working-directory: implementations/mcp-server
-        run: pnpm run build
-
-      - name: Run tests
-        working-directory: implementations/mcp-server
+      - name: Run workspace tests
         run: pnpm test
 
-      - name: Lint
-        working-directory: implementations/mcp-server
-        run: pnpm run lint
+      - name: Lint workspace
+        run: pnpm lint
         continue-on-error: true

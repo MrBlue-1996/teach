@@ -6,7 +6,6 @@ Pre-launch checklist for TopShelf Teaching pilot deployments.
 
 ### Infrastructure
 
-- [ ] MCP server deployed to staging environment
 - [ ] Database provisioned and configured
 - [ ] KMS/HSM keys generated and secured
 - [ ] CDN configured for content pack delivery

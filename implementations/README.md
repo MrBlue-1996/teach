@@ -4,7 +4,6 @@ This directory contains focused prototypes and implementation spikes.
 
 ## Current Implementations
 
-- [mcp-server](mcp-server) is the teaching MVP server.
 
 ## Indexing Notes
 

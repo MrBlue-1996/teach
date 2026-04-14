@@ -23,6 +23,4 @@ Record architectural decisions and cross-agent agreements here so all agents sta
 
 **Date**: 2026-04-13
 **By**: user
-**Decision**: The production app is Next.js web + Hono API. The MCP server is a regression harness only.
-**Reason**: Web UI is the user-facing surface. MCP is for smoke testing.
 **Affects**: all agents

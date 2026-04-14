@@ -18,7 +18,6 @@ flowchart TD
 	Apps --> Web[web]
 	Packages --> Runtime[runtime and shared packages]
 	Packages --> Tooling[tooling and support packages]
-	Implementations --> MCP[mcp-server prototype]
 	Governance --> Policies[policies/]
 	Governance --> Legal[legal/]
 	Governance --> Standards[standards/]
@@ -79,18 +78,6 @@ flowchart TD
 ## Prototypes And Implementations
 
 - [../implementations/README.md](../implementations/README.md) for implementation-specific entry points.
-- [../implementations/mcp-server](../implementations/mcp-server) for the MCP MVP server and manual click-through page.
-
-## Implementation Map
-
-```mermaid
-flowchart TD
-	MCP[implementations/mcp-server] --> Entry[src/index.ts]
-	MCP --> MVP[src/mvp-page.ts]
-	MCP --> Engines[src/constraint-engine.ts and related files]
-	MCP --> APITests[tests/api.test.ts]
-	MCP --> UnitTests[tests engine coverage]
-```
 
 ## Teaching Content
 
@@ -129,12 +116,8 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-	Impl[implementations/] --> MCP[mcp-server]
-	PackagesStable[packages/] --> Stable[stable shared platform code]
-
-	MCP --> Rule1[Prototype only]
-	MCP --> Rule2[No cross-package dumping ground]
-	MCP --> Rule3[Promote reusable logic only when needed]
+	Impl[implementations/] --> Stable[stable shared platform code]
+	PackagesStable[packages/] --> Stable
 	Stable --> Rule4[Reusable runtime code belongs in packages]
 ```
 

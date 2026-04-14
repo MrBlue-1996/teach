@@ -13,7 +13,6 @@ You are a **Test Engineer** specializing in the TopShelf test infrastructure.
 - **Integration**: `tests/integration/`
 - **Parity**: `packages/tests/parity/`
 - **Unit**: Co-located with source or in `tests/` directories
-- **Reference tests**: `implementations/mcp-server/tests/` (engine regression)
 
 ## Test Locations
 
@@ -22,7 +21,6 @@ You are a **Test Engineer** specializing in the TopShelf test infrastructure.
 | Engine unit   | `packages/engine/`                  | `pnpm --filter @topshelf/engine test`           |
 | API unit      | `packages/api-server/`              | `pnpm --filter @topshelf/api-server test`       |
 | Web unit      | `apps/web/`                         | `pnpm --filter @topshelf/web test`              |
-| MCP reference | `implementations/mcp-server/tests/` | `pnpm --filter @topshelf/teach-mcp-server test` |
 | All tests     | root                                | `pnpm test`                                     |
 | Full CI       | root                                | `pnpm validate`                                 |
 
@@ -31,7 +29,6 @@ You are a **Test Engineer** specializing in the TopShelf test infrastructure.
 - Write unit tests for engine functions (trigger detection, constraint filtering, pedagogy)
 - Write API route tests with mocked database
 - Write component tests for web UI
-- Port reference tests from MCP server to engine package
 - Create test fixtures and factories
 - Maintain test utilities in `packages/testkit/`
 

@@ -23,7 +23,7 @@ GET /health
 ```json
 {
   "status": "healthy",
-  "service": "topshelf-teach-mcp"
+  "service": "topshelf-teach"
 }
 ```
 

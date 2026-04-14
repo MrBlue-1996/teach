@@ -87,15 +87,14 @@ _No updates yet._
 
 ### infra-engineer
 
-**[2026-04-14]** `infra` Completed: Added a self-contained workflow lint path using `scripts/workflow-lint.mjs`, a new `.github/workflows/workflow-lint.yml`, and the `actionlint` WASM package. Also updated `.github/workflows/ci-parity-playwright.yml` to `codecov/codecov-action@v4` for current compatibility. Files changed: `.github/workflows/workflow-lint.yml`, `scripts/workflow-lint.mjs`, `scripts/README.md`, `.github/workflows/ci-parity-playwright.yml`. Other agents should know: `pnpm run workflow:lint` now passes locally without requiring a system `actionlint` binary.
+_No updates yet._
 
 ### test-engineer
 
-- **[2026-04-14]** `test` `api` Baseline capture only. Local `pnpm --dir implementations/mcp-server test` passes at 4 files / 25 tests in ~5.2s wall-clock; focused `tests/api.test.ts` passes at 2 tests in ~1.7s. Root `pnpm test` currently fails outside MCP on `@topshelf/policy-engine#build` (`TS5103` in DTS build), so MCP package health and monorepo test health are currently divergent.
 - 2026-04-13: Expanded `packages/api-server` learner/policy route coverage around teaching-state lifecycle.
 - Added learner session-start assertions for persisted default teaching context and event-ingestion assertions for learner/session state updates, trigger persistence, and non-completion behavior.
 - Added policy evaluation assertions for demotion persistence, session-aware evaluation records, and no-op protection when stored teaching state already matches computed state.
 
 ### quality-reviewer
 
-- **[2026-04-14]** `schema` `types` Completed: Added dependency drift enforcement with root `deps:drift:check` / `deps:drift:fix` scripts via `@manypkg/cli`, normalized root package metadata, aligned `implementations/mcp-server` `@types/node`, and sorted `packages/cli` dependencies. Files changed: `package.json`, `implementations/mcp-server/package.json`, `packages/cli/package.json`, `pnpm-lock.yaml`. Other agents should know: `pnpm run deps:drift:check` now passes locally.
+_No updates yet._

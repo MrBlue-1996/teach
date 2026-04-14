@@ -23,7 +23,6 @@ cd teach
 ### 2. Set Up Development Environment
 
 ```bash
-cd implementations/mcp-server
 npm install
 npm run dev
 ```

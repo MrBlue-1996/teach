@@ -10,7 +10,6 @@ Tracks batch execution progress. The coordinator updates this; agents check thei
 | -------------------------------------------- | --------------- | ----------- | ------------------ | -------------------------------------------------------------- |
 | Generate DB migration for teaching columns   | db-engineer     | not-started | `schema` `enums`   | Touches: `packages/database/src/schema/index.ts`               |
 | Create content seed script                   | db-engineer     | not-started | `content` `schema` | Reads: `content-packs/*.json`, writes: `scripts/migration/`    |
-| Port unit tests from MCP server              | engine-engineer | not-started | `types` `pedagogy` | From: `implementations/mcp-server/tests/` → `packages/engine/` |
 | Add promotion policy logic                   | engine-engineer | not-started | `policy` `enums`   | Reads: `governance/policies/promotion_policy_config.json`      |
 | Create .env with real defaults               | infra-engineer  | not-started | `config` `env`     | Touches: `.env`, `.env.example`                                |
 | Set up Docker Compose (Postgres + API + web) | infra-engineer  | not-started | `infra` `config`   | Touches: `infrastructure/docker/docker-compose.yml`            |
