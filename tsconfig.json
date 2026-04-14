@@ -3,7 +3,6 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@topshelf/mcp-server": ["packages/_future/mcp-server/src"],
       "@topshelf/client-pwa": ["packages/_future/client-pwa/src"],
       "@topshelf/policy-engine": ["packages/_future/policy-engine/src"],
       "@topshelf/deterministic-formatter": ["packages/_future/deterministic-formatter/src"],
@@ -19,7 +18,6 @@
     { "path": "./packages/_future/deterministic-formatter" },
     { "path": "./packages/_future/nlp" },
     { "path": "./packages/content-authoring" },
-    { "path": "./packages/_future/mcp-server" },
     { "path": "./packages/_future/client-pwa" },
     { "path": "./packages/tests" }
   ],
