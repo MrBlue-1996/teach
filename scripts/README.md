@@ -5,7 +5,7 @@ This directory contains repository automation entry points.
 ## Areas
 
 - `bootstrap.mjs` bootstraps the workspace.
-- `workflow-lint.mjs` lints `.github/workflows/` with `actionlint`, using Docker as a fallback when the binary is not installed locally.
+- `workflow-lint.mjs` runs `actionlint` against `.github/workflows/*.yml`.
 - `migration/` contains migration scripts.
 - `release/` contains release automation.
 
