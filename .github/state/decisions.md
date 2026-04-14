@@ -23,4 +23,6 @@ Record architectural decisions and cross-agent agreements here so all agents sta
 
 **Date**: 2026-04-13
 **By**: user
+**Decision**: The web UI is the canonical application surface for behavior, UX, and integration expectations.
+**Reason**: Other agents and implementations need a single source of truth for product behavior, so the web app should be treated as the reference point for alignment.
 **Affects**: all agents
