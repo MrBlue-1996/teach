@@ -32,9 +32,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build engine package
-        run: pnpm --filter @topshelf/engine run build
-
       - name: Build workspace
         run: pnpm build
 
