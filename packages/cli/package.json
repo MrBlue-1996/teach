@@ -15,13 +15,13 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@topshelf/auth": "workspace:*",
     "@topshelf/config": "workspace:*",
     "@topshelf/database": "workspace:*",
-    "@topshelf/auth": "workspace:*",
-    "commander": "^12.0.0",
     "chalk": "^5.3.0",
-    "ora": "^8.0.1",
-    "inquirer": "^9.2.12"
+    "commander": "^12.0.0",
+    "inquirer": "^9.2.12",
+    "ora": "^8.0.1"
   },
   "devDependencies": {
     "@types/inquirer": "^9.0.7",

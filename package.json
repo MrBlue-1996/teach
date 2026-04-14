@@ -44,14 +44,19 @@
     "bootstrap": "node scripts/bootstrap.mjs",
     "bootstrap:ci": "CI=1 node scripts/bootstrap.mjs --ci",
     "lint:full": "turbo run lint",
-    "verify:local": "NODE_OPTIONS=\"--max-old-space-size=4096\" turbo run lint typecheck build --concurrency=1 --force"
+    "verify:local": "NODE_OPTIONS=\"--max-old-space-size=4096\" turbo run lint typecheck build --concurrency=1 --force",
+    "deps:drift:check": "manypkg check",
+    "deps:drift:fix": "manypkg fix"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.1",
+    "@manypkg/cli": "^0.25.1",
     "@next/eslint-plugin-next": "^16.2.3",
+    "@supabase/ssr": "^0.10.2",
+    "@supabase/supabase-js": "^2.103.0",
     "@types/node": "^20.11.0",
     "@vitest/coverage-v8": "^2.1.9",
-    "eslint": "^9.0.0",
+    "eslint": "^9.39.4",
     "eslint-config-prettier": "^10.0.0",
     "eslint-plugin-security": "^3.0.0",
     "globals": "^17.5.0",
@@ -76,9 +81,5 @@
     "*.{json,md,yaml,yml}": [
       "prettier --write"
     ]
-  },
-  "dependencies": {
-    "@supabase/ssr": "^0.10.2",
-    "@supabase/supabase-js": "^2.103.0"
   }
 }
