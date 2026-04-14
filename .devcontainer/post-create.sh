@@ -8,7 +8,6 @@ export PATH="${PNPM_HOME}:${PATH}"
 
 mkdir -p "${PNPM_HOME}"
 
-corepack enable
 pnpm --version
 
 pnpm config set store-dir /home/node/.local/share/pnpm/store >/dev/null
