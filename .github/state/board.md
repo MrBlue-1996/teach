@@ -87,14 +87,23 @@ _No updates yet._
 
 ### infra-engineer
 
-_No updates yet._
+- **[2026-04-14]** `infra` Completed: Validated workflow lint end-to-end with temporary `actionlint 1.7.12` and updated `.github/workflows/ci-parity-playwright.yml` to `codecov/codecov-action@v4` so the repository's current workflows pass lint. Files changed: `.github/workflows/ci-parity-playwright.yml`, `.github/state/board.md`. Other agents should know: `node scripts/workflow-lint.mjs` now passes against all current workflow files when `actionlint` is available in `PATH`.
+- **[2026-04-14]** `infra` Completed: Added dedicated GitHub Actions workflow linting via `.github/workflows/workflow-lint.yml` and a local runner at `scripts/workflow-lint.mjs`; documented the command path in `scripts/README.md`. Files changed: `.github/workflows/workflow-lint.yml`, `scripts/workflow-lint.mjs`, `scripts/README.md`, `.github/state/board.md`. Other agents should know: workflow lint now runs independently of the main CI workflows, targets `.github/workflows/*.yml` and `.yaml`, and can be invoked locally with `node scripts/workflow-lint.mjs` without package.json changes.
+- **[2026-04-14]** `infra` Completed:
+  - Captured batch 1 CI baseline for `.github/workflows/ci.yml` and `.github/workflows/ci-parity-playwright.yml`.
+  - Collected current `main` run status, durations, queue time, and repeated-step hotspots from GitHub Actions.
+  - Files changed: `.github/state/board.md`.
+  - Other agents should know: current `main` HEAD `4ac3a45409890d02fe27ce280cff63b793722d36` is failing both workflows at the first gate, so this baseline mostly reflects setup/early-failure cost plus queue delay rather than full green-path runtime.
 
 ### test-engineer
 
+- **[2026-04-14]** `test` `api` Baseline capture only. Local `pnpm --dir implementations/mcp-server test` passes at 4 files / 25 tests in ~5.2s wall-clock; focused `tests/api.test.ts` passes at 2 tests in ~1.7s. Root `pnpm test` currently fails outside MCP on `@topshelf/policy-engine#build` (`TS5103` in DTS build), so MCP package health and monorepo test health are currently divergent.
 - 2026-04-13: Expanded `packages/api-server` learner/policy route coverage around teaching-state lifecycle.
 - Added learner session-start assertions for persisted default teaching context and event-ingestion assertions for learner/session state updates, trigger persistence, and non-completion behavior.
 - Added policy evaluation assertions for demotion persistence, session-aware evaluation records, and no-op protection when stored teaching state already matches computed state.
 
 ### quality-reviewer
 
-_No updates yet._
+- **[2026-04-14]** Completed: Added local dependency drift enforcement via root `deps:drift:check` and `deps:drift:fix` scripts backed by `@manypkg/cli`; normalized current manifest drift in `package.json`, `implementations/mcp-server/package.json`, `packages/cli/package.json`, and `pnpm-lock.yaml`. Other agents should know: `pnpm run deps:drift:check` passes locally.
+
+- 2026-04-14: Batch 1 baseline captured. pnpm lint failed at /policy-engine#build and pnpm typecheck failed at /policy-engine#typecheck, both due to packages/_future/policy-engine/tsconfig.json using ignoreDeprecations: "6.0" (TS5103). pnpm build:packages passed locally. pnpm audit --audit-level=high reported 4 high vulnerabilities (next x2 on apps/web, nodemailer in packages/email, drizzle-orm via packages/database). Local Turbo runs reported remote caching disabled.
