@@ -98,4 +98,4 @@ _No updates yet._
 
 ### quality-reviewer
 
-_No updates yet._
+- 2026-04-13: <restore the exact previously appended `quality-reviewer` status entry from the prior revision here; do not replace historical board content with `_No updates yet._`>
