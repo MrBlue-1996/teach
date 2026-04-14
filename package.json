@@ -44,6 +44,7 @@
     "bootstrap": "node scripts/bootstrap.mjs",
     "bootstrap:ci": "CI=1 node scripts/bootstrap.mjs --ci",
     "lint:full": "turbo run lint",
+    "workflow:lint": "node scripts/workflow-lint.mjs",
     "verify:local": "NODE_OPTIONS=\"--max-old-space-size=4096\" turbo run lint typecheck build --concurrency=1 --force"
   },
   "devDependencies": {

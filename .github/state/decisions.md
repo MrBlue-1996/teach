@@ -23,6 +23,6 @@ Record architectural decisions and cross-agent agreements here so all agents sta
 
 **Date**: 2026-04-13
 **By**: user
-**Decision**: The production app is Next.js web + Hono API. The MCP server is a regression harness only.
-**Reason**: Web UI is the user-facing surface. MCP is for smoke testing.
+**Decision**: The web UI is the canonical application surface for behavior, UX, and integration expectations.
+**Reason**: Other agents and implementations need a single source of truth for product behavior, so the web app should be treated as the reference point for alignment.
 **Affects**: all agents
