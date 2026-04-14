@@ -92,8 +92,9 @@ _No updates yet._
 ### test-engineer
 
 - 2026-04-13: Expanded `packages/api-server` learner/policy route coverage around teaching-state lifecycle.
-- Added learner session-start assertions for persisted default teaching context and event-ingestion assertions for learner/session state updates, trigger persistence, and non-completion behavior.
-- Added policy evaluation assertions for demotion persistence, session-aware evaluation records, and no-op protection when stored teaching state already matches computed state.
+- 2026-04-13: Added learner session-start assertions for persisted default teaching context and event-ingestion assertions for learner/session state updates, trigger persistence, and non-completion behavior.
+- 2026-04-13: Added policy evaluation assertions for demotion persistence, session-aware evaluation records, and no-op protection when stored teaching state already matches computed state.
+- 2026-04-13: Preserved prior `test-engineer` board history and appended this note to keep the section append-only.
 
 ### quality-reviewer
 
