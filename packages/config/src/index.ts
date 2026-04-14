@@ -6,9 +6,14 @@
 
 import { z } from 'zod';
 import { config as dotenvConfig } from 'dotenv';
+import { resolve, dirname } from 'path';
+import { fileURLToPath } from 'url';
 
-// Load environment variables
-dotenvConfig();
+// Walk up from this file's location (packages/config/src/) to the repo root
+// so .env is found regardless of which directory the process starts in.
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const repoRoot = resolve(__dirname, '../../..');
+dotenvConfig({ path: resolve(repoRoot, '.env') });
 
 // =============================================================================
 // ENVIRONMENT SCHEMA
