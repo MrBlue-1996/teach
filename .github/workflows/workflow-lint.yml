@@ -25,6 +25,9 @@ concurrency:
   group: workflow-lint-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+env:
+  NODE_VERSION: '20'
+
 jobs:
   actionlint:
     name: actionlint
@@ -37,7 +40,7 @@ jobs:
       - name: Setup workspace
         uses: ./.github/actions/setup-workspace
         with:
-          node-version: '20'
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Lint GitHub Actions workflows
         run: pnpm run workflow:lint
