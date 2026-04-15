@@ -108,6 +108,9 @@ importers:
       '@tanstack/react-query':
         specifier: ^5.17.19
         version: 5.99.0(react@18.3.1)
+      '@topshelf/engine':
+        specifier: workspace:*
+        version: link:../../packages/engine
       class-variance-authority:
         specifier: ^0.7.0
         version: 0.7.1

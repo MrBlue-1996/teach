@@ -228,7 +228,9 @@ export class ShadowValidator {
       const itemId = event.data['itemId'] as string;
       const zone = event.data['zone'] as string;
       const category = event.data['category'] as string | undefined;
-      this.stationItems.set(slotId, { itemId, zone, category });
+      const entry: { itemId: string; zone: string; category?: string } = { itemId, zone };
+      if (category !== undefined) entry.category = category;
+      this.stationItems.set(slotId, entry);
     }
 
     // Run each applicable rule

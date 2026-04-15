@@ -1,17 +1,13 @@
 /**
- * TopShelf Service LLC - Challenge Runner Page
- * PROPRIETARY AND CONFIDENTIAL
- * Copyright (c) 2026 TopShelf Service LLC. All Rights Reserved.
- *
- * Dynamic route that plays any challenge content pack through the full
- * SOLVE → CONSEQUENCE → TEACH → VERIFY → MASTERY lifecycle.
+ * Kitchen Challenge Runner.
+ * Drives one content pack through SOLVE → CONSEQUENCE → TEACH → VERIFY → MASTERY.
  */
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import {
   ChallengePhase,
   ChallengeType,
@@ -25,40 +21,18 @@ import { TicketQueue } from '@/components/kitchen/TicketQueue';
 import { InventoryBins } from '@/components/kitchen/InventoryBins';
 import { ReflectionHUD } from '@/components/kitchen/ReflectionHUD';
 import { GradeBadge } from '@/components/kitchen/GradeBadge';
+import { RecipeCard } from '@/components/kitchen/RecipeCard';
 import { SafetyAlert } from '@/components/kitchen/SafetyAlert';
+import { TempGauge } from '@/components/kitchen/TempGauge';
 import { getPack } from '@/lib/kitchen-packs';
 
 export default function ChallengeRunnerPage() {
   const params = useParams<{ slug: string }>();
   const router = useRouter();
-  const slug = params.slug;
-
-  const [config, setConfig] = useState<ChallengeConfig | null>(null);
-  const [loadState, setLoadState] = useState<'loading' | 'ready' | 'missing'>('loading');
-
-  useEffect(() => {
-    const pack = getPack(slug);
-    if (pack) {
-      setConfig(pack);
-      setLoadState('ready');
-    } else {
-      setLoadState('missing');
-    }
-  }, [slug]);
-
+  const config = useMemo(() => getPack(params.slug), [params.slug]);
   const ch = useChallenge(config);
 
-  if (loadState === 'loading') {
-    return (
-      <main className="kitchen-page">
-        <div className="kitchen-loading">
-          <Loader2 className="animate-spin" size={40} aria-hidden /> Loading challenge…
-        </div>
-      </main>
-    );
-  }
-
-  if (loadState === 'missing' || !config) {
+  if (!config) {
     return (
       <main className="kitchen-page">
         <header className="kitchen-nav">
@@ -68,9 +42,7 @@ export default function ChallengeRunnerPage() {
         </header>
         <div className="kitchen-card">
           <h1>Challenge not found</h1>
-          <p>
-            No content pack exists for <code>{slug}</code>.
-          </p>
+          <p>No content pack for <code>{params.slug}</code>.</p>
         </div>
       </main>
     );
@@ -78,44 +50,31 @@ export default function ChallengeRunnerPage() {
 
   return (
     <main className="kitchen-page challenge-page">
-      <ChallengeHeader title={config.title} phase={ch.phase} />
-      <PhaseRouter config={config} ch={ch} onFinish={() => router.push('/kitchen')} />
+      <header className="kitchen-nav challenge-header">
+        <Link href="/kitchen" className="kitchen-nav__back">
+          <ArrowLeft size={20} aria-hidden /> Exit
+        </Link>
+        <h1 className="challenge-header__title">{config.title}</h1>
+        <span className="challenge-header__phase">{(ch.phase ?? 'setup').toUpperCase()}</span>
+      </header>
+
+      <PhaseView config={config} ch={ch} onExit={() => router.push('/kitchen')} />
     </main>
   );
 }
 
-function ChallengeHeader({
-  title,
-  phase,
-}: {
-  title: string;
-  phase: ChallengePhase | null;
-}) {
-  return (
-    <header className="kitchen-nav challenge-header">
-      <Link href="/kitchen" className="kitchen-nav__back">
-        <ArrowLeft size={20} aria-hidden /> Exit
-      </Link>
-      <h1 className="challenge-header__title">{title}</h1>
-      <span className="challenge-header__phase" aria-label="Current phase">
-        {phase?.toUpperCase() ?? ''}
-      </span>
-    </header>
-  );
-}
-
-function PhaseRouter({
+function PhaseView({
   config,
   ch,
-  onFinish,
+  onExit,
 }: {
   config: ChallengeConfig;
   ch: ReturnType<typeof useChallenge>;
-  onFinish: () => void;
+  onExit: () => void;
 }) {
   switch (ch.phase) {
-    case ChallengePhase.SETUP:
     case null:
+    case ChallengePhase.SETUP:
       return <SetupView config={config} onStart={ch.start} />;
     case ChallengePhase.SOLVE:
     case ChallengePhase.VERIFY:
@@ -123,14 +82,13 @@ function PhaseRouter({
     case ChallengePhase.CONSEQUENCE:
       return <ConsequenceView ch={ch} />;
     case ChallengePhase.TEACH:
-      return <TeachView ch={ch} />;
+      return <TeachView config={config} ch={ch} />;
     case ChallengePhase.MASTERY:
-      return <MasteryView ch={ch} onFinish={onFinish} />;
+      return <MasteryView ch={ch} onExit={onExit} />;
     case ChallengePhase.COMPLETED:
       return (
         <div className="kitchen-card">
-          <h2>Challenge closed</h2>
-          <button type="button" className="btn-action btn-primary" onClick={onFinish}>
+          <button type="button" className="btn-action btn-primary" onClick={onExit}>
             Return to kitchen
           </button>
         </div>
@@ -147,46 +105,34 @@ function PhaseRouter({
   }
 }
 
-function SetupView({
-  config,
-  onStart,
-}: {
-  config: ChallengeConfig;
-  onStart: () => void;
-}) {
+// ---------- SETUP ----------
+
+function SetupView({ config, onStart }: { config: ChallengeConfig; onStart: () => void }) {
+  const min = Math.floor(config.timeLimitSeconds / 60);
+  const sec = (config.timeLimitSeconds % 60).toString().padStart(2, '0');
   return (
     <section className="kitchen-card challenge-setup">
       <h2>{config.title}</h2>
       <p className="challenge-setup__briefing">{config.briefing}</p>
       <dl className="challenge-setup__meta">
-        <div>
-          <dt>Time limit</dt>
-          <dd>{Math.floor(config.timeLimitSeconds / 60)}:{(config.timeLimitSeconds % 60).toString().padStart(2, '0')}</dd>
-        </div>
-        <div>
-          <dt>Difficulty</dt>
-          <dd>{'★'.repeat(config.difficultyLevel)}</dd>
-        </div>
+        <div><dt>Time</dt><dd>{min}:{sec}</dd></div>
+        <div><dt>Difficulty</dt><dd>{'★'.repeat(config.difficultyLevel)}</dd></div>
       </dl>
-      <button type="button" className="btn-action btn-primary" onClick={onStart}>
-        Fire
-      </button>
+      <button type="button" className="btn-action btn-primary" onClick={onStart}>Fire</button>
     </section>
   );
 }
 
-function SolveView({
-  config,
-  ch,
-}: {
-  config: ChallengeConfig;
-  ch: ReturnType<typeof useChallenge>;
-}) {
+// ---------- SOLVE ----------
+
+function SolveView({ config, ch }: { config: ChallengeConfig; ch: ReturnType<typeof useChallenge> }) {
   switch (config.type) {
     case ChallengeType.RUSH_HOUR:
       return <RushHourView config={config} ch={ch} />;
+    case ChallengeType.TEMP_CHECK:
+      return <TempCheckView config={config} ch={ch} />;
     default:
-      return <GenericSolveView config={config} ch={ch} />;
+      return <SimpleSolveView config={config} ch={ch} />;
   }
 }
 
@@ -203,24 +149,21 @@ function RushHourView({
   const [alert, setAlert] = useState<{ headline: string; sub?: string } | null>(null);
   const startedAt = useMemo(() => Date.now(), []);
 
-  const fireTicket = (id: string) => {
-    ch.logEvent(EventType.TICKET_STARTED, { ticketId: id });
-  };
   const finishTicket = (id: string) => {
     ch.completeTicket(id);
-    setCompleted((s) => new Set(s).add(id));
-    if (completed.size + 1 >= tickets.length) {
-      ch.endSolve();
-    }
+    const next = new Set(completed).add(id);
+    setCompleted(next);
+    if (next.size >= tickets.length) ch.endSolve();
   };
-  const selectIng = (ingId: string) => {
+
+  const selectIngredient = (ingId: string) => {
     const ing = ingredients.find((i) => i.id === ingId);
     if (!ing) return;
     ch.logEvent(EventType.INGREDIENT_SELECTED, { ingredientId: ing.id, spoiled: ing.isSpoiled });
     if (ing.isSpoiled) {
       setAlert({
         headline: 'Spoiled product grabbed',
-        sub: 'A real shift would mean a $2k comp or a 24-hour sickness complaint. The system saw it.',
+        sub: 'A real shift would mean comps or a sickness complaint.',
       });
     }
   };
@@ -251,7 +194,6 @@ function RushHourView({
         <TicketQueue
           tickets={tickets}
           completedIds={completed}
-          onFire={fireTicket}
           onComplete={finishTicket}
           startedAt={startedAt}
         />
@@ -259,7 +201,7 @@ function RushHourView({
 
       <section className="rush-layout__inventory">
         <h2>Walk-in</h2>
-        <InventoryBins ingredients={ingredients} onSelect={(ing) => selectIng(ing.id)} />
+        <InventoryBins ingredients={ingredients} onSelect={(i) => selectIngredient(i.id)} />
       </section>
 
       <SafetyAlert
@@ -272,7 +214,70 @@ function RushHourView({
   );
 }
 
-function GenericSolveView({
+function TempCheckView({
+  config,
+  ch,
+}: {
+  config: ChallengeConfig;
+  ch: ReturnType<typeof useChallenge>;
+}) {
+  const stations = useMemo(
+    () => [
+      { id: 'walkin', label: 'Walk-in cooler', min: 33, max: 40 },
+      { id: 'freezer', label: 'Freezer', min: -10, max: 0 },
+      { id: 'hothold', label: 'Hot hold', min: 140, max: 165 },
+      { id: 'line-reach', label: 'Line reach-in', min: 33, max: 40 },
+    ],
+    [],
+  );
+  const [values, setValues] = useState<Record<string, number>>({
+    walkin: 38,
+    freezer: -5,
+    hothold: 150,
+    'line-reach': 38,
+  });
+
+  const submit = () => {
+    for (const s of stations) {
+      ch.logEvent(EventType.TEMP_ESTIMATED, {
+        stationId: s.id,
+        value: values[s.id],
+        target: { min: s.min, max: s.max },
+      });
+    }
+    ch.endSolve();
+  };
+
+  return (
+    <section className="kitchen-card">
+      <header className="generic-solve__head">
+        <h2>Record every temp</h2>
+        <RushTimer remainingMs={ch.timeRemainingMs} totalMs={config.timeLimitSeconds * 1000} />
+      </header>
+      <div className="temp-grid">
+        {stations.map((s) => (
+          <TempGauge
+            key={s.id}
+            label={s.label}
+            value={values[s.id]}
+            min={s.min}
+            max={s.max}
+            editable
+            onChange={(v) => setValues((prev) => ({ ...prev, [s.id]: v }))}
+          />
+        ))}
+      </div>
+      <div className="generic-solve__actions">
+        <button type="button" className="btn-action btn-primary" onClick={submit}>
+          Submit readings
+        </button>
+      </div>
+    </section>
+  );
+}
+
+/** Fallback for challenge types without a custom UI: timer + submit. */
+function SimpleSolveView({
   config,
   ch,
 }: {
@@ -283,25 +288,18 @@ function GenericSolveView({
     <section className="kitchen-card">
       <header className="generic-solve__head">
         <h2>{config.title}</h2>
-        <RushTimer
-          remainingMs={ch.timeRemainingMs}
-          totalMs={config.timeLimitSeconds * 1000}
-        />
+        <RushTimer remainingMs={ch.timeRemainingMs} totalMs={config.timeLimitSeconds * 1000} />
       </header>
-      <p>
-        This challenge type (<code>{config.type}</code>) uses the same event-sourced
-        engine. A rich UI for it will ship in the next pack. For now you can still log
-        events and complete it — the shadow validator is watching.
-      </p>
+      <p>{config.briefing}</p>
       <div className="generic-solve__actions">
         <button
           type="button"
-          className="btn-action btn-primary"
-          onClick={() => ch.logEvent(EventType.SEQUENCE_STEP_DONE, { manual: true })}
+          className="btn-action btn-safe"
+          onClick={() => ch.logEvent(EventType.SEQUENCE_STEP_DONE, {})}
         >
-          Log step
+          Mark step done
         </button>
-        <button type="button" className="btn-action btn-caution" onClick={ch.endSolve}>
+        <button type="button" className="btn-action btn-primary" onClick={ch.endSolve}>
           Submit
         </button>
       </div>
@@ -309,13 +307,11 @@ function GenericSolveView({
   );
 }
 
+// ---------- CONSEQUENCE ----------
+
 function ConsequenceView({ ch }: { ch: ReturnType<typeof useChallenge> }) {
   if (!ch.consequence) {
-    return (
-      <div className="kitchen-card">
-        <p>Computing consequences…</p>
-      </div>
-    );
+    return <div className="kitchen-card"><p>Computing…</p></div>;
   }
   return (
     <section className="kitchen-card challenge-consequence">
@@ -329,51 +325,89 @@ function ConsequenceView({ ch }: { ch: ReturnType<typeof useChallenge> }) {
   );
 }
 
-function TeachView({ ch }: { ch: ReturnType<typeof useChallenge> }) {
+// ---------- TEACH ----------
+
+function TeachView({
+  config,
+  ch,
+}: {
+  config: ChallengeConfig;
+  ch: ReturnType<typeof useChallenge>;
+}) {
+  const highlightSteps = useMemo(() => {
+    const set = new Set<string>();
+    for (const inf of ch.infractions) {
+      // Map infractions to recipe steps when possible (best effort).
+      if (config.expertRecipe) {
+        for (const step of config.expertRecipe.steps) {
+          if (step.instruction.toLowerCase().includes(inf.domain.split('_')[0])) {
+            set.add(step.id);
+          }
+        }
+      }
+    }
+    return set;
+  }, [ch.infractions, config.expertRecipe]);
+
   return (
     <section className="kitchen-card challenge-teach">
       <h2>The expert standard</h2>
-      <p>
-        Here&apos;s what a veteran would have done. Read the <em>why</em> behind each step
-        — that&apos;s what separates a line cook from a chef.
-      </p>
-      <ul className="challenge-teach__lessons">
-        {ch.infractions.slice(0, 6).map((inf) => (
-          <li key={inf.id}>
-            <h3>{inf.explanation}</h3>
-            <p className="challenge-teach__why">Why it matters: {inf.whyItMatters}</p>
-            <p className="challenge-teach__fix">Expert approach: {inf.expertApproach}</p>
-          </li>
-        ))}
-      </ul>
+      {config.expertRecipe && (
+        <RecipeCard recipe={config.expertRecipe} highlightStepIds={highlightSteps} />
+      )}
+
+      {ch.infractions.length > 0 && (
+        <>
+          <h3>What tripped you up</h3>
+          <ul className="challenge-teach__lessons">
+            {ch.infractions.slice(0, 6).map((inf) => (
+              <li key={inf.id}>
+                <h4>{inf.explanation}</h4>
+                <p className="challenge-teach__why">Why: {inf.whyItMatters}</p>
+                <p className="challenge-teach__fix">Expert: {inf.expertApproach}</p>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+
       <div className="challenge-teach__actions">
         <button type="button" className="btn-action btn-primary" onClick={ch.toVerify}>
           Prove it — verify run
+        </button>
+        <button type="button" className="btn-action btn-ghost" onClick={ch.toMastery}>
+          Skip to mastery
         </button>
       </div>
     </section>
   );
 }
 
+// ---------- MASTERY ----------
+
 function MasteryView({
   ch,
-  onFinish,
+  onExit,
 }: {
   ch: ReturnType<typeof useChallenge>;
-  onFinish: () => void;
+  onExit: () => void;
 }) {
   return (
     <section className="kitchen-card challenge-mastery">
       <h2>Mastery scored</h2>
-      {ch.grade && <GradeBadge grade={ch.grade as 'A+' | 'A' | 'B' | 'C' | 'D' | 'F'} size="lg" />}
-      <p>You logged {ch.events.length} events and {ch.infractionCount} hidden infractions.</p>
+      {ch.grade && (
+        <GradeBadge grade={ch.grade as 'A+' | 'A' | 'B' | 'C' | 'D' | 'F'} size="lg" />
+      )}
+      <p>
+        {ch.events.length} events logged · {ch.infractionCount} hidden infractions caught
+      </p>
       <div className="challenge-mastery__actions">
         <button
           type="button"
           className="btn-action btn-primary"
           onClick={() => {
             ch.finish();
-            onFinish();
+            onExit();
           }}
         >
           Return to kitchen

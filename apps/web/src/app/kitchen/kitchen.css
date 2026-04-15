@@ -792,3 +792,11 @@
 
 .generic-solve__head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
 .generic-solve__actions { display: flex; gap: 12px; margin-top: 16px; }
+
+.temp-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin: 16px 0; }
+.btn-ghost { background: transparent; color: #fff; border: 2px solid rgba(255,255,255,0.2); }
+.btn-ghost:hover { background: rgba(255,255,255,0.05); }
+.btn-primary { background: var(--kitchen-info, #3b82f6); color: #fff; }
+.btn-safe { background: var(--kitchen-safe, #22c55e); color: #fff; }
+.btn-caution { background: var(--kitchen-caution, #f59e0b); color: #111; }
+.btn-danger { background: var(--kitchen-danger, #ef4444); color: #fff; }

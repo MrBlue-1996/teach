@@ -19,7 +19,6 @@ import {
   CheckCircle2,
   AlertTriangle,
   Star,
-  TrendingUp,
 } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
@@ -115,7 +114,7 @@ const CHALLENGES: ChallengeCard[] = [
     locked: false,
   },
   {
-    slug: 'impossible-order',
+    slug: 'mock-impossible',
     title: 'Mock Impossible Order',
     icon: AlertTriangle,
     difficulty: 'Expert',

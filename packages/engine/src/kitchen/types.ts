@@ -50,8 +50,10 @@ export interface ChallengeConfig {
   difficultyLevel: 1 | 2 | 3 | 4 | 5;
   /** Domains secretly assessed during this challenge */
   hiddenDomains: MasteryDomain[];
-  /** Expert standard this challenge is measured against */
+  /** Expert standard this challenge is measured against (DB foreign key) */
   recipeId: string;
+  /** Embedded expert recipe for the Teach phase (avoids DB roundtrip in MVP) */
+  expertRecipe?: ExpertRecipe;
   /** Whether this contains trap/impossible items */
   containsTraps: boolean;
   /** Equipment focus for failure association */

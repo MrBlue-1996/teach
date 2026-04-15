@@ -18,7 +18,6 @@ import {
   HiddenInfraction,
   MasteryDomain,
   ConsequencePayload,
-  TeachPayload,
   InfractionSeverity,
 } from './types.js';
 
@@ -174,7 +173,6 @@ export class ChallengeMachine {
         type: inf.type,
         severity: inf.severity,
         realWorldConsequence: inf.whyItMatters,
-        regulatoryReference: undefined,
       })),
       infractions,
       overallGrade: grade,
