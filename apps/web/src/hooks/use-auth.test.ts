@@ -18,6 +18,7 @@ vi.mock('next/navigation', () => ({
 vi.mock('@/lib/api', () => ({
   authApi: {
     login: vi.fn(),
+    me: vi.fn(),
     signup: vi.fn(),
     logout: vi.fn(),
     refreshToken: vi.fn(),
@@ -36,6 +37,7 @@ vi.mock('@/stores/auth-store', () => ({
 
 const mockAuthApi = authApi as unknown as {
   login: ReturnType<typeof vi.fn>;
+  me: ReturnType<typeof vi.fn>;
   signup: ReturnType<typeof vi.fn>;
   logout: ReturnType<typeof vi.fn>;
   refreshToken: ReturnType<typeof vi.fn>;
@@ -114,9 +116,9 @@ describe('useAuth', () => {
       expect(result.current.isAuthenticated).toBe(false);
     });
 
-    it('should restore user from localStorage when token and user data exist', async () => {
+    it('should restore user from /auth/me when token exists', async () => {
       localStorage.setItem('auth_token', 'stored-token');
-      localStorage.setItem('user_data', JSON.stringify(mockUser));
+      mockAuthApi.me.mockResolvedValueOnce({ user: mockUser });
 
       const { result } = renderHook(() => useAuth());
 
@@ -126,13 +128,14 @@ describe('useAuth', () => {
 
       expect(result.current.user).toEqual(mockUser);
       expect(result.current.isAuthenticated).toBe(true);
+      expect(mockAuthApi.me).toHaveBeenCalled();
       expect(mockAuthStore.setUser).toHaveBeenCalledWith(mockUser);
     });
 
-    it('should attempt refresh when token exists but no user data', async () => {
+    it('should attempt refresh when /auth/me fails', async () => {
       localStorage.setItem('auth_token', 'stored-token');
       localStorage.setItem('refresh_token', 'refresh-token');
-      localStorage.setItem('user_data', JSON.stringify(mockUser));
+      mockAuthApi.me.mockRejectedValueOnce(new Error('expired'));
 
       mockAuthApi.refreshToken.mockResolvedValueOnce({
         accessToken: 'new-access-token',
@@ -140,19 +143,24 @@ describe('useAuth', () => {
         expiresIn: 3600,
         tokenType: 'Bearer',
       });
+      mockAuthApi.me.mockResolvedValueOnce({ user: mockUser });
 
       const { result } = renderHook(() => useAuth());
 
       await waitFor(() => {
         expect(result.current.isLoading).toBe(false);
       });
+
+      expect(localStorage.getItem('auth_token')).toBe('new-access-token');
+      expect(result.current.user).toEqual(mockUser);
+      expect(result.current.isAuthenticated).toBe(true);
     });
 
-    it('should clear auth when stored user data is invalid JSON', async () => {
+    it('should clear auth when /auth/me and refresh both fail', async () => {
       localStorage.setItem('auth_token', 'stored-token');
-      localStorage.setItem('user_data', 'invalid-json');
       localStorage.setItem('refresh_token', 'refresh-token');
 
+      mockAuthApi.me.mockRejectedValueOnce(new Error('expired'));
       mockAuthApi.refreshToken.mockRejectedValueOnce(new Error('Invalid token'));
 
       const { result } = renderHook(() => useAuth());

@@ -1,26 +1,57 @@
-import { NextResponse } from 'next/server';
-import { createSupabaseServerClient } from '@/lib/supabase-server';
+/**
+ * TopShelf Service LLC
+ * PROPRIETARY AND CONFIDENTIAL
+ * Copyright (c) 2026 TopShelf Service LLC. All Rights Reserved.
+ */
 
-export async function GET(request: Request) {
-  const requestUrl = new URL(request.url);
-  const code = requestUrl.searchParams.get('code');
-  const next = requestUrl.searchParams.get('next');
+import { NextRequest, NextResponse } from 'next/server';
+import { createServerClient } from '@supabase/ssr';
+
+export async function GET(request: NextRequest) {
+  const { searchParams, origin } = new URL(request.url);
+  const code = searchParams.get('code');
+  const next = searchParams.get('next');
   const redirectPath = next?.startsWith('/') ? next : '/dashboard';
-  let errorMessage =
-    requestUrl.searchParams.get('error_description') ?? 'Unable to sign in with Google.';
+  const errorDescription =
+    searchParams.get('error_description') ?? 'Unable to sign in with Google.';
 
-  if (code) {
-    const supabase = createSupabaseServerClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-
-    if (!error) {
-      return NextResponse.redirect(new URL(redirectPath, requestUrl.origin));
-    }
-
-    errorMessage = error.message;
+  if (!code) {
+    const loginUrl = new URL('/auth/login', origin);
+    loginUrl.searchParams.set('error', errorDescription);
+    return NextResponse.redirect(loginUrl);
   }
 
-  const loginUrl = new URL('/auth/login', requestUrl.origin);
-  loginUrl.searchParams.set('error', errorMessage);
+  // Build the success redirect first so we can attach cookies to it.
+  const successResponse = NextResponse.redirect(new URL(redirectPath, origin));
+
+  // Create the Supabase client reading cookies directly from the incoming
+  // NextRequest and writing them onto the outgoing NextResponse.
+  // This is required for PKCE: the code verifier is stored in a request
+  // cookie by the browser client, and must be readable here server-side.
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          for (const { name, value, options } of cookiesToSet) {
+            successResponse.cookies.set(name, value, options);
+          }
+        },
+      },
+    },
+  );
+
+  const { error } = await supabase.auth.exchangeCodeForSession(code);
+
+  if (!error) {
+    return successResponse;
+  }
+
+  const loginUrl = new URL('/auth/login', origin);
+  loginUrl.searchParams.set('error', error.message);
   return NextResponse.redirect(loginUrl);
 }

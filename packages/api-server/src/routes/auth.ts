@@ -18,6 +18,7 @@ import {
 } from '@topshelf/auth';
 import { getDatabase, users, authSessions, eq, and, isNull } from '@topshelf/database';
 import { badRequest, unauthorized, conflict, serverError } from '../middleware/error-handler.js';
+import { authMiddleware } from '../middleware/auth.js';
 
 // =============================================================================
 // SCHEMAS
@@ -357,6 +358,35 @@ export function createAuthRoutes() {
     // In production: Verify token from database, update password, invalidate token
     // For now, return not implemented
     throw badRequest('Password reset not fully implemented');
+  });
+
+  // ---------------------------------------------------------------------------
+  // GET /auth/me - Get current authenticated user profile
+  // ---------------------------------------------------------------------------
+  router.get('/me', authMiddleware(), async (c) => {
+    const userId = c.get('userId');
+    const db = getDatabase();
+
+    const user = await db.query.users.findFirst({
+      where: and(eq(users.id, userId), isNull(users.deletedAt), eq(users.isActive, true)),
+      columns: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        displayName: true,
+        role: true,
+        emailVerified: true,
+        lastLoginAt: true,
+        createdAt: true,
+      },
+    });
+
+    if (!user) {
+      throw unauthorized('User not found');
+    }
+
+    return c.json({ user });
   });
 
   return router;
