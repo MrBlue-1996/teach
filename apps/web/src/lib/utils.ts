@@ -31,34 +31,52 @@ export function getInitials(name: string): string {
 }
 
 export function getLevelColor(level: string): string {
-  const colors: Record<string, string> = {
-    L1_RECALL: 'bg-blue-500',
-    L2_EXPLAIN: 'bg-green-500',
-    L3_APPLY: 'bg-yellow-500',
-    L4_ANALYZE: 'bg-orange-500',
-    L5_EXPERT: 'bg-purple-500',
-  };
-  return colors[level] || 'bg-gray-500';
+  switch (level) {
+    case 'L1_RECALL':
+      return 'bg-blue-500';
+    case 'L2_EXPLAIN':
+      return 'bg-green-500';
+    case 'L3_APPLY':
+      return 'bg-yellow-500';
+    case 'L4_ANALYZE':
+      return 'bg-orange-500';
+    case 'L5_EXPERT':
+      return 'bg-purple-500';
+    default:
+      return 'bg-gray-500';
+  }
 }
 
 export function getLevelGradientFrom(level: string): string {
-  const colors: Record<string, string> = {
-    L1_RECALL: 'from-blue-500',
-    L2_EXPLAIN: 'from-green-500',
-    L3_APPLY: 'from-yellow-500',
-    L4_ANALYZE: 'from-orange-500',
-    L5_EXPERT: 'from-purple-500',
-  };
-  return colors[level] || 'from-gray-500';
+  switch (level) {
+    case 'L1_RECALL':
+      return 'from-blue-500';
+    case 'L2_EXPLAIN':
+      return 'from-green-500';
+    case 'L3_APPLY':
+      return 'from-yellow-500';
+    case 'L4_ANALYZE':
+      return 'from-orange-500';
+    case 'L5_EXPERT':
+      return 'from-purple-500';
+    default:
+      return 'from-gray-500';
+  }
 }
 
 export function getLevelName(level: string): string {
-  const names: Record<string, string> = {
-    L1_RECALL: 'Recall',
-    L2_EXPLAIN: 'Explain',
-    L3_APPLY: 'Apply',
-    L4_ANALYZE: 'Analyze',
-    L5_EXPERT: 'Expert',
-  };
-  return names[level] || level;
+  switch (level) {
+    case 'L1_RECALL':
+      return 'Recall';
+    case 'L2_EXPLAIN':
+      return 'Explain';
+    case 'L3_APPLY':
+      return 'Apply';
+    case 'L4_ANALYZE':
+      return 'Analyze';
+    case 'L5_EXPERT':
+      return 'Expert';
+    default:
+      return level;
+  }
 }
