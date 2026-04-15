@@ -61,6 +61,8 @@ jobs:
       - name: Build packages
         run: pnpm run build:packages
 
+      # The web app has a dedicated job, and the shared @topshelf/tests suite runs
+      # separately below so it can keep CI-specific coverage output.
       - name: Run package-local tests
         run: pnpm turbo run test --filter='@topshelf/*' --filter='!@topshelf/web' --filter='!@topshelf/tests'
 
