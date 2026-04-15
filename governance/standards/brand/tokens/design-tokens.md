@@ -60,7 +60,7 @@ Source of truth for all UI work. Derived from the official Brand Guidelines v1.0
 | Body / UI | Inter      | 400 (Regular), 500 (Medium), 600 (Semi) | `font-sans`    |
 | Code      | Menlo      | 400                                     | `font-mono`    |
 
-Both Montserrat and Inter are loaded via `next/font/google` in layout.tsx with CSS variables `--font-montserrat` and `--font-inter`.
+Both Montserrat and Inter are loaded in `layout.tsx` from local font assets with CSS variables `--font-montserrat` and `--font-inter`.
 
 ### Type Scale
 

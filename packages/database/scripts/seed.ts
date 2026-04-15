@@ -55,7 +55,10 @@ interface ContentPackJson {
 // HELPERS
 // =============================================================================
 
-const MODE_MAP: Record<string, 'L1_RECALL' | 'L2_EXPLAIN' | 'L3_APPLY' | 'L4_ANALYZE' | 'L5_EXPERT'> = {
+const MODE_MAP: Record<
+  string,
+  'L1_RECALL' | 'L2_EXPLAIN' | 'L3_APPLY' | 'L4_ANALYZE' | 'L5_EXPERT'
+> = {
   L0: 'L1_RECALL',
   L1: 'L1_RECALL',
   L2: 'L2_EXPLAIN',
