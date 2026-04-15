@@ -92,10 +92,17 @@ function SignupForm() {
       });
 
       if (authError) {
-        throw authError;
+        if (authError.message?.toLowerCase().includes('provider') || authError.status === 400) {
+          setErrors({
+            form: 'Google sign-in is not configured yet. Please use email and password below.',
+          });
+        } else {
+          throw authError;
+        }
       }
     } catch (err) {
       setErrors({ form: err instanceof Error ? err.message : 'Google signup failed.' });
+    } finally {
       setIsLoading(false);
     }
   };
@@ -143,6 +150,7 @@ function SignupForm() {
               <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 name="name"
+                autoComplete="name"
                 placeholder="Full name"
                 className="pl-10"
                 value={formData.name}
@@ -160,6 +168,7 @@ function SignupForm() {
               <Input
                 name="email"
                 type="email"
+                autoComplete="email"
                 placeholder="Email"
                 className="pl-10"
                 value={formData.email}
@@ -177,6 +186,7 @@ function SignupForm() {
               <Input
                 name="password"
                 type="password"
+                autoComplete="new-password"
                 placeholder="Password (8+ characters)"
                 className="pl-10"
                 value={formData.password}
