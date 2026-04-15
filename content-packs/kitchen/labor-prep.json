@@ -1,0 +1,12 @@
+{
+  "id": "labor-prep-v1",
+  "slug": "labor-prep",
+  "type": "labor_prep",
+  "title": "Sous Chef: Schedule the Line",
+  "briefing": "Four cooks. Eight prep tasks. Two hours until doors open. Assign smart or burn labor dollars.",
+  "timeLimitSeconds": 300,
+  "difficultyLevel": 4,
+  "recipeId": "recipe-labor-plan-v1",
+  "containsTraps": false,
+  "hiddenDomains": ["labor_cost", "sequencing", "efficiency", "judgment"]
+}

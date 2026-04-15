@@ -1,0 +1,12 @@
+{
+  "id": "inventory-scramble-v1",
+  "slug": "inventory-scramble",
+  "type": "inventory_scramble",
+  "title": "Walk-In FIFO Scramble",
+  "briefing": "Truck came in. Produce is jammed in front of last week's. Fix it before something rots.",
+  "timeLimitSeconds": 240,
+  "difficultyLevel": 2,
+  "recipeId": "recipe-walkin-org-v1",
+  "containsTraps": true,
+  "hiddenDomains": ["inventory", "waste_management", "sanitation", "food_safety"]
+}

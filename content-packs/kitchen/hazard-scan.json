@@ -1,0 +1,12 @@
+{
+  "id": "hazard-scan-v1",
+  "slug": "hazard-scan",
+  "type": "hazard_scan",
+  "title": "Clock-In Hazard Scan",
+  "briefing": "Before you tie your apron, eyeball the kitchen. Tap every hazard you see. Miss one and OSHA can shut us down.",
+  "timeLimitSeconds": 90,
+  "difficultyLevel": 2,
+  "recipeId": "recipe-osha-standard-v1",
+  "containsTraps": true,
+  "hiddenDomains": ["osha_safety", "judgment", "sanitation"]
+}

@@ -1,0 +1,27 @@
+{
+  "id": "mock-impossible-v1",
+  "slug": "mock-impossible",
+  "type": "mock_impossible",
+  "title": "The Karen Order",
+  "briefing": "A ticket just landed. Before you fire it, read it twice. Some of what they want is literally impossible.",
+  "timeLimitSeconds": 120,
+  "difficultyLevel": 4,
+  "recipeId": "recipe-order-review-v1",
+  "containsTraps": true,
+  "hiddenDomains": ["judgment", "food_safety", "sanitation"],
+  "tickets": [
+    {
+      "id": "imp-1",
+      "orderNumber": 666,
+      "items": [
+        { "id": "im-1", "name": "Medium-Rare Pork Belly", "recipeId": "r-pork", "modifiers": ["medium rare"], "isImpossible": true, "impossibleReason": "Pork must reach 145°F minimum per FDA.", "quantity": 1 },
+        { "id": "im-2", "name": "Gluten-Free Pasta Bowl", "recipeId": "r-pasta", "modifiers": ["gluten-free", "cooked in shared water"], "isImpossible": true, "impossibleReason": "Cross-contact with wheat pasta water voids gluten-free claim.", "quantity": 1 },
+        { "id": "im-3", "name": "Caesar Salad", "recipeId": "r-caesar", "modifiers": ["vegan", "no anchovy", "no egg", "no cheese"], "isImpossible": false, "quantity": 1 }
+      ],
+      "submittedAt": 0,
+      "priority": "vip",
+      "isTrapped": true,
+      "timeWindowSeconds": 120
+    }
+  ]
+}

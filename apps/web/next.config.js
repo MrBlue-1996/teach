@@ -27,7 +27,8 @@ const nextConfig = {
           },
           {
             key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=()',
+            // Kitchen routes use camera (QR scan) and microphone (voice control).
+            value: 'camera=(self), microphone=(self), geolocation=()',
           },
         ],
       },

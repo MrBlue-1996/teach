@@ -1,0 +1,12 @@
+{
+  "id": "ghost-recipe-v1",
+  "slug": "ghost-recipe",
+  "type": "ghost_recipe",
+  "title": "Double the Recipe",
+  "briefing": "Chef just told you the party of 12 became a party of 28. Scale the hollandaise, right now. No calculator.",
+  "timeLimitSeconds": 180,
+  "difficultyLevel": 3,
+  "recipeId": "recipe-hollandaise-v1",
+  "containsTraps": false,
+  "hiddenDomains": ["kitchen_math", "judgment", "efficiency"]
+}

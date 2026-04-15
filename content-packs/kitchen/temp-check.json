@@ -1,0 +1,13 @@
+{
+  "id": "temp-check-v1",
+  "slug": "temp-check",
+  "type": "temp_check",
+  "title": "Temp Check Challenge",
+  "briefing": "Walk-in, reach-in, hot hold, cold hold. Record every temp. FDA says 40°F–140°F is the death zone. Prove you know why.",
+  "timeLimitSeconds": 180,
+  "difficultyLevel": 2,
+  "recipeId": "recipe-temp-standard-v1",
+  "containsTraps": true,
+  "equipmentFocus": ["cold_station"],
+  "hiddenDomains": ["food_safety", "sanitation", "judgment"]
+}

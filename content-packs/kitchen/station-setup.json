@@ -1,0 +1,31 @@
+{
+  "id": "station-setup-v1",
+  "slug": "station-setup",
+  "type": "station_setup",
+  "title": "Pre-Brunch Mise en Place",
+  "briefing": "Before service hits, set your station. You have 3 minutes. Get it right or fight the clock all shift.",
+  "timeLimitSeconds": 180,
+  "difficultyLevel": 2,
+  "recipeId": "recipe-brunch-setup-v1",
+  "containsTraps": false,
+  "equipmentFocus": ["cold_station", "prep_table"],
+  "hiddenDomains": ["sequencing", "efficiency", "sanitation", "osha_safety"],
+  "stationLayout": {
+    "id": "brunch-station",
+    "name": "Brunch Line",
+    "maxCapacity": 12,
+    "requiredTools": ["tongs", "spatula", "chef-knife", "sani-bucket"],
+    "requiredIngredients": ["eggs", "bacon", "hollandaise", "english-muffin"],
+    "positions": [
+      { "slotId": "s-1", "label": "Hot zone A", "x": 0, "y": 0, "width": 1, "height": 1, "zone": "hot", "idealItemId": "i-pan" },
+      { "slotId": "s-2", "label": "Hot zone B", "x": 1, "y": 0, "width": 1, "height": 1, "zone": "hot", "idealItemId": "i-tongs" },
+      { "slotId": "s-3", "label": "Cold rail A", "x": 2, "y": 0, "width": 1, "height": 1, "zone": "cold", "idealItemId": "i-eggs" },
+      { "slotId": "s-4", "label": "Cold rail B", "x": 3, "y": 0, "width": 1, "height": 1, "zone": "cold", "idealItemId": "i-bacon" },
+      { "slotId": "s-5", "label": "Prep A", "x": 0, "y": 1, "width": 1, "height": 1, "zone": "prep", "idealItemId": "i-knife" },
+      { "slotId": "s-6", "label": "Prep B", "x": 1, "y": 1, "width": 1, "height": 1, "zone": "prep", "idealItemId": "i-board" },
+      { "slotId": "s-7", "label": "Plating", "x": 2, "y": 1, "width": 1, "height": 1, "zone": "plating", "idealItemId": "i-muffins" },
+      { "slotId": "s-8", "label": "Sani bucket", "x": 3, "y": 1, "width": 1, "height": 1, "zone": "prep", "idealItemId": "i-sani" }
+    ],
+    "idealLayout": []
+  }
+}
