@@ -161,6 +161,25 @@ export const oauthAccounts = pgTable(
   })
 );
 
+export const passwordResetTokens = pgTable(
+  'password_reset_tokens',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    tokenHash: varchar('token_hash', { length: 64 }).notNull().unique(),
+    expiresAt: timestamp('expires_at').notNull(),
+    usedAt: timestamp('used_at'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (table) => ({
+    userIdx: index('prt_user_idx').on(table.userId),
+    tokenHashIdx: uniqueIndex('prt_token_hash_idx').on(table.tokenHash),
+    expiresIdx: index('prt_expires_idx').on(table.expiresAt),
+  })
+);
+
 // =============================================================================
 // CONTENT PACKS & BLOCKS
 // =============================================================================
@@ -485,6 +504,13 @@ export const usersRelations = relations(users, ({ one, many }) => ({
 export const authSessionsRelations = relations(authSessions, ({ one }) => ({
   user: one(users, {
     fields: [authSessions.userId],
+    references: [users.id],
+  }),
+}));
+
+export const passwordResetTokensRelations = relations(passwordResetTokens, ({ one }) => ({
+  user: one(users, {
+    fields: [passwordResetTokens.userId],
     references: [users.id],
   }),
 }));

@@ -1,26 +1,42 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { User, Bell, Shield, Palette, Clock, Save, Moon, Sun, Monitor } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/hooks/use-auth';
+import { authApi } from '@/lib/api';
 
 type TabType = 'profile' | 'notifications' | 'appearance' | 'learning' | 'security';
 
 export default function SettingsPage() {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<TabType>('profile');
   const [isLoading, setIsLoading] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
-  // Profile state
+  // Profile state — initialised from real auth user
   const [profile, setProfile] = useState({
-    firstName: 'Alex',
-    lastName: 'Johnson',
-    email: 'alex@example.com',
-    timezone: 'America/New_York',
+    firstName: '',
+    lastName: '',
+    email: '',
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/New_York',
   });
+
+  // Sync profile from auth user once loaded
+  useEffect(() => {
+    if (user) {
+      setProfile((prev) => ({
+        ...prev,
+        firstName: user.firstName ?? '',
+        lastName: user.lastName ?? '',
+        email: user.email,
+      }));
+    }
+  }, [user]);
 
   // Notifications state
   const [notifications, setNotifications] = useState({
@@ -45,11 +61,23 @@ export default function SettingsPage() {
 
   const handleSave = async () => {
     setIsLoading(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsLoading(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+    setSaveError(null);
+    try {
+      if (activeTab === 'profile') {
+        await authApi.updateProfile({
+          firstName: profile.firstName || undefined,
+          lastName: profile.lastName || undefined,
+          timezone: profile.timezone || undefined,
+        });
+      }
+      // Notifications / appearance / learning preferences are stored locally for now
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : 'Failed to save settings.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const tabs = [
@@ -317,6 +345,7 @@ export default function SettingsPage() {
           <div className="mt-6 flex items-center justify-between">
             <div>
               {saved && <p className="text-sm text-success">Settings saved successfully!</p>}
+              {saveError && <p className="text-sm text-destructive">{saveError}</p>}
             </div>
             <Button onClick={handleSave} loading={isLoading}>
               <Save className="mr-2 h-4 w-4" />

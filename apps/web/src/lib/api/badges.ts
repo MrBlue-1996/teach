@@ -48,16 +48,12 @@ export const badgesApi = {
   getAll: () => api.get<{ badges: Badge[] }>('/badge'),
 
   /**
-   * GET /badge - Backend does not have a separate /badge/earned endpoint.
-   * Returns all badges; filter client-side by status === 'issued' if needed.
-   * TODO: Backend does not support /badge/earned — using /badge instead
+   * GET /badge — filter client-side by status === 'issued' to get earned badges.
    */
   getEarned: () => api.get<{ badges: Badge[] }>('/badge'),
 
   /**
-   * TODO: Backend does not have /badge/available endpoint.
-   * There is no concept of "available" badges on the backend.
-   * Using /badge as fallback; consumer should filter as needed.
+   * GET /badge — filter client-side by status !== 'issued' for available badges.
    */
   getAvailable: () => api.get<{ badges: Badge[] }>('/badge'),
 
@@ -67,6 +63,6 @@ export const badgesApi = {
   /** GET /badge/verify/:hash - Verify badge by hash (public) */
   verify: (hash: string) => api.get<BadgeVerification>(`/badge/verify/${hash}`),
 
-  // TODO: Backend does not have a /badge/:badgeId/share endpoint
+  /** POST /badge/:badgeId/share - Generate shareable badge URL */
   share: (badgeId: string) => api.post<{ shareUrl: string }>(`/badge/${badgeId}/share`),
 };

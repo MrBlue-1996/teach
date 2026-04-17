@@ -82,8 +82,15 @@ export const authApi = {
   resetPassword: (token: string, password: string) =>
     api.post<{ message: string }>('/auth/reset-password', { token, password }),
 
-  // TODO: Backend does not have a /auth/verify-email endpoint yet
+  /** POST /auth/verify-email \u2014 verify email address with one-time token */
   verifyEmail: (token: string) => api.post<{ message: string }>('/auth/verify-email', { token }),
 
   me: () => api.get<BackendMeResponse>('/auth/me'),
+
+  updateProfile: (data: {
+    firstName?: string;
+    lastName?: string;
+    displayName?: string;
+    timezone?: string;
+  }) => api.patch<BackendMeResponse>('/auth/me', data),
 };

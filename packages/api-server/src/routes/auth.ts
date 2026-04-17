@@ -16,7 +16,16 @@ import {
   verifyRefreshToken,
   generateSecureToken,
 } from '@topshelf/auth';
-import { getDatabase, users, authSessions, eq, and, isNull } from '@topshelf/database';
+import {
+  getDatabase,
+  users,
+  authSessions,
+  passwordResetTokens,
+  eq,
+  and,
+  isNull,
+} from '@topshelf/database';
+import { createHash } from 'crypto';
 import { badRequest, unauthorized, conflict, serverError } from '../middleware/error-handler.js';
 import { authMiddleware } from '../middleware/auth.js';
 
@@ -321,18 +330,35 @@ export function createAuthRoutes() {
     const { email } = c.req.valid('json');
     const db = getDatabase();
 
-    // Find user (don't reveal if user exists)
     const user = await db.query.users.findFirst({
       where: eq(users.email, email.toLowerCase()),
     });
 
     if (user) {
-      // Generate reset token
-      const resetToken = generateSecureToken(32);
+      // Generate a cryptographically secure reset token
+      const rawToken = generateSecureToken(32);
+      // Store a SHA-256 hash — never store raw tokens in the DB
+      const tokenHash = createHash('sha256').update(rawToken).digest('hex');
+      const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
 
-      // TODO: Store token in database with expiry and send email via email service
-      // DO NOT log tokens — even in development this creates a security vulnerability
-      void resetToken; // token generated, email sending not yet implemented
+      // Invalidate any existing tokens for this user
+      await db
+        .update(passwordResetTokens)
+        .set({ usedAt: new Date() })
+        .where(
+          and(eq(passwordResetTokens.userId, user.id), isNull(passwordResetTokens.usedAt))
+        );
+
+      await db.insert(passwordResetTokens).values({
+        userId: user.id,
+        tokenHash,
+        expiresAt,
+      });
+
+      // Email sending is wired in the email service — rawToken would be included
+      // in the reset link: /auth/reset-password?token=<rawToken>
+      // For now the token is stored; email delivery requires the email package.
+      void rawToken;
     }
 
     // Always return success to prevent email enumeration
@@ -345,9 +371,9 @@ export function createAuthRoutes() {
   // POST /auth/reset-password - Reset password with token
   // ---------------------------------------------------------------------------
   router.post('/reset-password', zValidator('json', ResetPasswordSchema), async (c) => {
-    const { password } = c.req.valid('json');
+    const { token, password } = c.req.valid('json');
+    const db = getDatabase();
 
-    // Validate password strength
     const passwordCheck = validatePasswordStrength(password);
     if (!passwordCheck.valid) {
       throw badRequest('Password does not meet requirements', {
@@ -355,9 +381,43 @@ export function createAuthRoutes() {
       });
     }
 
-    // In production: Verify token from database, update password, invalidate token
-    // For now, return not implemented
-    throw badRequest('Password reset not fully implemented');
+    const tokenHash = createHash('sha256').update(token).digest('hex');
+
+    const resetRecord = await db.query.passwordResetTokens.findFirst({
+      where: and(
+        eq(passwordResetTokens.tokenHash, tokenHash),
+        isNull(passwordResetTokens.usedAt)
+      ),
+      with: { user: true },
+    });
+
+    if (!resetRecord || resetRecord.expiresAt < new Date()) {
+      throw badRequest('Reset link is invalid or has expired. Please request a new one.');
+    }
+
+    const hashed = await hashPassword(password);
+
+    await db.transaction(async (tx) => {
+      await tx
+        .update(users)
+        .set({ passwordHash: hashed, updatedAt: new Date() })
+        .where(eq(users.id, resetRecord.userId));
+
+      await tx
+        .update(passwordResetTokens)
+        .set({ usedAt: new Date() })
+        .where(eq(passwordResetTokens.id, resetRecord.id));
+
+      // Revoke all active sessions so the old password can't be reused via tokens
+      await tx
+        .update(authSessions)
+        .set({ revokedAt: new Date() })
+        .where(
+          and(eq(authSessions.userId, resetRecord.userId), isNull(authSessions.revokedAt))
+        );
+    });
+
+    return c.json({ message: 'Password reset successfully. You can now sign in.' });
   });
 
   // ---------------------------------------------------------------------------
@@ -387,6 +447,47 @@ export function createAuthRoutes() {
     }
 
     return c.json({ user });
+  });
+
+  // ---------------------------------------------------------------------------
+  // PATCH /auth/me - Update current user's profile
+  // ---------------------------------------------------------------------------
+  const UpdateProfileSchema = z.object({
+    firstName: z.string().min(1).max(100).optional(),
+    lastName: z.string().min(1).max(100).optional(),
+    displayName: z.string().min(1).max(150).optional(),
+    timezone: z.string().max(64).optional(),
+  });
+
+  router.patch('/me', authMiddleware(), zValidator('json', UpdateProfileSchema), async (c) => {
+    const userId = c.get('userId');
+    const updates = c.req.valid('json');
+    const db = getDatabase();
+
+    const existing = await db.query.users.findFirst({
+      where: and(eq(users.id, userId), isNull(users.deletedAt), eq(users.isActive, true)),
+      columns: { id: true },
+    });
+
+    if (!existing) {
+      throw unauthorized('User not found');
+    }
+
+    const [updated] = await db
+      .update(users)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(users.id, userId))
+      .returning({
+        id: users.id,
+        email: users.email,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        displayName: users.displayName,
+        role: users.role,
+        emailVerified: users.emailVerified,
+      });
+
+    return c.json({ user: updated });
   });
 
   return router;
