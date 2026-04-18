@@ -9,7 +9,14 @@ on:
       - '.github/actions/**/*.yaml'
       - 'scripts/workflow-lint.mjs'
   push:
-    branches: [main, develop]
+    branches:
+      - main
+      - 'feat/**'
+      - 'feature/**'
+      - 'fix/**'
+      - 'hotfix/**'
+      - 'copilot/**'
+      - 'claude/**'
     paths:
       - '.github/workflows/*.yml'
       - '.github/workflows/*.yaml'

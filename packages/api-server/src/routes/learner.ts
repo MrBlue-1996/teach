@@ -413,7 +413,7 @@ export function createLearnerRoutes() {
     // Compute start of current ISO week (Monday)
     const now = new Date();
     const day = now.getUTCDay(); // 0 = Sunday
-    const diffToMonday = (day === 0 ? -6 : 1 - day);
+    const diffToMonday = day === 0 ? -6 : 1 - day;
     const weekStart = new Date(now);
     weekStart.setUTCDate(now.getUTCDate() + diffToMonday);
     weekStart.setUTCHours(0, 0, 0, 0);
@@ -425,16 +425,12 @@ export function createLearnerRoutes() {
     });
 
     const meta = (user?.metadata ?? {}) as Record<string, unknown>;
-    const targetMinutes = typeof meta['weeklyGoalMinutes'] === 'number'
-      ? meta['weeklyGoalMinutes']
-      : 60;
+    const targetMinutes =
+      typeof meta['weeklyGoalMinutes'] === 'number' ? meta['weeklyGoalMinutes'] : 60;
 
     // Sum time from sessions completed this week
     const sessions = await db.query.learningSessions.findMany({
-      where: and(
-        eq(learningSessions.userId, userId),
-        gte(learningSessions.startedAt, weekStart)
-      ),
+      where: and(eq(learningSessions.userId, userId), gte(learningSessions.startedAt, weekStart)),
       columns: { startedAt: true, endedAt: true, pausedDurationSeconds: true },
     });
 
@@ -477,21 +473,21 @@ export function createLearnerRoutes() {
     const existing = (user?.metadata ?? {}) as Record<string, unknown>;
     const updated = { ...existing, weeklyGoalMinutes: targetMinutes };
 
-    await db.update(users).set({ metadata: updated, updatedAt: new Date() }).where(eq(users.id, userId));
+    await db
+      .update(users)
+      .set({ metadata: updated, updatedAt: new Date() })
+      .where(eq(users.id, userId));
 
     // Recompute this week's progress
     const now = new Date();
     const day = now.getUTCDay();
-    const diffToMonday = (day === 0 ? -6 : 1 - day);
+    const diffToMonday = day === 0 ? -6 : 1 - day;
     const weekStart = new Date(now);
     weekStart.setUTCDate(now.getUTCDate() + diffToMonday);
     weekStart.setUTCHours(0, 0, 0, 0);
 
     const sessions = await db.query.learningSessions.findMany({
-      where: and(
-        eq(learningSessions.userId, userId),
-        gte(learningSessions.startedAt, weekStart)
-      ),
+      where: and(eq(learningSessions.userId, userId), gte(learningSessions.startedAt, weekStart)),
       columns: { startedAt: true, endedAt: true, pausedDurationSeconds: true },
     });
 
