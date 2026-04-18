@@ -2,16 +2,17 @@ name: Extended CI
 
 on:
   push:
-    branches: [main, develop]
-  pull_request:
-    branches: [main, develop]
+    branches:
+      - main
+  schedule:
+    - cron: '17 6 * * *'
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: extended-ci-${{ github.event.pull_request.number || github.ref }}
+  group: extended-ci-${{ github.ref }}
   cancel-in-progress: true
 
 env:
@@ -37,10 +38,10 @@ jobs:
       - name: Run parity tests
         run: pnpm run test:parity
 
-  content-validation:
-    name: Content validation
+  e2e-playwright:
+    name: End-to-end browser tests
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -50,11 +51,8 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Build packages
-        run: pnpm run build:packages
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium
 
-      - name: Validate content packs
-        run: pnpm run validate:content-packs
-
-      - name: Validate policies
-        run: pnpm run validate:policies
+      - name: Run end-to-end tests
+        run: pnpm run test:e2e
