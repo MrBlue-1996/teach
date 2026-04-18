@@ -9,12 +9,14 @@ import { z } from 'zod';
 import { zValidator } from '@hono/zod-validator';
 import {
   getDatabase,
+  users,
   learnerStates,
   learnerProgressEvents,
   learningSessions,
   contentBlocks,
   eq,
   and,
+  gte,
   desc,
 } from '@topshelf/database';
 import {
@@ -398,6 +400,115 @@ export function createLearnerRoutes() {
         correctness: e.correctness,
         occurredAt: e.occurredAt,
       })),
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // GET /learner/weekly-goal - Weekly learning goal summary
+  // ---------------------------------------------------------------------------
+  router.get('/weekly-goal', async (c) => {
+    const userId = c.get('userId');
+    const db = getDatabase();
+
+    // Compute start of current ISO week (Monday)
+    const now = new Date();
+    const day = now.getUTCDay(); // 0 = Sunday
+    const diffToMonday = (day === 0 ? -6 : 1 - day);
+    const weekStart = new Date(now);
+    weekStart.setUTCDate(now.getUTCDate() + diffToMonday);
+    weekStart.setUTCHours(0, 0, 0, 0);
+
+    // Read stored weekly target from user metadata
+    const user = await db.query.users.findFirst({
+      where: eq(users.id, userId),
+      columns: { metadata: true },
+    });
+
+    const meta = (user?.metadata ?? {}) as Record<string, unknown>;
+    const targetMinutes = typeof meta['weeklyGoalMinutes'] === 'number'
+      ? meta['weeklyGoalMinutes']
+      : 60;
+
+    // Sum time from sessions completed this week
+    const sessions = await db.query.learningSessions.findMany({
+      where: and(
+        eq(learningSessions.userId, userId),
+        gte(learningSessions.startedAt, weekStart)
+      ),
+      columns: { startedAt: true, endedAt: true, pausedDurationSeconds: true },
+    });
+
+    let completedSeconds = 0;
+    const activeDays = new Set<string>();
+    for (const s of sessions) {
+      const endTime = s.endedAt ?? new Date();
+      const rawSeconds = Math.max(0, (endTime.getTime() - s.startedAt.getTime()) / 1000);
+      const paused = s.pausedDurationSeconds ?? 0;
+      const completedSessionSeconds = Math.max(0, rawSeconds - paused);
+      completedSeconds += completedSessionSeconds;
+      activeDays.add(s.startedAt.toISOString().slice(0, 10));
+    }
+
+    return c.json({
+      targetMinutes,
+      completedMinutes: Math.round(completedSeconds / 60),
+      daysActive: activeDays.size,
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // PATCH /learner/weekly-goal - Update weekly learning target
+  // ---------------------------------------------------------------------------
+  const WeeklyGoalSchema = z.object({
+    targetMinutes: z.number().int().min(15).max(10080), // 15 min to 1 week
+  });
+
+  router.patch('/weekly-goal', zValidator('json', WeeklyGoalSchema), async (c) => {
+    const userId = c.get('userId');
+    const { targetMinutes } = c.req.valid('json');
+    const db = getDatabase();
+
+    // Read current metadata
+    const user = await db.query.users.findFirst({
+      where: eq(users.id, userId),
+      columns: { metadata: true },
+    });
+
+    const existing = (user?.metadata ?? {}) as Record<string, unknown>;
+    const updated = { ...existing, weeklyGoalMinutes: targetMinutes };
+
+    await db.update(users).set({ metadata: updated, updatedAt: new Date() }).where(eq(users.id, userId));
+
+    // Recompute this week's progress
+    const now = new Date();
+    const day = now.getUTCDay();
+    const diffToMonday = (day === 0 ? -6 : 1 - day);
+    const weekStart = new Date(now);
+    weekStart.setUTCDate(now.getUTCDate() + diffToMonday);
+    weekStart.setUTCHours(0, 0, 0, 0);
+
+    const sessions = await db.query.learningSessions.findMany({
+      where: and(
+        eq(learningSessions.userId, userId),
+        gte(learningSessions.startedAt, weekStart)
+      ),
+      columns: { startedAt: true, endedAt: true, pausedDurationSeconds: true },
+    });
+
+    let completedSeconds = 0;
+    const activeDays = new Set<string>();
+    for (const s of sessions) {
+      const endTime = s.endedAt ?? new Date();
+      const rawSeconds = Math.max(0, (endTime.getTime() - s.startedAt.getTime()) / 1000);
+      const paused = s.pausedDurationSeconds ?? 0;
+      completedSeconds += rawSeconds - paused;
+      activeDays.add(s.startedAt.toISOString().slice(0, 10));
+    }
+
+    return c.json({
+      targetMinutes,
+      completedMinutes: Math.round(completedSeconds / 60),
+      daysActive: activeDays.size,
     });
   });
 

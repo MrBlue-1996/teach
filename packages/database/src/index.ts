@@ -147,4 +147,4 @@ export async function withTransaction<T>(callback: TransactionCallback<T>): Prom
 // =============================================================================
 
 export * from './schema/index.js';
-export { eq, and, or, desc, asc, sql, isNull, isNotNull, inArray, notInArray } from 'drizzle-orm';
+export { eq, and, or, desc, asc, sql, isNull, isNotNull, inArray, notInArray, gte, lte, gt, lt } from 'drizzle-orm';
