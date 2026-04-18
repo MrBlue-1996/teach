@@ -177,7 +177,7 @@ function RushHourView({
           label={ch.isVerification ? 'Verify' : 'Rush'}
         />
         <DirtyHandTimer
-          lastHandwashAt={null}
+          lastHandwashAt={ch.lastHandwashAt}
           challengeStartedAt={startedAt}
           onWash={ch.recordHandwash}
         />
@@ -194,6 +194,7 @@ function RushHourView({
         <TicketQueue
           tickets={tickets}
           completedIds={completed}
+          onFire={(id) => ch.logEvent(EventType.TICKET_STARTED, { ticketId: id })}
           onComplete={finishTicket}
           startedAt={startedAt}
         />

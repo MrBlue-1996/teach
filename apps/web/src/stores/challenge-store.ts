@@ -38,7 +38,6 @@ interface ChallengeStore {
   domainScores: Record<string, number>;
   isVerification: boolean;
   consequencePayload: ConsequencePayload | null;
-  teachPayload: Record<string, unknown> | null;
   overallGrade: string | null;
   isTimerRunning: boolean;
   challengeId: string | null;
@@ -54,7 +53,6 @@ interface ChallengeStore {
   completeTicket: () => void;
   tick: (elapsedMs: number) => void;
   setConsequencePayload: (payload: ConsequencePayload) => void;
-  setTeachPayload: (payload: Record<string, unknown>) => void;
   setOverallGrade: (grade: string) => void;
   setIsVerification: (isVerification: boolean) => void;
   incrementFailures: () => void;
@@ -80,7 +78,6 @@ const createInitialDomainScores = (): Record<string, number> => {
     'speed' as MasteryDomain,
     'plating' as MasteryDomain,
     'judgment' as MasteryDomain,
-    'osha_safety' as MasteryDomain,
     'inventory' as MasteryDomain,
     'labor_cost' as MasteryDomain,
   ];
@@ -109,7 +106,7 @@ export const useChallengeStore = create<ChallengeStore>((set) => ({
   domainScores: createInitialDomainScores(),
   isVerification: false,
   consequencePayload: null,
-  teachPayload: null,
+
   overallGrade: null,
   isTimerRunning: false,
   challengeId: null,
@@ -132,7 +129,7 @@ export const useChallengeStore = create<ChallengeStore>((set) => ({
       domainScores: createInitialDomainScores(),
       isVerification: false,
       consequencePayload: null,
-      teachPayload: null,
+    
       overallGrade: null,
       isTimerRunning: false,
       startedAt: Date.now(),
@@ -182,7 +179,6 @@ export const useChallengeStore = create<ChallengeStore>((set) => ({
     })),
 
   setConsequencePayload: (payload) => set({ consequencePayload: payload }),
-  setTeachPayload: (payload) => set({ teachPayload: payload }),
   setOverallGrade: (grade) => set({ overallGrade: grade }),
   setIsVerification: (isVerification) => set({ isVerification }),
   incrementFailures: () =>
@@ -208,7 +204,7 @@ export const useChallengeStore = create<ChallengeStore>((set) => ({
       domainScores: createInitialDomainScores(),
       isVerification: false,
       consequencePayload: null,
-      teachPayload: null,
+    
       overallGrade: null,
       isTimerRunning: false,
       challengeId: null,

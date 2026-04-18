@@ -200,6 +200,7 @@ export function useChallenge(config: ChallengeConfig | null) {
     consequence: store.consequencePayload,
     grade: store.overallGrade,
     isVerification: store.isVerification,
+    lastHandwashAt: store.lastHandwashAt,
     handsDirty,
     logEvent,
     start,

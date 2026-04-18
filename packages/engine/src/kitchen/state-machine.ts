@@ -192,9 +192,8 @@ export class ChallengeMachine {
    * Move from TEACH to VERIFY for re-attempt.
    */
   enterVerify(): ChallengeState {
-    const newState = this.transition(ChallengePhase.VERIFY);
     this.state = { ...this.state, isVerification: true };
-    return newState;
+    return this.transition(ChallengePhase.VERIFY);
   }
 
   /**
@@ -406,6 +405,8 @@ export class ChallengeMachine {
         return 20;
       case InfractionSeverity.CRITICAL:
         return 35;
+      default:
+        return 0;
     }
   }
 

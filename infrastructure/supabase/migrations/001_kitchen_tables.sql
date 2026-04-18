@@ -37,7 +37,7 @@ CREATE TYPE infraction_severity AS ENUM ('low', 'medium', 'high', 'critical');
 
 CREATE TYPE mastery_domain AS ENUM (
   'sanitation', 'food_safety', 'efficiency', 'sequencing', 'kitchen_math',
-  'waste_management', 'speed', 'plating', 'judgment', 'osha_safety',
+  'waste_management', 'speed', 'plating', 'judgment',
   'inventory', 'labor_cost'
 );
 

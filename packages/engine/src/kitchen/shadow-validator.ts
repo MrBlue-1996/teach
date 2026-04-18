@@ -457,26 +457,39 @@ export class ShadowValidator {
     rule: ShadowValidatorRule,
     event: ChallengeEvent
   ): HiddenInfraction | null {
-    const estimated = event.data['estimatedTemp'] as number | undefined;
-    const actual = event.data['actualTemp'] as number | undefined;
-    const dangerMin = rule.params['dangerZoneMin'] as number;
-    const dangerMax = rule.params['dangerZoneMax'] as number;
+    const value = event.data['value'] as number | undefined;
+    const target = event.data['target'] as { min: number; max: number } | undefined;
+    if (value === undefined) return null;
 
-    if (estimated !== undefined && actual !== undefined) {
-      // Check if the estimated temp falls in the danger zone
-      if (estimated >= dangerMin && estimated <= dangerMax) {
-        return this.createInfraction(
-          rule.infractionType,
-          rule.severity,
-          rule.domain,
-          event.id,
-          rule.costPerOccurrence,
-          `Temperature estimate of ${estimated}°F is in the danger zone (${dangerMin}–${dangerMax}°F).`,
-          'The temperature danger zone (40–140°F) allows rapid bacterial growth. Food left in this range for more than 2 hours must be discarded.',
-          'Always verify internal temps with a calibrated thermometer. Hot food above 140°F, cold food below 40°F.'
-        );
-      }
+    const dangerMin = (rule.params['dangerZoneMin'] as number | undefined) ?? 40;
+    const dangerMax = (rule.params['dangerZoneMax'] as number | undefined) ?? 140;
+
+    if (value >= dangerMin && value <= dangerMax) {
+      return this.createInfraction(
+        rule.infractionType,
+        rule.severity,
+        rule.domain,
+        event.id,
+        rule.costPerOccurrence,
+        `Temperature ${value}°F is in the danger zone (${dangerMin}–${dangerMax}°F).`,
+        'The temperature danger zone (40–140°F) allows rapid bacterial growth.',
+        'Always verify internal temps with a calibrated thermometer. Hot food above 140°F, cold food below 40°F.'
+      );
     }
+
+    if (target && (value < target.min || value > target.max)) {
+      return this.createInfraction(
+        rule.infractionType,
+        rule.severity,
+        rule.domain,
+        event.id,
+        rule.costPerOccurrence,
+        `Temperature ${value}°F is outside acceptable range (${target.min}–${target.max}°F).`,
+        'Equipment outside safe range risks spoilage or unsafe food.',
+        'Adjust equipment immediately and re-check in 15 minutes.'
+      );
+    }
+
     return null;
   }
 
@@ -486,6 +499,7 @@ export class ShadowValidator {
   ): HiddenInfraction | null {
     const stepId = event.data['stepId'] as string;
     if (!stepId || this.idealSequence.length === 0) return null;
+    if (this.currentSequenceIndex >= this.idealSequence.length) return null;
 
     const expectedStep = this.idealSequence[this.currentSequenceIndex];
     this.currentSequenceIndex++;

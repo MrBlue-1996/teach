@@ -357,7 +357,7 @@ export default function KitchenDashboardPage() {
       <section className="mb-4">
         <h2 className="mb-4 text-xl font-bold uppercase tracking-wide">Quick Actions</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <Link href={`/kitchen/challenges/${challenges[Math.floor(Math.random() * challenges.filter((c) => !c.locked).length)].slug}`}>
+          <Link href={`/kitchen/challenges/${(() => { const unlocked = challenges.filter((c) => !c.locked); return unlocked[Math.floor(Math.random() * unlocked.length)]; })().slug}`}>
             <button className="btn-action btn-primary flex w-full items-center justify-center gap-3">
               <Shuffle className="h-6 w-6" />
               Start Random Challenge

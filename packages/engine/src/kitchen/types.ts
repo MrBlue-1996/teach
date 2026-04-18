@@ -116,38 +116,13 @@ export enum EventType {
   TICKET_STARTED = 'ticket_started',
   TICKET_COMPLETED = 'ticket_completed',
   ORDER_REJECTED = 'order_rejected',
-  RECIPE_RECALLED = 'recipe_recalled',
   QUANTITY_ENTERED = 'quantity_entered',
   SEQUENCE_STEP_DONE = 'sequence_step_done',
-
-  // Sanitation events
   HAND_WASH = 'hand_wash',
-  SURFACE_SANITIZED = 'surface_sanitized',
-  GLOVES_CHANGED = 'gloves_changed',
-  CROSS_CONTACT_RISK = 'cross_contact_risk',
-
-  // Safety events
-  HAZARD_IDENTIFIED = 'hazard_identified',
-  HAZARD_MISSED = 'hazard_missed',
   UNSAFE_ORDER_ACCEPTED = 'unsafe_order_accepted',
-  UNSAFE_ORDER_REJECTED = 'unsafe_order_rejected',
-  SAFETY_CHECK_PERFORMED = 'safety_check_performed',
-
-  // Inventory events
-  FIFO_CORRECT = 'fifo_correct',
   FIFO_VIOLATION = 'fifo_violation',
-  SPOILAGE_DETECTED = 'spoilage_detected',
-  WALK_IN_ORGANIZED = 'walk_in_organized',
-
-  // Math/scaling events
   RECIPE_SCALED = 'recipe_scaled',
   CONVERSION_ATTEMPTED = 'conversion_attempted',
-  MATH_ERROR = 'math_error',
-
-  // Voice events
-  VOICE_COMMAND = 'voice_command',
-
-  // Teach phase events
   LESSON_VIEWED = 'lesson_viewed',
   WHY_TOOLTIP_OPENED = 'why_tooltip_opened',
   REPLAY_WATCHED = 'replay_watched',
@@ -169,46 +144,20 @@ export interface ChallengeEvent {
 // =============================================================================
 
 export enum InfractionType {
-  // Sanitation
   HANDWASH_NEGLECT = 'handwash_neglect',
   CROSS_CONTAMINATION = 'cross_contamination',
-  SURFACE_NOT_SANITIZED = 'surface_not_sanitized',
   RAW_COOKED_CONTACT = 'raw_cooked_contact',
-
-  // Food Safety
   TEMP_DANGER_ZONE = 'temp_danger_zone',
-  UNDERCOOKED = 'undercooked',
-  OVERCOOKED = 'overcooked',
-  ALLERGEN_CROSS_CONTACT = 'allergen_cross_contact',
   UNSAFE_ORDER_SERVED = 'unsafe_order_served',
-
-  // FIFO / Waste
   FIFO_VIOLATION = 'fifo_violation',
   SPOILED_INGREDIENT_USED = 'spoiled_ingredient_used',
   EXCESSIVE_WASTE = 'excessive_waste',
   PRODUCT_MISHANDLED = 'product_mishandled',
-
-  // Sequencing & Efficiency
   WRONG_SEQUENCE = 'wrong_sequence',
   STATION_OVERCROWDED = 'station_overcrowded',
-  MISE_EN_PLACE_FAILURE = 'mise_en_place_failure',
-  BATCHING_MISSED = 'batching_missed',
-
-  // Math
   CONVERSION_ERROR = 'conversion_error',
-  SCALING_ERROR = 'scaling_error',
   PORTION_ERROR = 'portion_error',
-
-  // Safety / OSHA
-  BLOCKED_EXIT = 'blocked_exit',
-  WET_FLOOR_IGNORED = 'wet_floor_ignored',
-  KNIFE_SAFETY_VIOLATION = 'knife_safety_violation',
-  BURN_HAZARD_IGNORED = 'burn_hazard_ignored',
-  PPE_MISSING = 'ppe_missing',
-
-  // Judgment
   IMPOSSIBLE_ORDER_ACCEPTED = 'impossible_order_accepted',
-  QUALITY_STANDARD_MISSED = 'quality_standard_missed',
 }
 
 export enum InfractionSeverity {
@@ -268,7 +217,6 @@ export enum MasteryDomain {
   SPEED = 'speed',
   PLATING = 'plating',
   JUDGMENT = 'judgment',
-  OSHA_SAFETY = 'osha_safety',
   INVENTORY = 'inventory',
   LABOR_COST = 'labor_cost',
 }
