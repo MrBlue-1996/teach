@@ -84,7 +84,7 @@ export function createBadgeRoutes() {
     }
 
     if (badge.status !== 'issued') {
-      return c.json({ error: 'Only issued badges can be shared' }, 400);
+      throw badRequest('Only issued badges can be shared');
     }
 
     const appUrl = process.env['APP_URL'] ?? 'https://app.topshelfteaching.com';
