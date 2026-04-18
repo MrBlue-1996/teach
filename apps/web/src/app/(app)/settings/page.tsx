@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { User, Bell, Shield, Palette, Clock, Save, Moon, Sun, Monitor } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
-import { authApi } from '@/lib/api';
+import { authApi, learnerApi } from '@/lib/api';
 
 type TabType = 'profile' | 'notifications' | 'appearance' | 'learning' | 'security';
 
@@ -59,6 +59,18 @@ export default function SettingsPage() {
     autoPlayNext: true,
   });
 
+  // Load weekly goal from backend
+  useEffect(() => {
+    learnerApi
+      .getWeeklyGoal()
+      .then((res) => {
+        setLearning((prev) => ({ ...prev, weeklyGoal: res.targetMinutes }));
+      })
+      .catch(() => {
+        // Keep defaults
+      });
+  }, []);
+
   const handleSave = async () => {
     setIsLoading(true);
     setSaveError(null);
@@ -70,7 +82,10 @@ export default function SettingsPage() {
           ...(profile.timezone ? { timezone: profile.timezone } : {}),
         });
       }
-      // Notifications / appearance / learning preferences are stored locally for now
+      if (activeTab === 'learning') {
+        await learnerApi.updateWeeklyGoal(learning.weeklyGoal);
+      }
+      // Notifications / appearance preferences are stored locally for now
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch (err) {

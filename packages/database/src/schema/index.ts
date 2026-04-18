@@ -542,6 +542,13 @@ export const emailVerificationTokensRelations = relations(emailVerificationToken
   }),
 }));
 
+export const oauthAccountsRelations = relations(oauthAccounts, ({ one }) => ({
+  user: one(users, {
+    fields: [oauthAccounts.userId],
+    references: [users.id],
+  }),
+}));
+
 export const contentPacksRelations = relations(contentPacks, ({ one, many }) => ({
   author: one(users, {
     fields: [contentPacks.authorId],

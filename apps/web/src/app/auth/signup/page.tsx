@@ -78,7 +78,7 @@ function SignupForm() {
   };
 
   const handleGoogleSignup = async () => {
-    setErrors((prev) => ({ ...prev, form: '' }));
+    setErrors({});
     setIsLoading(true);
 
     try {
@@ -92,17 +92,10 @@ function SignupForm() {
       });
 
       if (authError) {
-        if (authError.message?.toLowerCase().includes('provider') || authError.status === 400) {
-          setErrors({
-            form: 'Google sign-in is not configured yet. Please use email and password below.',
-          });
-        } else {
-          throw authError;
-        }
+        throw authError;
       }
     } catch (err) {
       setErrors({ form: err instanceof Error ? err.message : 'Google signup failed.' });
-    } finally {
       setIsLoading(false);
     }
   };
@@ -116,7 +109,7 @@ function SignupForm() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Google signup - fastest path */}
+        {/* Google signup */}
         <Button
           variant="outline"
           className="w-full"
@@ -137,7 +130,6 @@ function SignupForm() {
           </div>
         </div>
 
-        {/* Email signup form */}
         <form onSubmit={handleSubmit} className="space-y-3">
           {errors.form && (
             <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">

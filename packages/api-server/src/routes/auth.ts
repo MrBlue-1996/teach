@@ -20,6 +20,7 @@ import {
   getDatabase,
   users,
   authSessions,
+  oauthAccounts,
   passwordResetTokens,
   emailVerificationTokens,
   eq,
@@ -86,6 +87,14 @@ const ResetPasswordSchema = z.object({
 
 const VerifyEmailSchema = z.object({
   token: z.string().min(1, 'Verification token is required'),
+});
+
+const OAuthSchema = z.object({
+  provider: z.string().min(1).max(50),
+  providerAccountId: z.string().min(1).max(255),
+  email: z.string().email(),
+  firstName: z.string().max(100).optional(),
+  lastName: z.string().max(100).optional(),
 });
 
 // =============================================================================
@@ -257,6 +266,124 @@ export function createAuthRoutes() {
         firstName: user.firstName,
         lastName: user.lastName,
         role: user.role,
+      },
+      ...tokens,
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // POST /auth/oauth - Exchange OAuth provider info for custom JWT tokens
+  // ---------------------------------------------------------------------------
+  router.post('/oauth', zValidator('json', OAuthSchema), async (c) => {
+    const { provider, providerAccountId, email, firstName, lastName } = c.req.valid('json');
+    const db = getDatabase();
+
+    // Check if we already have this OAuth account linked
+    const existingOAuth = await db.query.oauthAccounts.findFirst({
+      where: and(
+        eq(oauthAccounts.provider, provider),
+        eq(oauthAccounts.providerAccountId, providerAccountId)
+      ),
+      with: { user: true },
+    });
+
+    let userId: string;
+    let userEmail: string;
+    let userRole: string;
+    let userFirstName: string | null = null;
+    let userLastName: string | null = null;
+
+    if (existingOAuth?.user) {
+      // Existing OAuth link — use that user
+      const u = existingOAuth.user;
+      userId = u.id;
+      userEmail = u.email;
+      userRole = u.role;
+      userFirstName = u.firstName;
+      userLastName = u.lastName;
+
+      // Update last login
+      await db.update(users).set({ lastLoginAt: new Date() }).where(eq(users.id, u.id));
+    } else {
+      // No OAuth link yet — find or create user by email
+      const existingUser = await db.query.users.findFirst({
+        where: and(eq(users.email, email.toLowerCase()), isNull(users.deletedAt)),
+      });
+
+      if (existingUser) {
+        userId = existingUser.id;
+        userEmail = existingUser.email;
+        userRole = existingUser.role;
+        userFirstName = existingUser.firstName;
+        userLastName = existingUser.lastName;
+
+        await db.update(users).set({ lastLoginAt: new Date() }).where(eq(users.id, userId));
+      } else {
+        // Create new user (no password — OAuth-only)
+        const displayName =
+          firstName && lastName
+            ? `${firstName} ${lastName}`
+            : (firstName ?? email.split('@')[0] ?? email);
+
+        const [newUser] = await db
+          .insert(users)
+          .values({
+            email: email.toLowerCase(),
+            firstName: firstName ?? null,
+            lastName: lastName ?? null,
+            displayName,
+            role: 'learner',
+            emailVerified: true, // OAuth provider verified the email
+          })
+          .returning({ id: users.id, email: users.email, role: users.role });
+
+        if (!newUser) {
+          throw serverError('Failed to create user record');
+        }
+
+        userId = newUser.id;
+        userEmail = newUser.email;
+        userRole = newUser.role;
+        userFirstName = firstName ?? null;
+        userLastName = lastName ?? null;
+      }
+
+      // Link the OAuth account
+      await db.insert(oauthAccounts).values({
+        userId,
+        provider,
+        providerAccountId,
+      });
+    }
+
+    // Create session + tokens (same pattern as /auth/login)
+    const sessionId = generateSessionId();
+
+    await db.insert(authSessions).values({
+      userId,
+      token: sessionId,
+      userAgent: c.req.header('User-Agent') ?? null,
+      ipAddress:
+        (c.req.header('X-Forwarded-For')?.split(',')[0]?.trim() || c.req.header('X-Real-IP')) ??
+        null,
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    });
+
+    const tokens = await generateTokens({
+      userId,
+      email: userEmail,
+      role: userRole,
+      sessionId,
+    });
+
+    return c.json({
+      message: 'OAuth login successful',
+      user: {
+        id: userId,
+        email: userEmail,
+        firstName: userFirstName,
+        lastName: userLastName,
+        role: userRole,
       },
       ...tokens,
     });
