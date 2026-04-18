@@ -360,15 +360,14 @@ function computeStreak(sessions: LearningSession[]): number {
   }
 
   let streak = 1;
-  let previousDay = sortedDays[0];
-
-  for (const currentDay of sortedDays.slice(1)) {
-    const prev = new Date(previousDay);
-    const curr = new Date(currentDay);
+  for (let i = 1; i < sortedDays.length; i++) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const prev = new Date(sortedDays[i - 1]!);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const curr = new Date(sortedDays[i]!);
     const diffDays = (prev.getTime() - curr.getTime()) / 86400000;
     if (Math.round(diffDays) === 1) {
       streak++;
-      previousDay = currentDay;
     } else {
       break;
     }

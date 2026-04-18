@@ -475,7 +475,13 @@ export function createAuthRoutes() {
 
     const [updated] = await db
       .update(users)
-      .set({ ...updates, updatedAt: new Date() })
+      .set({
+        updatedAt: new Date(),
+        ...(updates.firstName !== undefined ? { firstName: updates.firstName } : {}),
+        ...(updates.lastName !== undefined ? { lastName: updates.lastName } : {}),
+        ...(updates.displayName !== undefined ? { displayName: updates.displayName } : {}),
+        ...(updates.timezone !== undefined ? { timezone: updates.timezone } : {}),
+      })
       .where(eq(users.id, userId))
       .returning({
         id: users.id,

@@ -65,9 +65,9 @@ export default function SettingsPage() {
     try {
       if (activeTab === 'profile') {
         await authApi.updateProfile({
-          firstName: profile.firstName || undefined,
-          lastName: profile.lastName || undefined,
-          timezone: profile.timezone || undefined,
+          ...(profile.firstName ? { firstName: profile.firstName } : {}),
+          ...(profile.lastName ? { lastName: profile.lastName } : {}),
+          ...(profile.timezone ? { timezone: profile.timezone } : {}),
         });
       }
       // Notifications / appearance / learning preferences are stored locally for now

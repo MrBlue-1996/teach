@@ -1,5 +1,4 @@
-ARG BASE_IMAGE=node:20-bookworm
-FROM ${BASE_IMAGE}
+FROM mcr.microsoft.com/devcontainers/typescript-node:1-20-bookworm
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=America/Chicago
@@ -13,7 +12,6 @@ RUN apt-get update \
     curl \
     fd-find \
     gh \
-    git \
     git-lfs \
     jq \
     less \

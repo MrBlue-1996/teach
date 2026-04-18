@@ -119,7 +119,12 @@ export function useAuth() {
 
   const signup = useCallback(
     async (email: string, password: string, firstName?: string, lastName?: string) => {
-      const response = await authApi.signup({ email, password, firstName, lastName });
+      const response = await authApi.signup({
+        email,
+        password,
+        ...(firstName !== undefined ? { firstName } : {}),
+        ...(lastName !== undefined ? { lastName } : {}),
+      });
       saveAuthResponse(response);
       setState({ user: response.user, isLoading: false, isAuthenticated: true });
       router.push('/dashboard');

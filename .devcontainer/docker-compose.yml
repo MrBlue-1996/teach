@@ -1,0 +1,64 @@
+services:
+  workspace:
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
+    command: sleep infinity
+    volumes:
+      - ..:/workspaces/teach:cached
+    environment:
+      NODE_ENV: development
+      TZ: America/Chicago
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: topshelf
+      DB_USER: topshelf
+      DB_PASSWORD: topshelf
+      DATABASE_URL: postgresql://topshelf:topshelf@postgres:5432/topshelf
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWT_SECRET: dev-jwt-secret-minimum-32-characters
+      SESSION_SECRET: dev-session-secret-minimum-32-characters
+      NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL:-https://example.supabase.co}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY:-dev-anon-key-placeholder}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      TZ: America/Chicago
+      POSTGRES_DB: topshelf
+      POSTGRES_USER: topshelf
+      POSTGRES_PASSWORD: topshelf
+    volumes:
+      - topshelf-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U topshelf -d topshelf"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    environment:
+      TZ: America/Chicago
+    volumes:
+      - topshelf-redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  topshelf-postgres-data:
+  topshelf-redis-data:

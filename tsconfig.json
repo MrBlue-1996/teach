@@ -3,23 +3,41 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
+      "@topshelf/engine": ["packages/engine/src"],
+      "@topshelf/api-server": ["packages/api-server/src"],
+      "@topshelf/auth": ["packages/auth/src"],
+      "@topshelf/database": ["packages/database/src"],
+      "@topshelf/config": ["packages/config/src"],
+      "@topshelf/shared": ["packages/shared/src"],
+      "@topshelf/email": ["packages/email/src"],
+      "@topshelf/billing": ["packages/billing/src"],
+      "@topshelf/observability": ["packages/observability/src"],
+      "@topshelf/cli": ["packages/cli/src"],
+      "@topshelf/content-authoring": ["packages/content-authoring/src"],
+      "@topshelf/tests": ["packages/tests/src"],
       "@topshelf/client-pwa": ["packages/_future/client-pwa/src"],
       "@topshelf/policy-engine": ["packages/_future/policy-engine/src"],
       "@topshelf/deterministic-formatter": ["packages/_future/deterministic-formatter/src"],
-      "@topshelf/content-authoring": ["packages/content-authoring/src"],
-      "@topshelf/shared": ["packages/shared/src"],
-      "@topshelf/nlp": ["packages/_future/nlp/src"],
-      "@topshelf/tests": ["packages/tests/src"]
+      "@topshelf/nlp": ["packages/_future/nlp/src"]
     }
   },
   "references": [
+    { "path": "./packages/engine" },
+    { "path": "./packages/api-server" },
+    { "path": "./packages/auth" },
+    { "path": "./packages/database" },
+    { "path": "./packages/config" },
     { "path": "./packages/shared" },
+    { "path": "./packages/email" },
+    { "path": "./packages/billing" },
+    { "path": "./packages/observability" },
+    { "path": "./packages/cli" },
+    { "path": "./packages/content-authoring" },
+    { "path": "./packages/tests" },
     { "path": "./packages/_future/policy-engine" },
     { "path": "./packages/_future/deterministic-formatter" },
     { "path": "./packages/_future/nlp" },
-    { "path": "./packages/content-authoring" },
-    { "path": "./packages/_future/client-pwa" },
-    { "path": "./packages/tests" }
+    { "path": "./packages/_future/client-pwa" }
   ],
   "files": [],
   "include": []
