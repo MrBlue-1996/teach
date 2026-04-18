@@ -277,9 +277,8 @@ export function createContentRoutes() {
 
       // Evaluate correctness: compare normalised answer against stored correctAnswer
       const blockContent = block.content as Record<string, unknown>;
-      const correctAnswer = typeof blockContent['correctAnswer'] === 'string'
-        ? blockContent['correctAnswer']
-        : null;
+      const correctAnswer =
+        typeof blockContent['correctAnswer'] === 'string' ? blockContent['correctAnswer'] : null;
 
       let correctness = 0;
       if (correctAnswer !== null) {
@@ -317,9 +316,8 @@ export function createContentRoutes() {
 
       // Retrieve hints for incorrect answers
       const hints = Array.isArray(block.hints) ? (block.hints as string[]) : [];
-      const explanation = typeof blockContent['explanation'] === 'string'
-        ? blockContent['explanation']
-        : null;
+      const explanation =
+        typeof blockContent['explanation'] === 'string' ? blockContent['explanation'] : null;
 
       return c.json({
         correct: correctness >= 0.5,

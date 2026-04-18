@@ -53,10 +53,26 @@ const mockDb = {
 
 vi.mock('@topshelf/database', () => ({
   getDatabase: () => mockDb,
-  users: { id: 'id', email: 'email', deletedAt: 'deletedAt', isActive: 'isActive', firstName: 'firstName', lastName: 'lastName', timezone: 'timezone', displayName: 'displayName', updatedAt: 'updatedAt' },
+  users: {
+    id: 'id',
+    email: 'email',
+    deletedAt: 'deletedAt',
+    isActive: 'isActive',
+    firstName: 'firstName',
+    lastName: 'lastName',
+    timezone: 'timezone',
+    displayName: 'displayName',
+    updatedAt: 'updatedAt',
+  },
   authSessions: { userId: 'userId', token: 'token', revokedAt: 'revokedAt' },
   passwordResetTokens: { userId: 'userId', tokenHash: 'tokenHash', usedAt: 'usedAt', id: 'id' },
-  emailVerificationTokens: { userId: 'userId', tokenHash: 'tokenHash', usedAt: 'usedAt', id: 'id', expiresAt: 'expiresAt' },
+  emailVerificationTokens: {
+    userId: 'userId',
+    tokenHash: 'tokenHash',
+    usedAt: 'usedAt',
+    id: 'id',
+    expiresAt: 'expiresAt',
+  },
   eq: (...args: unknown[]) => args,
   and: (...args: unknown[]) => args,
   isNull: (field: unknown) => field,
@@ -113,7 +129,9 @@ describe('Auth Routes', () => {
 
     // Reset default mock returns
     mockDb.query.users.findFirst.mockResolvedValue(null);
-    const returningMock = vi.fn().mockResolvedValue([{ id: 'user-new-1', email: 'newuser@example.com', role: 'learner' }]);
+    const returningMock = vi
+      .fn()
+      .mockResolvedValue([{ id: 'user-new-1', email: 'newuser@example.com', role: 'learner' }]);
     const valuesResult = Object.assign(
       Promise.resolve([{ id: 'user-new-1', email: 'newuser@example.com', role: 'learner' }]),
       { returning: returningMock }

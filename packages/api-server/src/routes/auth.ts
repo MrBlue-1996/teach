@@ -520,9 +520,7 @@ export function createAuthRoutes() {
       await db
         .update(passwordResetTokens)
         .set({ usedAt: new Date() })
-        .where(
-          and(eq(passwordResetTokens.userId, user.id), isNull(passwordResetTokens.usedAt))
-        );
+        .where(and(eq(passwordResetTokens.userId, user.id), isNull(passwordResetTokens.usedAt)));
 
       await db.insert(passwordResetTokens).values({
         userId: user.id,
@@ -564,10 +562,7 @@ export function createAuthRoutes() {
     const tokenHash = createHash('sha256').update(token).digest('hex');
 
     const resetRecord = await db.query.passwordResetTokens.findFirst({
-      where: and(
-        eq(passwordResetTokens.tokenHash, tokenHash),
-        isNull(passwordResetTokens.usedAt)
-      ),
+      where: and(eq(passwordResetTokens.tokenHash, tokenHash), isNull(passwordResetTokens.usedAt)),
       with: { user: true },
     });
 
@@ -592,9 +587,7 @@ export function createAuthRoutes() {
       await tx
         .update(authSessions)
         .set({ revokedAt: new Date() })
-        .where(
-          and(eq(authSessions.userId, resetRecord.userId), isNull(authSessions.revokedAt))
-        );
+        .where(and(eq(authSessions.userId, resetRecord.userId), isNull(authSessions.revokedAt)));
     });
 
     return c.json({ message: 'Password reset successfully. You can now sign in.' });

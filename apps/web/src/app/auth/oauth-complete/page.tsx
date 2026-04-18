@@ -15,8 +15,14 @@ const REFRESH_TOKEN_KEY = 'refresh_token';
 const USER_DATA_KEY = 'user_data';
 
 function getCookie(name: string): string | null {
-  const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
-  return match?.[1] != null ? decodeURIComponent(match[1]) : null;
+  const prefix = `${encodeURIComponent(name)}=`;
+  const cookie = document.cookie.split('; ').find((entry) => entry.startsWith(prefix));
+
+  if (!cookie) {
+    return null;
+  }
+
+  return decodeURIComponent(cookie.slice(prefix.length));
 }
 
 function deleteCookie(name: string, path: string) {

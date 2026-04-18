@@ -6,10 +6,14 @@
 
 import { Hono, type Context } from 'hono';
 import { getDatabase, badges, eq, and, desc } from '@topshelf/database';
-import { notFound } from '../middleware/error-handler.js';
+import { badRequest, notFound } from '../middleware/error-handler.js';
 
 async function verifyBadgeByHash(c: Context) {
   const hash = c.req.param('hash');
+  if (!hash) {
+    throw badRequest('Verification hash is required');
+  }
+
   const db = getDatabase();
 
   const badge = await db.query.badges.findFirst({
