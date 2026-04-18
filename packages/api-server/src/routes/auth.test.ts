@@ -25,13 +25,23 @@ const mockDb = {
     passwordResetTokens: {
       findFirst: vi.fn(),
     },
+    emailVerificationTokens: {
+      findFirst: vi.fn(),
+    },
   },
   insert: vi.fn().mockReturnValue({
-    values: vi.fn().mockReturnValue({
-      returning: vi
-        .fn()
-        .mockResolvedValue([{ id: 'user-new-1', email: 'newuser@example.com', role: 'learner' }]),
-    }),
+    values: vi.fn().mockReturnValue(
+      Object.assign(
+        Promise.resolve([{ id: 'user-new-1', email: 'newuser@example.com', role: 'learner' }]),
+        {
+          returning: vi
+            .fn()
+            .mockResolvedValue([
+              { id: 'user-new-1', email: 'newuser@example.com', role: 'learner' },
+            ]),
+        }
+      )
+    ),
   }),
   update: vi.fn().mockReturnValue({
     set: vi.fn().mockReturnValue({
@@ -46,6 +56,7 @@ vi.mock('@topshelf/database', () => ({
   users: { id: 'id', email: 'email', deletedAt: 'deletedAt', isActive: 'isActive', firstName: 'firstName', lastName: 'lastName', timezone: 'timezone', displayName: 'displayName', updatedAt: 'updatedAt' },
   authSessions: { userId: 'userId', token: 'token', revokedAt: 'revokedAt' },
   passwordResetTokens: { userId: 'userId', tokenHash: 'tokenHash', usedAt: 'usedAt', id: 'id' },
+  emailVerificationTokens: { userId: 'userId', tokenHash: 'tokenHash', usedAt: 'usedAt', id: 'id', expiresAt: 'expiresAt' },
   eq: (...args: unknown[]) => args,
   and: (...args: unknown[]) => args,
   isNull: (field: unknown) => field,
@@ -102,13 +113,12 @@ describe('Auth Routes', () => {
 
     // Reset default mock returns
     mockDb.query.users.findFirst.mockResolvedValue(null);
-    mockDb.insert.mockReturnValue({
-      values: vi.fn().mockReturnValue({
-        returning: vi
-          .fn()
-          .mockResolvedValue([{ id: 'user-new-1', email: 'newuser@example.com', role: 'learner' }]),
-      }),
-    });
+    const returningMock = vi.fn().mockResolvedValue([{ id: 'user-new-1', email: 'newuser@example.com', role: 'learner' }]);
+    const valuesResult = Object.assign(
+      Promise.resolve([{ id: 'user-new-1', email: 'newuser@example.com', role: 'learner' }]),
+      { returning: returningMock }
+    );
+    mockDb.insert.mockReturnValue({ values: vi.fn().mockReturnValue(valuesResult) });
   });
 
   // ---------------------------------------------------------------------------

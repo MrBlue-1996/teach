@@ -344,5 +344,72 @@ export function createContentRoutes() {
     }
   );
 
+  // ---------------------------------------------------------------------------
+  // POST /content/packs/:packId/enroll - Enroll learner in a content pack
+  // ---------------------------------------------------------------------------
+  router.post('/packs/:packId/enroll', async (c) => {
+    const userId = c.get('userId');
+    const packId = c.req.param('packId');
+    const db = getDatabase();
+
+    const pack = await db.query.contentPacks.findFirst({
+      where: and(eq(contentPacks.id, packId), eq(contentPacks.status, 'published')),
+      columns: { id: true },
+    });
+
+    if (!pack) {
+      return c.json({ error: 'Content pack not found or not published' }, 404);
+    }
+
+    const existing = await db.query.learnerStates.findFirst({
+      where: and(eq(learnerStates.userId, userId), eq(learnerStates.contentPackId, packId)),
+      columns: { id: true },
+    });
+
+    if (!existing) {
+      await db.insert(learnerStates).values({
+        userId,
+        contentPackId: packId,
+        currentMode: 'L1_RECALL',
+        overallMastery: 0,
+        totalTimeSpentSeconds: 0,
+        blocksCompleted: 0,
+      });
+    }
+
+    return c.json({ enrolled: true });
+  });
+
+  // ---------------------------------------------------------------------------
+  // DELETE /content/packs/:packId/enroll - Unenroll learner from a content pack
+  // ---------------------------------------------------------------------------
+  router.delete('/packs/:packId/enroll', async (c) => {
+    const userId = c.get('userId');
+    const packId = c.req.param('packId');
+    const db = getDatabase();
+
+    const existing = await db.query.learnerStates.findFirst({
+      where: and(eq(learnerStates.userId, userId), eq(learnerStates.contentPackId, packId)),
+      columns: { id: true, blocksCompleted: true },
+    });
+
+    if (!existing) {
+      return c.json({ enrolled: false });
+    }
+
+    if ((existing.blocksCompleted ?? 0) > 0) {
+      return c.json(
+        { error: 'Cannot unenroll: progress exists. Contact support to reset your progress.' },
+        409
+      );
+    }
+
+    await db
+      .delete(learnerStates)
+      .where(and(eq(learnerStates.userId, userId), eq(learnerStates.contentPackId, packId)));
+
+    return c.json({ enrolled: false });
+  });
+
   return router;
 }

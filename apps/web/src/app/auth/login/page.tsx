@@ -77,7 +77,7 @@ function LoginForm() {
         <CardDescription>Sign in to continue learning</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Google login - fastest path */}
+        {/* Google login */}
         <Button
           variant="outline"
           className="w-full"
@@ -98,7 +98,6 @@ function LoginForm() {
           </div>
         </div>
 
-        {/* Email login form */}
         <form onSubmit={handleSubmit} className="space-y-3">
           {error && (
             <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{error}</div>

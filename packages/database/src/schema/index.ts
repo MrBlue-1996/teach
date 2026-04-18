@@ -180,6 +180,25 @@ export const passwordResetTokens = pgTable(
   })
 );
 
+export const emailVerificationTokens = pgTable(
+  'email_verification_tokens',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    tokenHash: varchar('token_hash', { length: 64 }).notNull().unique(),
+    expiresAt: timestamp('expires_at').notNull(),
+    usedAt: timestamp('used_at'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (table) => ({
+    userIdx: index('evt_user_idx').on(table.userId),
+    tokenHashIdx: uniqueIndex('evt_token_hash_idx').on(table.tokenHash),
+    expiresIdx: index('evt_expires_idx').on(table.expiresAt),
+  })
+);
+
 // =============================================================================
 // CONTENT PACKS & BLOCKS
 // =============================================================================
@@ -499,6 +518,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   learningSessions: many(learningSessions),
   badges: many(badges),
   authoredPacks: many(contentPacks),
+  emailVerificationTokens: many(emailVerificationTokens),
 }));
 
 export const authSessionsRelations = relations(authSessions, ({ one }) => ({
@@ -511,6 +531,20 @@ export const authSessionsRelations = relations(authSessions, ({ one }) => ({
 export const passwordResetTokensRelations = relations(passwordResetTokens, ({ one }) => ({
   user: one(users, {
     fields: [passwordResetTokens.userId],
+    references: [users.id],
+  }),
+}));
+
+export const emailVerificationTokensRelations = relations(emailVerificationTokens, ({ one }) => ({
+  user: one(users, {
+    fields: [emailVerificationTokens.userId],
+    references: [users.id],
+  }),
+}));
+
+export const oauthAccountsRelations = relations(oauthAccounts, ({ one }) => ({
+  user: one(users, {
+    fields: [oauthAccounts.userId],
     references: [users.id],
   }),
 }));

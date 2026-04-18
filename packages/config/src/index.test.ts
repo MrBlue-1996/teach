@@ -91,13 +91,18 @@ describe('ConfigurationManager', () => {
     });
 
     it('should throw when required database name is missing', async () => {
+      // The config module calls dotenv at import time (loads root .env which has
+      // DB_NAME=topshelf). We must delete DB_NAME AFTER the module is re-imported
+      // but BEFORE loadConfig() reads process.env.
       process.env.DB_USER = 'testuser';
       process.env.DB_PASSWORD = 'testpassword';
       process.env.JWT_SECRET = 'a-very-long-jwt-secret-that-is-at-least-32-characters';
       process.env.SESSION_SECRET = 'a-very-long-session-secret-that-is-at-least-32-chars';
-      // Deliberately omit DB_NAME
 
       const { loadConfig } = await loadFreshConfig();
+
+      // Delete AFTER import so dotenv re-injection is undone before parse.
+      delete process.env.DB_NAME;
 
       expect(() => loadConfig()).toThrow('Configuration validation failed');
     });
