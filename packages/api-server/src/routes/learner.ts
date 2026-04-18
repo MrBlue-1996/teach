@@ -444,7 +444,8 @@ export function createLearnerRoutes() {
       const endTime = s.endedAt ?? new Date();
       const rawSeconds = Math.max(0, (endTime.getTime() - s.startedAt.getTime()) / 1000);
       const paused = s.pausedDurationSeconds ?? 0;
-      completedSeconds += rawSeconds - paused;
+      const completedSessionSeconds = Math.max(0, rawSeconds - paused);
+      completedSeconds += completedSessionSeconds;
       activeDays.add(s.startedAt.toISOString().slice(0, 10));
     }
 
