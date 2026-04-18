@@ -18,7 +18,7 @@
     "build": "turbo run build",
     "build:packages": "pnpm -r --filter './packages/*' run build",
     "clean": "turbo run clean && rm -rf node_modules",
-    "dev": "turbo run dev --parallel",
+    "dev": "turbo run dev",
     "dev:server": "pnpm --filter @topshelf/api-server run dev",
     "start": "pnpm --filter @topshelf/api-server run start",
     "format": "prettier --write .",
