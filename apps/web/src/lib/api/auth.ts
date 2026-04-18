@@ -12,7 +12,13 @@ export interface User {
   lastName?: string;
   role: string;
   organizationId?: string;
-  createdAt: string;
+  displayName?: string;
+  emailVerified?: boolean;
+  createdAt?: string;
+}
+
+export interface BackendMeResponse {
+  user: User;
 }
 
 export interface AuthTokens {
@@ -76,11 +82,15 @@ export const authApi = {
   resetPassword: (token: string, password: string) =>
     api.post<{ message: string }>('/auth/reset-password', { token, password }),
 
-  // TODO: Backend does not have a /auth/verify-email endpoint yet
+  /** POST /auth/verify-email \u2014 verify email address with one-time token */
   verifyEmail: (token: string) => api.post<{ message: string }>('/auth/verify-email', { token }),
 
-  // TODO: Backend does not have a /auth/me endpoint yet.
-  // For now, user data is returned from login/register responses and should be
-  // stored client-side. This function is kept for future implementation.
-  me: () => api.get<User>('/auth/me'),
+  me: () => api.get<BackendMeResponse>('/auth/me'),
+
+  updateProfile: (data: {
+    firstName?: string;
+    lastName?: string;
+    displayName?: string;
+    timezone?: string;
+  }) => api.patch<BackendMeResponse>('/auth/me', data),
 };

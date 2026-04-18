@@ -9,7 +9,8 @@ import { z } from 'zod';
 import { learningModeSchema } from './learner.schema.js';
 
 function isSemanticVersion(value: string): boolean {
-  const [core, prerelease] = value.split('-', 2);
+  const [core, ...prereleaseParts] = value.split('-');
+  const prerelease = prereleaseParts.length > 0 ? prereleaseParts.join('-') : undefined;
   const parts = core?.split('.') ?? [];
 
   if (parts.length !== 3 || parts.some((part) => part.length === 0 || !/^\d+$/.test(part))) {
@@ -21,7 +22,7 @@ function isSemanticVersion(value: string): boolean {
   }
 
   return (
-    prerelease.length > 0 && prerelease.split('.').every((part) => /^[a-zA-Z0-9]+$/.test(part))
+    prerelease.length > 0 && prerelease.split('.').every((part) => /^[a-zA-Z0-9-]+$/.test(part))
   );
 }
 

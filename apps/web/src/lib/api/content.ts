@@ -132,18 +132,18 @@ export const contentApi = {
   /** @deprecated Use getPack instead. Maps to GET /content/packs/:packId */
   getCourse: (courseId: string) => api.get<ContentPackDetail>(`/content/packs/${courseId}`),
 
-  // TODO: Backend does not have /content/courses/:id/modules - use getPack which includes blocks
+  /** GET /content/packs/:packId — blocks are included in the pack response */
   getModules: (courseId: string) => api.get<ContentPackDetail>(`/content/packs/${courseId}`),
 
-  // TODO: Backend does not have /content/courses/:id/enroll endpoint
+  /** POST /content/packs/:packId/enroll — begin tracking this pack for the learner */
   enrollInCourse: (courseId: string) =>
     api.post<{ enrolled: boolean }>(`/content/packs/${courseId}/enroll`),
 
-  // TODO: Backend does not have /content/courses/:id/enroll DELETE endpoint
+  /** DELETE /content/packs/:packId/enroll — stop tracking this pack */
   unenrollFromCourse: (courseId: string) =>
     api.delete<{ enrolled: boolean }>(`/content/packs/${courseId}/enroll`),
 
-  // TODO: Backend does not have a submit answer endpoint
+  /** POST /content/packs/:packId/blocks/:blockId/submit — submit a learner answer */
   submitAnswer: (courseId: string, blockId: string, answer: string) =>
     api.post<{
       correct: boolean;
@@ -151,6 +151,6 @@ export const contentApi = {
       correctAnswer?: string;
     }>(`/content/packs/${courseId}/blocks/${blockId}/submit`, { answer }),
 
-  // TODO: Backend does not have a /content/categories endpoint
+  /** GET /content/categories — list available certification categories */
   getCategories: () => api.get<string[]>('/content/categories'),
 };

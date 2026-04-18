@@ -6,7 +6,7 @@ Deploy TopShelf Teaching MCP Server to various environments with confidence.
 
 ## Prerequisites
 
-- Node.js 18+ installed
+- Node.js 20+ installed
 - TypeScript compiler
 - Port 3000 available (or configure custom port)
 
@@ -14,8 +14,8 @@ Deploy TopShelf Teaching MCP Server to various environments with confidence.
 
 ```bash
 cd implementations/mcp-server
-npm install
-npm run dev
+pnpm install
+pnpm run dev
 ```
 
 Server runs with hot-reload on `http://localhost:3000`
@@ -24,9 +24,9 @@ Server runs with hot-reload on `http://localhost:3000`
 
 ```bash
 cd implementations/mcp-server
-npm install --production
-npm run build
-npm start
+pnpm install --prod
+pnpm run build
+pnpm start
 ```
 
 ## Environment Variables
@@ -44,12 +44,14 @@ SESSION_TIMEOUT_MS=3600000  # 1 hour session timeout
 ### Dockerfile
 
 ```dockerfile
-FROM node:18-alpine
+FROM node:20-alpine
+
+RUN corepack enable
 
 WORKDIR /app
 
 COPY implementations/mcp-server/package*.json ./
-RUN npm ci --production
+RUN pnpm install --prod
 
 COPY implementations/mcp-server/dist ./dist
 
@@ -70,7 +72,7 @@ docker run -p 3000:3000 topshelf-teach
 ### AWS EC2
 
 1. Launch Ubuntu instance
-2. Install Node.js 18+
+2. Install Node.js 20+
 3. Clone repository
 4. Build and run
 5. Use PM2 for process management

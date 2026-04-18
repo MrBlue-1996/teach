@@ -1,4 +1,16 @@
+/**
+ * TopShelf Service LLC
+ * PROPRIETARY AND CONFIDENTIAL
+ * Copyright (c) 2026 TopShelf Service LLC. All Rights Reserved.
+ */
+
 import type { Metadata, Viewport } from 'next';
+import '@fontsource/inter/400.css';
+import '@fontsource/inter/500.css';
+import '@fontsource/inter/600.css';
+import '@fontsource/montserrat/600.css';
+import '@fontsource/montserrat/700.css';
+import '@fontsource/montserrat/800.css';
 import { ThemeProvider } from '@/components/providers/theme-provider';
 import { Toaster } from '@/components/ui/toaster';
 import './globals.css';
@@ -6,25 +18,25 @@ import './globals.css';
 export const metadata: Metadata = {
   metadataBase: new URL('https://topshelfteaching.com'),
   title: {
-    default: 'TopShelf Teaching - Learn Faster, Learn Smarter',
-    template: '%s | TopShelf Teaching',
+    default: 'Top Shelf Teaching — The hardest part is done for you.',
+    template: '%s | Top Shelf Teaching',
   },
   description:
     'Master IT skills the most effective way possible. AI-powered learning that adapts to you.',
   keywords: ['learning', 'IT certification', 'education', 'skills', 'training'],
-  authors: [{ name: 'TopShelf Service LLC' }],
-  creator: 'TopShelf Service LLC',
+  authors: [{ name: 'Top Shelf Service LLC' }],
+  creator: 'Top Shelf Service LLC',
   openGraph: {
     type: 'website',
     locale: 'en_US',
     url: 'https://topshelfteaching.com',
-    siteName: 'TopShelf Teaching',
-    title: 'TopShelf Teaching - Learn Faster, Learn Smarter',
+    siteName: 'Top Shelf Teaching',
+    title: 'Top Shelf Teaching — The hardest part is done for you.',
     description: 'Master IT skills the most effective way possible.',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'TopShelf Teaching',
+    title: 'Top Shelf Teaching',
     description: 'Master IT skills the most effective way possible.',
   },
   robots: {
@@ -35,8 +47,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
-    { media: '(prefers-color-scheme: dark)', color: '#0f172a' },
+    { media: '(prefers-color-scheme: light)', color: '#F3F4F6' },
+    { media: '(prefers-color-scheme: dark)', color: '#050507' },
   ],
   width: 'device-width',
   initialScale: 1,

@@ -50,7 +50,7 @@ describe('apiRequest', () => {
     await apiRequest<{ data: string }>('/test');
 
     expect(mockFetch).toHaveBeenCalledTimes(1);
-    const [url, options] = mockFetch.mock.calls[0];
+    const [url, options] = mockFetch.mock.calls[0]!;
     expect(url).toBe('http://localhost:3000/api/v1/test');
     expect(options.method).toBeUndefined(); // Default GET
   });
@@ -63,7 +63,7 @@ describe('apiRequest', () => {
 
     await apiRequest('/test', { params: { foo: 'bar', baz: '123' } });
 
-    const [url] = mockFetch.mock.calls[0];
+    const [url] = mockFetch.mock.calls[0]!;
     expect(url).toBe('http://localhost:3000/api/v1/test?foo=bar&baz=123');
   });
 
@@ -75,7 +75,7 @@ describe('apiRequest', () => {
 
     await apiRequest('/test', { method: 'POST', body: JSON.stringify({ data: 'test' }) });
 
-    const [, options] = mockFetch.mock.calls[0];
+    const [, options] = mockFetch.mock.calls[0]!;
     const headers = options.headers as Headers;
     expect(headers.get('Content-Type')).toBe('application/json');
   });
@@ -92,7 +92,7 @@ describe('apiRequest', () => {
       headers: { 'Content-Type': 'text/plain' },
     });
 
-    const [, options] = mockFetch.mock.calls[0];
+    const [, options] = mockFetch.mock.calls[0]!;
     const headers = options.headers as Headers;
     expect(headers.get('Content-Type')).toBe('text/plain');
   });
@@ -106,7 +106,7 @@ describe('apiRequest', () => {
 
     await apiRequest('/test');
 
-    const [, options] = mockFetch.mock.calls[0];
+    const [, options] = mockFetch.mock.calls[0]!;
     const headers = options.headers as Headers;
     expect(headers.get('Authorization')).toBe('Bearer test-token-123');
   });
@@ -120,7 +120,7 @@ describe('apiRequest', () => {
 
     await apiRequest('/test', { headers: { Authorization: 'Bearer custom-token' } });
 
-    const [, options] = mockFetch.mock.calls[0];
+    const [, options] = mockFetch.mock.calls[0]!;
     const headers = options.headers as Headers;
     expect(headers.get('Authorization')).toBe('Bearer custom-token');
   });
@@ -218,7 +218,7 @@ describe('api convenience methods', () => {
 
       await api.get('/users');
 
-      const [url, options] = mockFetch.mock.calls[0];
+      const [url, options] = mockFetch.mock.calls[0]!;
       expect(url).toBe('http://localhost:3000/api/v1/users');
       expect(options.method).toBe('GET');
     });
@@ -231,7 +231,7 @@ describe('api convenience methods', () => {
 
       await api.get('/users', { page: '1', limit: '10' });
 
-      const [url] = mockFetch.mock.calls[0];
+      const [url] = mockFetch.mock.calls[0]!;
       expect(url).toBe('http://localhost:3000/api/v1/users?page=1&limit=10');
     });
   });
@@ -245,7 +245,7 @@ describe('api convenience methods', () => {
 
       await api.post('/users', { name: 'Test' });
 
-      const [url, options] = mockFetch.mock.calls[0];
+      const [url, options] = mockFetch.mock.calls[0]!;
       expect(url).toBe('http://localhost:3000/api/v1/users');
       expect(options.method).toBe('POST');
       expect(options.body).toBe('{"name":"Test"}');
@@ -259,7 +259,7 @@ describe('api convenience methods', () => {
 
       await api.post('/logout');
 
-      const [, options] = mockFetch.mock.calls[0];
+      const [, options] = mockFetch.mock.calls[0]!;
       expect(options.method).toBe('POST');
       expect(options.body).toBeUndefined();
     });
@@ -274,7 +274,7 @@ describe('api convenience methods', () => {
 
       await api.put('/users/1', { name: 'Updated' });
 
-      const [url, options] = mockFetch.mock.calls[0];
+      const [url, options] = mockFetch.mock.calls[0]!;
       expect(url).toBe('http://localhost:3000/api/v1/users/1');
       expect(options.method).toBe('PUT');
       expect(options.body).toBe('{"name":"Updated"}');
@@ -290,7 +290,7 @@ describe('api convenience methods', () => {
 
       await api.patch('/users/1', { name: 'Patched' });
 
-      const [url, options] = mockFetch.mock.calls[0];
+      const [url, options] = mockFetch.mock.calls[0]!;
       expect(url).toBe('http://localhost:3000/api/v1/users/1');
       expect(options.method).toBe('PATCH');
       expect(options.body).toBe('{"name":"Patched"}');
@@ -306,7 +306,7 @@ describe('api convenience methods', () => {
 
       await api.delete('/users/1');
 
-      const [url, options] = mockFetch.mock.calls[0];
+      const [url, options] = mockFetch.mock.calls[0]!;
       expect(url).toBe('http://localhost:3000/api/v1/users/1');
       expect(options.method).toBe('DELETE');
     });

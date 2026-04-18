@@ -67,6 +67,13 @@ const mockSession = {
   userId: 'user-test-1',
   learnerStateId: 'state-1',
   status: 'active',
+  deviceInfo: { userAgent: 'Mozilla/5.0 (X11; CrOS x86_64 14526.89.0)' },
+  teachingMode: 2,
+  deviceProfile: 'chromebook_standard',
+  errorsEncountered: 2,
+  problemsSolved: 0,
+  triggersFired: [],
+  averageCorrectness: 0.5,
   blocksCompleted: 5,
   blocksAttempted: 6,
   startedAt: new Date('2026-03-20T10:00:00Z'),
@@ -385,6 +392,55 @@ describe('Learner Routes', () => {
       expect(res.status).toBe(201);
     });
 
+    it('should persist default teaching context when starting a session', async () => {
+      const valuesSpy = vi.fn().mockReturnValue({
+        returning: vi.fn().mockResolvedValue([
+          {
+            id: 'new-session-1',
+            userId: 'user-test-1',
+            learnerStateId: 'state-1',
+            status: 'active',
+            teachingMode: 2,
+            deviceProfile: 'chromebook_standard',
+            startedAt: new Date(),
+          },
+        ]),
+      });
+
+      mockDb.query.learnerStates.findFirst.mockResolvedValue(mockLearnerState);
+      mockDb.insert.mockReturnValue({ values: valuesSpy });
+
+      const res = await app.request('/learner/session/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contentPackId: '550e8400-e29b-41d4-a716-446655440000',
+          deviceInfo: mockSession.deviceInfo,
+        }),
+      });
+
+      expect(res.status).toBe(201);
+      expect(valuesSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          status: 'active',
+          teachingMode: 2,
+          deviceProfile: 'chromebook_standard',
+          errorsEncountered: 0,
+          problemsSolved: 0,
+          triggersFired: [],
+          deviceInfo: mockSession.deviceInfo,
+        })
+      );
+
+      const body = await res.json();
+      expect(body.teaching).toEqual(
+        expect.objectContaining({
+          mode: 2,
+          deviceProfile: 'chromebook_standard',
+        })
+      );
+    });
+
     it('should reject invalid content pack ID format', async () => {
       const res = await app.request('/learner/session/start', {
         method: 'POST',
@@ -487,6 +543,114 @@ describe('Learner Routes', () => {
       });
 
       expect(res.status).toBe(200);
+    });
+
+    it('should update learner and session metrics for a correct completion event', async () => {
+      const setSpy = vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue(undefined),
+      });
+
+      mockDb.query.learningSessions.findFirst.mockResolvedValue({
+        ...mockSession,
+        startedAt: new Date(),
+        teachingMode: 2,
+        errorsEncountered: 0,
+        problemsSolved: 1,
+        triggersFired: [],
+      });
+      mockDb.update.mockReturnValue({ set: setSpy });
+
+      const res = await app.request('/learner/session/session-1/event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          blockId: 'block-7',
+          eventType: 'completed',
+          correctness: 0.85,
+          timeSpentSeconds: 120,
+        }),
+      });
+
+      expect(res.status).toBe(200);
+      expect(setSpy).toHaveBeenNthCalledWith(
+        1,
+        expect.objectContaining({
+          currentBlockId: 'block-7',
+          blocksCompleted: 6,
+        })
+      );
+      expect(setSpy).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({
+          blocksCompleted: 6,
+          blocksAttempted: 7,
+          problemsSolved: 2,
+          averageCorrectness: 0.55,
+          teachingMode: 2,
+          triggersFired: [],
+          deviceProfile: 'chromebook_standard',
+        })
+      );
+    });
+
+    it('should persist trigger state and elevated teaching mode after repeated struggle', async () => {
+      const setSpy = vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue(undefined),
+      });
+
+      mockDb.update.mockReturnValue({ set: setSpy });
+
+      const res = await app.request('/learner/session/session-1/event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          blockId: 'block-3',
+          eventType: 'hint_used',
+        }),
+      });
+
+      expect(res.status).toBe(200);
+      expect(setSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          teachingMode: 3,
+          triggersFired: expect.arrayContaining(['error_repeated', 'stuck_detected']),
+        })
+      );
+    });
+
+    it('should only update session struggle counters for skipped events', async () => {
+      const setSpy = vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue(undefined),
+      });
+
+      mockDb.query.learningSessions.findFirst.mockResolvedValue({
+        ...mockSession,
+        startedAt: new Date(),
+        errorsEncountered: 1,
+        problemsSolved: 2,
+        teachingMode: 2,
+      });
+      mockDb.update.mockReturnValue({ set: setSpy });
+
+      const res = await app.request('/learner/session/session-1/event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          blockId: 'block-4',
+          eventType: 'skipped',
+        }),
+      });
+
+      expect(res.status).toBe(200);
+      expect(setSpy).toHaveBeenCalledTimes(1);
+      expect(setSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          errorsEncountered: 2,
+          teachingMode: 2,
+          triggersFired: [],
+          deviceProfile: 'chromebook_standard',
+        })
+      );
     });
 
     it('should record skipped event', async () => {

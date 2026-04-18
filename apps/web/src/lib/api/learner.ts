@@ -150,14 +150,8 @@ export const learnerApi = {
     api.post<EndSessionResponse>(`/learner/session/${sessionId}/end`),
 
   /** POST /learner/session/:sessionId/teach - Get engine-backed teaching guidance */
-  getTeachingGuidance: (
-    sessionId: string,
-    opts?: { blockId?: string; content?: string }
-  ) =>
-    api.post<TeachingGuidanceResponse>(
-      `/learner/session/${sessionId}/teach`,
-      opts ?? {}
-    ),
+  getTeachingGuidance: (sessionId: string, opts?: { blockId?: string; content?: string }) =>
+    api.post<TeachingGuidanceResponse>(`/learner/session/${sessionId}/teach`, opts ?? {}),
 
   /** GET /session - List user's learning sessions (separate session route) */
   getRecentSessions: (limit?: number) =>
@@ -166,13 +160,13 @@ export const learnerApi = {
       limit ? { limit: String(limit) } : undefined
     ),
 
-  // TODO: Backend does not have /learner/weekly-goal endpoint
+  /** GET /learner/weekly-goal — summary of weekly learning activity */
   getWeeklyGoal: () =>
     api.get<{ targetMinutes: number; completedMinutes: number; daysActive: number }>(
       '/learner/weekly-goal'
     ),
 
-  // TODO: Backend does not have PATCH /learner/weekly-goal endpoint
+  /** PATCH /learner/weekly-goal — update the learner's weekly target */
   updateWeeklyGoal: (targetMinutes: number) =>
     api.patch<{ targetMinutes: number; completedMinutes: number; daysActive: number }>(
       '/learner/weekly-goal',

@@ -52,18 +52,18 @@ const DEVICE_PROFILES: Record<DeviceProfile, DeviceConstraints> = {
   },
 };
 
-export class ConstraintEngine {
+export const ConstraintEngine = {
   /**
    * Get device constraints for a profile
    */
-  static getConstraints(profile: DeviceProfile): DeviceConstraints {
+  getConstraints(profile: DeviceProfile): DeviceConstraints {
     return DEVICE_PROFILES[profile];
-  }
+  },
 
   /**
    * Check if a suggestion is suitable for the device
    */
-  static isSuggestionSuitable(
+  isSuggestionSuitable(
     suggestion: string,
     profile: DeviceProfile
   ): { suitable: boolean; reason?: string } {
@@ -105,12 +105,12 @@ export class ConstraintEngine {
     }
 
     return { suitable: true };
-  }
+  },
 
   /**
    * Filter and optimize suggestion for device
    */
-  static filterSuggestion(
+  filterSuggestion(
     suggestion: string,
     profile: DeviceProfile
   ): { filtered: string; wasModified: boolean } {
@@ -119,26 +119,28 @@ export class ConstraintEngine {
     let wasModified = false;
 
     if (filtered.length > constraints.maxResponseSize) {
+      const safeTruncateLength = Math.max(0, constraints.maxResponseSize - 100);
       filtered =
-        filtered.substring(0, constraints.maxResponseSize - 100) +
+        filtered.substring(0, safeTruncateLength) +
         '\n\n[Response truncated for device constraints]';
       wasModified = true;
     }
 
     return { filtered, wasModified };
-  }
+  },
 
   /**
    * Infer a DeviceProfile from arbitrary device info.
    * Falls back to CHROMEBOOK_STANDARD when unknown.
    */
-  static inferProfile(deviceInfo?: Record<string, unknown> | null): DeviceProfile {
+  inferProfile(deviceInfo?: Record<string, unknown> | null): DeviceProfile {
     if (!deviceInfo) {
       return DeviceProfile.CHROMEBOOK_STANDARD;
     }
 
-    const ua = (typeof deviceInfo['userAgent'] === 'string' ? deviceInfo['userAgent'] : '')
-      .toLowerCase();
+    const ua = (
+      typeof deviceInfo['userAgent'] === 'string' ? deviceInfo['userAgent'] : ''
+    ).toLowerCase();
     const mem = typeof deviceInfo['deviceMemory'] === 'number' ? deviceInfo['deviceMemory'] : null;
     const cores =
       typeof deviceInfo['hardwareConcurrency'] === 'number'
@@ -157,5 +159,5 @@ export class ConstraintEngine {
     if (cores !== null && cores >= 8) return DeviceProfile.DESKTOP_HIGH;
     if (mem !== null && mem >= 8) return DeviceProfile.DESKTOP_HIGH;
     return DeviceProfile.DESKTOP_STANDARD;
-  }
-}
+  },
+};

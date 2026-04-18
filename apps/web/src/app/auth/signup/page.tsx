@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowRight, Mail, Lock, User, Chrome } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
-import { supabase } from '@/lib/supabase';
+import { getSupabaseBrowserClient } from '@/lib/supabase';
 
 function SignupForm() {
   const { signup } = useAuth();
@@ -78,10 +78,11 @@ function SignupForm() {
   };
 
   const handleGoogleSignup = async () => {
-    setErrors((prev) => ({ ...prev, form: '' }));
+    setErrors({});
     setIsLoading(true);
 
     try {
+      const supabase = getSupabaseBrowserClient();
       const redirectTo = new URL('/auth/callback', window.location.origin);
       const { error: authError } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -108,7 +109,7 @@ function SignupForm() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Google signup - fastest path */}
+        {/* Google signup */}
         <Button
           variant="outline"
           className="w-full"
@@ -129,7 +130,6 @@ function SignupForm() {
           </div>
         </div>
 
-        {/* Email signup form */}
         <form onSubmit={handleSubmit} className="space-y-3">
           {errors.form && (
             <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
@@ -142,6 +142,7 @@ function SignupForm() {
               <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 name="name"
+                autoComplete="name"
                 placeholder="Full name"
                 className="pl-10"
                 value={formData.name}
@@ -159,6 +160,7 @@ function SignupForm() {
               <Input
                 name="email"
                 type="email"
+                autoComplete="email"
                 placeholder="Email"
                 className="pl-10"
                 value={formData.email}
@@ -176,6 +178,7 @@ function SignupForm() {
               <Input
                 name="password"
                 type="password"
+                autoComplete="new-password"
                 placeholder="Password (8+ characters)"
                 className="pl-10"
                 value={formData.password}

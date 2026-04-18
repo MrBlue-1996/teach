@@ -12,6 +12,7 @@ import {
   contentPacks,
   contentBlocks,
   learnerStates,
+  learnerProgressEvents,
   eq,
   and,
   desc,
@@ -231,6 +232,105 @@ export function createContentRoutes() {
   });
 
   // ---------------------------------------------------------------------------
+  // GET /content/categories - List distinct certification targets
+  // ---------------------------------------------------------------------------
+  router.get('/categories', async (c) => {
+    const db = getDatabase();
+
+    const packs = await db.query.contentPacks.findMany({
+      where: eq(contentPacks.status, 'published'),
+      columns: { certificationTarget: true },
+    });
+
+    const categories = [...new Set(packs.map((p) => p.certificationTarget).filter(Boolean))];
+
+    return c.json({ categories });
+  });
+
+  // ---------------------------------------------------------------------------
+  // POST /content/packs/:packId/blocks/:blockId/submit - Submit an answer
+  // ---------------------------------------------------------------------------
+
+  const SubmitAnswerSchema = z.object({
+    answer: z.string().min(1).max(2000),
+    sessionId: z.string().uuid(),
+    timeSpentSeconds: z.number().int().min(0).optional(),
+  });
+
+  router.post(
+    '/packs/:packId/blocks/:blockId/submit',
+    zValidator('json', SubmitAnswerSchema),
+    async (c) => {
+      const packId = c.req.param('packId');
+      const blockId = c.req.param('blockId');
+      const userId = c.get('userId');
+      const { answer, sessionId, timeSpentSeconds } = c.req.valid('json');
+      const db = getDatabase();
+
+      const block = await db.query.contentBlocks.findFirst({
+        where: and(eq(contentBlocks.packId, packId), eq(contentBlocks.blockId, blockId)),
+      });
+
+      if (!block) {
+        throw notFound('Content block', blockId);
+      }
+
+      // Evaluate correctness: compare normalised answer against stored correctAnswer
+      const blockContent = block.content as Record<string, unknown>;
+      const correctAnswer =
+        typeof blockContent['correctAnswer'] === 'string' ? blockContent['correctAnswer'] : null;
+
+      let correctness = 0;
+      if (correctAnswer !== null) {
+        const norm = (s: string) => s.trim().toLowerCase().replace(/\s+/g, ' ');
+        correctness = norm(answer) === norm(correctAnswer) ? 1 : 0;
+      }
+
+      // Record a progress event
+      const learnerState = await db.query.learnerStates.findFirst({
+        where: and(eq(learnerStates.userId, userId), eq(learnerStates.contentPackId, packId)),
+      });
+
+      if (learnerState) {
+        await db.insert(learnerProgressEvents).values({
+          userId,
+          learnerStateId: learnerState.id,
+          blockId,
+          eventType: 'completed',
+          responseData: { answer },
+          correctness,
+          ...(timeSpentSeconds !== undefined ? { timeSpentSeconds } : {}),
+          occurredAt: new Date(),
+        });
+
+        // Update learner state counters
+        await db
+          .update(learnerStates)
+          .set({
+            blocksCompleted: learnerState.blocksCompleted + (correctness >= 0.5 ? 1 : 0),
+            currentBlockId: blockId,
+            lastActivityAt: new Date(),
+          })
+          .where(eq(learnerStates.id, learnerState.id));
+      }
+
+      // Retrieve hints for incorrect answers
+      const hints = Array.isArray(block.hints) ? (block.hints as string[]) : [];
+      const explanation =
+        typeof blockContent['explanation'] === 'string' ? blockContent['explanation'] : null;
+
+      return c.json({
+        correct: correctness >= 0.5,
+        correctness,
+        ...(correctAnswer !== null ? { correctAnswer } : {}),
+        ...(explanation !== null ? { explanation } : {}),
+        hints: correctness < 0.5 ? hints.slice(0, 1) : [],
+        sessionId,
+      });
+    }
+  );
+
+  // ---------------------------------------------------------------------------
   // ADMIN: POST /content/packs - Create new content pack (content authors only)
   // ---------------------------------------------------------------------------
   router.post(
@@ -241,6 +341,73 @@ export function createContentRoutes() {
       return c.json({ message: 'Content pack creation endpoint' }, 501);
     }
   );
+
+  // ---------------------------------------------------------------------------
+  // POST /content/packs/:packId/enroll - Enroll learner in a content pack
+  // ---------------------------------------------------------------------------
+  router.post('/packs/:packId/enroll', async (c) => {
+    const userId = c.get('userId');
+    const packId = c.req.param('packId');
+    const db = getDatabase();
+
+    const pack = await db.query.contentPacks.findFirst({
+      where: and(eq(contentPacks.id, packId), eq(contentPacks.status, 'published')),
+      columns: { id: true },
+    });
+
+    if (!pack) {
+      return c.json({ error: 'Content pack not found or not published' }, 404);
+    }
+
+    const existing = await db.query.learnerStates.findFirst({
+      where: and(eq(learnerStates.userId, userId), eq(learnerStates.contentPackId, packId)),
+      columns: { id: true },
+    });
+
+    if (!existing) {
+      await db.insert(learnerStates).values({
+        userId,
+        contentPackId: packId,
+        currentMode: 'L1_RECALL',
+        overallMastery: 0,
+        totalTimeSpentSeconds: 0,
+        blocksCompleted: 0,
+      });
+    }
+
+    return c.json({ enrolled: true });
+  });
+
+  // ---------------------------------------------------------------------------
+  // DELETE /content/packs/:packId/enroll - Unenroll learner from a content pack
+  // ---------------------------------------------------------------------------
+  router.delete('/packs/:packId/enroll', async (c) => {
+    const userId = c.get('userId');
+    const packId = c.req.param('packId');
+    const db = getDatabase();
+
+    const existing = await db.query.learnerStates.findFirst({
+      where: and(eq(learnerStates.userId, userId), eq(learnerStates.contentPackId, packId)),
+      columns: { id: true, blocksCompleted: true },
+    });
+
+    if (!existing) {
+      return c.json({ enrolled: false });
+    }
+
+    if ((existing.blocksCompleted ?? 0) > 0) {
+      return c.json(
+        { error: 'Cannot unenroll: progress exists. Contact support to reset your progress.' },
+        409
+      );
+    }
+
+    await db
+      .delete(learnerStates)
+      .where(and(eq(learnerStates.userId, userId), eq(learnerStates.contentPackId, packId)));
+
+    return c.json({ enrolled: false });
+  });
 
   return router;
 }

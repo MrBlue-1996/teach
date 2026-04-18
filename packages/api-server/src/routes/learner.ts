@@ -9,14 +9,15 @@ import { z } from 'zod';
 import { zValidator } from '@hono/zod-validator';
 import {
   getDatabase,
+  users,
   learnerStates,
   learnerProgressEvents,
   learningSessions,
   contentBlocks,
   eq,
   and,
+  gte,
   desc,
-  asc,
 } from '@topshelf/database';
 import {
   PedagogyEngine,
@@ -245,6 +246,8 @@ export function createLearnerRoutes() {
 
     // ---- Update teaching metrics on the session ----
     const sessionUpdates: Record<string, unknown> = {};
+    let nextProblemsSolved = session.problemsSolved ?? 0;
+    let nextErrorsEncountered = session.errorsEncountered ?? 0;
 
     if (eventData.eventType === 'completed') {
       sessionUpdates['blocksCompleted'] = (session.blocksCompleted || 0) + 1;
@@ -252,12 +255,14 @@ export function createLearnerRoutes() {
 
       // Correct answer → increment problems solved
       if (eventData.correctness !== undefined && eventData.correctness >= 0.5) {
-        sessionUpdates['problemsSolved'] = (session.problemsSolved ?? 0) + 1;
+        nextProblemsSolved += 1;
+        sessionUpdates['problemsSolved'] = nextProblemsSolved;
       }
 
       // Wrong answer → increment errors
       if (eventData.correctness !== undefined && eventData.correctness < 0.5) {
-        sessionUpdates['errorsEncountered'] = (session.errorsEncountered ?? 0) + 1;
+        nextErrorsEncountered += 1;
+        sessionUpdates['errorsEncountered'] = nextErrorsEncountered;
       }
 
       // Update learner state
@@ -273,7 +278,42 @@ export function createLearnerRoutes() {
 
     if (eventData.eventType === 'hint_used') {
       // Requesting a hint counts as an implicit error signal
-      sessionUpdates['errorsEncountered'] = (session.errorsEncountered ?? 0) + 1;
+      nextErrorsEncountered += 1;
+      sessionUpdates['errorsEncountered'] = nextErrorsEncountered;
+    }
+
+    if (eventData.eventType === 'skipped') {
+      nextErrorsEncountered += 1;
+      sessionUpdates['errorsEncountered'] = nextErrorsEncountered;
+    }
+
+    const deviceProfile = ConstraintEngine.inferProfile(
+      session.deviceInfo as Record<string, unknown> | null
+    );
+
+    const teachingContext: TeachingContext = {
+      mode: (session.teachingMode ?? TeachingMode.L2_CONTEXTUAL) as TeachingMode,
+      deviceProfile,
+      constraints: ConstraintEngine.getConstraints(deviceProfile),
+      triggers: [],
+      sessionStartTime: session.startedAt,
+      problemsSolved: nextProblemsSolved,
+      errorsEncountered: nextErrorsEncountered,
+    };
+
+    const triggers = TriggerDetector.detectTriggers(teachingContext);
+    const suggestedMode = TriggerDetector.suggestModeElevation(teachingContext.mode, triggers);
+
+    sessionUpdates['triggersFired'] = triggers;
+    sessionUpdates['teachingMode'] = suggestedMode;
+    sessionUpdates['deviceProfile'] = deviceProfile;
+
+    if (eventData.correctness !== undefined && eventData.eventType === 'completed') {
+      const priorAttempts = session.blocksAttempted ?? 0;
+      const previousAverage = session.averageCorrectness ?? null;
+      const nextAttemptCount = priorAttempts + 1;
+      const correctnessTotal = (previousAverage ?? 0) * priorAttempts + eventData.correctness;
+      sessionUpdates['averageCorrectness'] = correctnessTotal / nextAttemptCount;
     }
 
     if (Object.keys(sessionUpdates).length > 0) {
@@ -364,84 +404,185 @@ export function createLearnerRoutes() {
   });
 
   // ---------------------------------------------------------------------------
+  // GET /learner/weekly-goal - Weekly learning goal summary
+  // ---------------------------------------------------------------------------
+  router.get('/weekly-goal', async (c) => {
+    const userId = c.get('userId');
+    const db = getDatabase();
+
+    // Compute start of current ISO week (Monday)
+    const now = new Date();
+    const day = now.getUTCDay(); // 0 = Sunday
+    const diffToMonday = day === 0 ? -6 : 1 - day;
+    const weekStart = new Date(now);
+    weekStart.setUTCDate(now.getUTCDate() + diffToMonday);
+    weekStart.setUTCHours(0, 0, 0, 0);
+
+    // Read stored weekly target from user metadata
+    const user = await db.query.users.findFirst({
+      where: eq(users.id, userId),
+      columns: { metadata: true },
+    });
+
+    const meta = (user?.metadata ?? {}) as Record<string, unknown>;
+    const targetMinutes =
+      typeof meta['weeklyGoalMinutes'] === 'number' ? meta['weeklyGoalMinutes'] : 60;
+
+    // Sum time from sessions completed this week
+    const sessions = await db.query.learningSessions.findMany({
+      where: and(eq(learningSessions.userId, userId), gte(learningSessions.startedAt, weekStart)),
+      columns: { startedAt: true, endedAt: true, pausedDurationSeconds: true },
+    });
+
+    let completedSeconds = 0;
+    const activeDays = new Set<string>();
+    for (const s of sessions) {
+      const endTime = s.endedAt ?? new Date();
+      const rawSeconds = Math.max(0, (endTime.getTime() - s.startedAt.getTime()) / 1000);
+      const paused = s.pausedDurationSeconds ?? 0;
+      const completedSessionSeconds = Math.max(0, rawSeconds - paused);
+      completedSeconds += completedSessionSeconds;
+      activeDays.add(s.startedAt.toISOString().slice(0, 10));
+    }
+
+    return c.json({
+      targetMinutes,
+      completedMinutes: Math.round(completedSeconds / 60),
+      daysActive: activeDays.size,
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // PATCH /learner/weekly-goal - Update weekly learning target
+  // ---------------------------------------------------------------------------
+  const WeeklyGoalSchema = z.object({
+    targetMinutes: z.number().int().min(15).max(10080), // 15 min to 1 week
+  });
+
+  router.patch('/weekly-goal', zValidator('json', WeeklyGoalSchema), async (c) => {
+    const userId = c.get('userId');
+    const { targetMinutes } = c.req.valid('json');
+    const db = getDatabase();
+
+    // Read current metadata
+    const user = await db.query.users.findFirst({
+      where: eq(users.id, userId),
+      columns: { metadata: true },
+    });
+
+    const existing = (user?.metadata ?? {}) as Record<string, unknown>;
+    const updated = { ...existing, weeklyGoalMinutes: targetMinutes };
+
+    await db
+      .update(users)
+      .set({ metadata: updated, updatedAt: new Date() })
+      .where(eq(users.id, userId));
+
+    // Recompute this week's progress
+    const now = new Date();
+    const day = now.getUTCDay();
+    const diffToMonday = day === 0 ? -6 : 1 - day;
+    const weekStart = new Date(now);
+    weekStart.setUTCDate(now.getUTCDate() + diffToMonday);
+    weekStart.setUTCHours(0, 0, 0, 0);
+
+    const sessions = await db.query.learningSessions.findMany({
+      where: and(eq(learningSessions.userId, userId), gte(learningSessions.startedAt, weekStart)),
+      columns: { startedAt: true, endedAt: true, pausedDurationSeconds: true },
+    });
+
+    let completedSeconds = 0;
+    const activeDays = new Set<string>();
+    for (const s of sessions) {
+      const endTime = s.endedAt ?? new Date();
+      const rawSeconds = Math.max(0, (endTime.getTime() - s.startedAt.getTime()) / 1000);
+      const paused = s.pausedDurationSeconds ?? 0;
+      completedSeconds += rawSeconds - paused;
+      activeDays.add(s.startedAt.toISOString().slice(0, 10));
+    }
+
+    return c.json({
+      targetMinutes,
+      completedMinutes: Math.round(completedSeconds / 60),
+      daysActive: activeDays.size,
+    });
+  });
+
+  // ---------------------------------------------------------------------------
   // POST /learner/session/:sessionId/teach - Get engine-backed teaching guidance
   // ---------------------------------------------------------------------------
-  router.post(
-    '/session/:sessionId/teach',
-    zValidator('json', TeachRequestSchema),
-    async (c) => {
-      const userId = c.get('userId');
-      const sessionId = c.req.param('sessionId');
-      const { blockId, content: clientContent } = c.req.valid('json');
-      const db = getDatabase();
+  router.post('/session/:sessionId/teach', zValidator('json', TeachRequestSchema), async (c) => {
+    const userId = c.get('userId');
+    const sessionId = c.req.param('sessionId');
+    const { blockId, content: clientContent } = c.req.valid('json');
+    const db = getDatabase();
 
-      // Look up session
-      const session = await db.query.learningSessions.findFirst({
-        where: and(
-          eq(learningSessions.id, sessionId),
-          eq(learningSessions.userId, userId),
-          eq(learningSessions.status, 'active')
-        ),
-        with: { learnerState: true },
+    // Look up session
+    const session = await db.query.learningSessions.findFirst({
+      where: and(
+        eq(learningSessions.id, sessionId),
+        eq(learningSessions.userId, userId),
+        eq(learningSessions.status, 'active')
+      ),
+      with: { learnerState: true },
+    });
+
+    if (!session) {
+      throw notFound('Active session', sessionId);
+    }
+
+    // Resolve teaching content: prefer existing block hints, fall back to client
+    let teachingContent = clientContent ?? '';
+
+    if (blockId) {
+      const block = await db.query.contentBlocks.findFirst({
+        where: eq(contentBlocks.blockId, blockId),
       });
 
-      if (!session) {
-        throw notFound('Active session', sessionId);
-      }
-
-      // Resolve teaching content: prefer existing block hints, fall back to client
-      let teachingContent = clientContent ?? '';
-
-      if (blockId) {
-        const block = await db.query.contentBlocks.findFirst({
-          where: eq(contentBlocks.blockId, blockId),
-        });
-
-        if (block) {
-          const hints = Array.isArray(block.hints) ? (block.hints as string[]) : [];
-          if (hints.length > 0) {
-            teachingContent = hints.join('\n\n');
-          }
+      if (block) {
+        const hints = Array.isArray(block.hints) ? (block.hints as string[]) : [];
+        if (hints.length > 0) {
+          teachingContent = hints.join('\n\n');
         }
       }
-
-      // Reconstruct TeachingContext from persisted session state
-      const deviceProfile = ConstraintEngine.inferProfile(
-        session.deviceInfo as Record<string, unknown> | null
-      );
-
-      const context: TeachingContext = {
-        mode: (session.teachingMode ?? TeachingMode.L2_CONTEXTUAL) as TeachingMode,
-        deviceProfile,
-        constraints: ConstraintEngine.getConstraints(deviceProfile),
-        triggers: [],
-        sessionStartTime: session.startedAt,
-        problemsSolved: session.problemsSolved ?? 0,
-        errorsEncountered: session.errorsEncountered ?? 0,
-      };
-
-      // Run engine
-      const response = PedagogyEngine.processTeachingRequest(context, teachingContent);
-
-      // Check for mode elevation
-      const triggers = TriggerDetector.detectTriggers(context);
-      const suggestedMode = TriggerDetector.suggestModeElevation(context.mode, triggers);
-
-      if (suggestedMode > context.mode) {
-        await db
-          .update(learningSessions)
-          .set({ teachingMode: suggestedMode, triggersFired: triggers })
-          .where(eq(learningSessions.id, sessionId));
-      }
-
-      return c.json({
-        ...response,
-        triggers,
-        suggestedMode,
-        currentMode: context.mode,
-      });
     }
-  );
+
+    // Reconstruct TeachingContext from persisted session state
+    const deviceProfile = ConstraintEngine.inferProfile(
+      session.deviceInfo as Record<string, unknown> | null
+    );
+
+    const context: TeachingContext = {
+      mode: (session.teachingMode ?? TeachingMode.L2_CONTEXTUAL) as TeachingMode,
+      deviceProfile,
+      constraints: ConstraintEngine.getConstraints(deviceProfile),
+      triggers: [],
+      sessionStartTime: session.startedAt,
+      problemsSolved: session.problemsSolved ?? 0,
+      errorsEncountered: session.errorsEncountered ?? 0,
+    };
+
+    // Run engine
+    const response = PedagogyEngine.processTeachingRequest(context, teachingContent);
+
+    // Check for mode elevation
+    const triggers = TriggerDetector.detectTriggers(context);
+    const suggestedMode = TriggerDetector.suggestModeElevation(context.mode, triggers);
+
+    if (suggestedMode > context.mode) {
+      await db
+        .update(learningSessions)
+        .set({ teachingMode: suggestedMode, triggersFired: triggers })
+        .where(eq(learningSessions.id, sessionId));
+    }
+
+    return c.json({
+      ...response,
+      triggers,
+      suggestedMode,
+      currentMode: context.mode,
+    });
+  });
 
   return router;
 }

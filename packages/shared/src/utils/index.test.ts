@@ -291,6 +291,11 @@ describe('Array Utilities', () => {
       const result = chunk([1, 2, 3], 1);
       expect(result).toEqual([[1], [2], [3]]);
     });
+
+    it('should reject non-positive chunk sizes', () => {
+      expect(() => chunk([1, 2, 3], 0)).toThrow(RangeError);
+      expect(() => chunk([1, 2, 3], -1)).toThrow(RangeError);
+    });
   });
 });
 
@@ -309,6 +314,8 @@ describe('Validation Utilities', () => {
     it('should accept semver with prerelease', () => {
       expect(isValidSemver('1.0.0-alpha')).toBe(true);
       expect(isValidSemver('1.0.0-beta.1')).toBe(true);
+      expect(isValidSemver('1.0.0-alpha-1')).toBe(true);
+      expect(isValidSemver('1.0.0-rc.1-beta')).toBe(true);
     });
 
     it('should reject invalid semver', () => {
@@ -414,6 +421,13 @@ describe('String Utilities', () => {
 
     it('should handle exact length', () => {
       expect(truncate('12345', 5)).toBe('12345');
+    });
+
+    it('should honor very small max lengths without exceeding them', () => {
+      expect(truncate('abcdef', 3)).toBe('...');
+      expect(truncate('abcdef', 2)).toBe('..');
+      expect(truncate('abcdef', 1)).toBe('.');
+      expect(truncate('abcdef', 0)).toBe('');
     });
   });
 

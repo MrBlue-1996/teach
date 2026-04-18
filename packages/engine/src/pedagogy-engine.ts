@@ -11,20 +11,17 @@ import { TeachingMode, TeachingContext, TeachingResponse, DeviceProfile } from '
 import { TriggerDetector } from './trigger-detector.js';
 import { ConstraintEngine } from './constraint-engine.js';
 
-export class PedagogyEngine {
+export const PedagogyEngine = {
   /**
    * Process a teaching request
    */
-  static processTeachingRequest(
-    context: TeachingContext,
-    teachingContent?: string
-  ): TeachingResponse {
+  processTeachingRequest(context: TeachingContext, teachingContent?: string): TeachingResponse {
     const triggers = TriggerDetector.detectTriggers(context);
     context.triggers = triggers;
 
     const shouldTeach = TriggerDetector.shouldTeach(context.mode, triggers);
 
-    if (!shouldTeach || !teachingContent) {
+    if (!shouldTeach || teachingContent === undefined || teachingContent.length === 0) {
       return {
         shouldTeach: false,
         mode: context.mode,
@@ -57,15 +54,17 @@ export class PedagogyEngine {
       mode: context.mode,
       filtered: wasModified,
     };
-  }
+  },
 
-  private static formatTeachingContent(content: string, mode: TeachingMode): string {
+  formatTeachingContent(content: string, mode: TeachingMode): string {
     const prefix = this.getModePrefix(mode);
     return `${prefix}\n\n${content}`;
-  }
+  },
 
-  private static getModePrefix(mode: TeachingMode): string {
+  getModePrefix(mode: TeachingMode): string {
     switch (mode) {
+      case TeachingMode.L0_SILENT:
+        return '';
       case TeachingMode.L1_MINIMAL:
         return '💡 Hint:';
       case TeachingMode.L2_CONTEXTUAL:
@@ -77,12 +76,12 @@ export class PedagogyEngine {
       default:
         return '';
     }
-  }
+  },
 
   /**
    * Create initial teaching context
    */
-  static createContext(mode: TeachingMode, deviceProfile: DeviceProfile): TeachingContext {
+  createContext(mode: TeachingMode, deviceProfile: DeviceProfile): TeachingContext {
     return {
       mode,
       deviceProfile,
@@ -92,5 +91,5 @@ export class PedagogyEngine {
       problemsSolved: 0,
       errorsEncountered: 0,
     };
-  }
-}
+  },
+};

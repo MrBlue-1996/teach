@@ -9,6 +9,7 @@ import { Flame, Target, TrendingUp, Play, BookOpen, Award, ChevronRight } from '
 import { getLevelColor, getLevelName } from '@/lib/utils';
 import { learnerApi, contentApi, badgesApi } from '@/lib/api';
 import type { LearnerState, LearningSession, ContentPack } from '@/lib/api';
+import { pickGoldenPathPack } from '@/lib/golden-path';
 
 interface DashboardData {
   states: LearnerState[];
@@ -99,6 +100,7 @@ export default function DashboardPage() {
   // Packs user has NOT started (no learner state) for suggestions
   const enrolledPackIds = new Set(states.map((s) => s.contentPack?.id).filter(Boolean));
   const suggestedPacks = packs.filter((p) => !enrolledPackIds.has(p.id)).slice(0, 2);
+  const starterPack = pickGoldenPathPack(packs.filter((p) => !enrolledPackIds.has(p.id)));
 
   // Compute streak from consecutive session days
   const streak = computeStreak(sessions);
@@ -166,6 +168,45 @@ export default function DashboardPage() {
                   Continue
                 </Button>
               </Link>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {!currentState && starterPack && (
+        <Card className="overflow-hidden border-2 border-primary/25 bg-gradient-to-r from-primary/10 to-transparent">
+          <CardContent className="p-6">
+            <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+              <div className="space-y-3">
+                <div className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-medium uppercase tracking-[0.18em] text-primary">
+                  Golden Path
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold">Start with {starterPack.title}</h2>
+                  <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+                    This is the shortest path from signup to a real lesson. Open the seeded Linux
+                    pack, start the first block, and let the teaching engine adapt from there.
+                  </p>
+                </div>
+                <div className="grid gap-2 text-sm text-muted-foreground sm:grid-cols-3">
+                  <div>1. Open the pack</div>
+                  <div>2. Start the first block</div>
+                  <div>3. Ask for hints when stuck</div>
+                </div>
+              </div>
+              <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
+                <Link href={`/learn/${starterPack.id}`}>
+                  <Button size="lg" className="w-full sm:w-auto lg:w-full">
+                    <Play className="mr-2 h-5 w-5" />
+                    Start First Lesson
+                  </Button>
+                </Link>
+                <Link href={`/content/${starterPack.id}`}>
+                  <Button variant="outline" size="lg" className="w-full sm:w-auto lg:w-full">
+                    Review Course
+                  </Button>
+                </Link>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -320,8 +361,10 @@ function computeStreak(sessions: LearningSession[]): number {
 
   let streak = 1;
   for (let i = 1; i < sortedDays.length; i++) {
-    const prev = new Date(sortedDays[i - 1]);
-    const curr = new Date(sortedDays[i]);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const prev = new Date(sortedDays[i - 1]!);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const curr = new Date(sortedDays[i]!);
     const diffDays = (prev.getTime() - curr.getTime()) / 86400000;
     if (Math.round(diffDays) === 1) {
       streak++;

@@ -20,6 +20,7 @@ out/
 .env.development
 
 # Secrets & credentials
+secrets/
 *.pem
 *.key
 *.p12
@@ -52,3 +53,7 @@ coverage/
 # Auto-generated
 next-env.d.ts
 package-lock.json
+.github/state/board.md
+.github/state/queue.md
+.github/state/decisions.md
+.github/state/blockers.md

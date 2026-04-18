@@ -10,6 +10,7 @@ import { ArrowLeft, Clock, BookOpen, CheckCircle2, Play, Lock, Target, Zap } fro
 import { cn, getLevelName, getLevelGradientFrom } from '@/lib/utils';
 import { contentApi, learnerApi } from '@/lib/api';
 import type { ContentPackDetail } from '@/lib/api';
+import { isGoldenPathPackTitle } from '@/lib/golden-path';
 
 export default function CourseDetailPage({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -39,7 +40,7 @@ export default function CourseDetailPage({ params }: { params: { id: string } })
       // Start a learning session, which creates the learner state on the backend
       await learnerApi.startSession(params.id);
       router.push(`/learn/${params.id}`);
-    } catch (err) {
+    } catch {
       setIsEnrolling(false);
       // If session start fails, still navigate as a fallback
       router.push(`/learn/${params.id}`);
@@ -77,6 +78,7 @@ export default function CourseDetailPage({ params }: { params: { id: string } })
   const { pack, learnerProgress } = packDetail;
   const hasProgress = learnerProgress !== null;
   const masteryPercent = hasProgress ? Math.round(learnerProgress.overallMastery * 100) : 0;
+  const isGoldenPathPack = isGoldenPathPackTitle(pack.title);
 
   return (
     <div className="space-y-6 page-transition">
@@ -102,6 +104,11 @@ export default function CourseDetailPage({ params }: { params: { id: string } })
             <span className="rounded-full bg-white/90 px-3 py-1 text-sm font-medium text-gray-800">
               {pack.certificationTarget || 'Course'}
             </span>
+            {!hasProgress && isGoldenPathPack && (
+              <span className="rounded-full bg-ts-gold/90 px-3 py-1 text-sm font-medium text-ts-black">
+                Recommended first course
+              </span>
+            )}
             {hasProgress && (
               <span className="rounded-full bg-white/20 px-3 py-1 text-sm font-medium text-white">
                 {getLevelName(learnerProgress.currentMode)}
@@ -138,7 +145,7 @@ export default function CourseDetailPage({ params }: { params: { id: string } })
           {/* CTA */}
           <Button size="lg" variant="secondary" onClick={handleEnroll} loading={isEnrolling}>
             <Play className="mr-2 h-5 w-5" />
-            {hasProgress ? 'Continue Learning' : 'Start Learning'}
+            {hasProgress ? 'Continue Learning' : 'Start First Lesson'}
           </Button>
         </div>
       </div>

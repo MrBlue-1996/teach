@@ -307,6 +307,8 @@ describe('semanticVersionSchema', () => {
     expect(semanticVersionSchema.safeParse('10.20.30').success).toBe(true);
     expect(semanticVersionSchema.safeParse('1.0.0-alpha').success).toBe(true);
     expect(semanticVersionSchema.safeParse('1.0.0-beta.1').success).toBe(true);
+    expect(semanticVersionSchema.safeParse('1.0.0-alpha-1').success).toBe(true);
+    expect(semanticVersionSchema.safeParse('1.0.0-rc.1-beta').success).toBe(true);
   });
 
   it('should reject invalid versions', () => {

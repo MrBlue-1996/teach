@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -8,9 +8,9 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowRight, Mail, Lock, Chrome } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
-import { supabase } from '@/lib/supabase';
+import { getSupabaseBrowserClient } from '@/lib/supabase';
 
-export default function LoginPage() {
+function LoginForm() {
   const { login } = useAuth();
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
@@ -52,6 +52,7 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
+      const supabase = getSupabaseBrowserClient();
       const redirectTo = new URL('/auth/callback', window.location.origin);
       const { error: authError } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -76,7 +77,7 @@ export default function LoginPage() {
         <CardDescription>Sign in to continue learning</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Google login - fastest path */}
+        {/* Google login */}
         <Button
           variant="outline"
           className="w-full"
@@ -97,7 +98,6 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Email login form */}
         <form onSubmit={handleSubmit} className="space-y-3">
           {error && (
             <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{error}</div>
@@ -152,5 +152,22 @@ export default function LoginPage() {
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <Card className="border-0 shadow-lg">
+          <CardHeader className="space-y-1 text-center">
+            <CardTitle className="text-2xl">Welcome back</CardTitle>
+            <CardDescription>Loading...</CardDescription>
+          </CardHeader>
+        </Card>
+      }
+    >
+      <LoginForm />
+    </Suspense>
   );
 }

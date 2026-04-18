@@ -236,7 +236,7 @@ export class ContentPackValidator {
       // Check hints are not empty
       for (let i = 0; i < block.hints.length; i++) {
         const hint = block.hints[i];
-        if (hint !== undefined && hint.trim().length === 0) {
+        if (hint?.trim().length === 0) {
           errors.push({
             code: 'EMPTY_HINT',
             path: `teachingBlocks.${block.id}.hints[${i}]`,

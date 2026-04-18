@@ -12,7 +12,15 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 export default tseslint.config(
   // Global ignores (replaces .eslintignore)
   {
-    ignores: ['**/node_modules/', '**/dist/', '**/build/', '**/.next/', '**/.turbo/', '**/coverage/', '**/*.min.js'],
+    ignores: [
+      '**/node_modules/',
+      '**/dist/',
+      '**/build/',
+      '**/.next/',
+      '**/.turbo/',
+      '**/coverage/',
+      '**/*.min.js',
+    ],
   },
 
   // Base config for all TS files
@@ -124,5 +132,5 @@ export default tseslint.config(
   },
 
   // Prettier must be last
-  eslintConfigPrettier,
+  eslintConfigPrettier
 );

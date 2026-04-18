@@ -96,7 +96,7 @@ describe('learnerApi', () => {
 
       expect(mockApi.get).toHaveBeenCalledWith('/learner/states');
       expect(result.states).toHaveLength(1);
-      expect(result.states[0].id).toBe('state-123');
+      expect(result.states[0]!.id).toBe('state-123');
     });
 
     it('should return empty states for new users', async () => {
@@ -157,7 +157,7 @@ describe('learnerApi', () => {
       const result = await learnerApi.getProgress('pack-123');
 
       expect(result.recentActivity).toHaveLength(1);
-      expect(result.recentActivity[0].eventType).toBe('completed');
+      expect(result.recentActivity[0]!.eventType).toBe('completed');
     });
   });
 
@@ -356,7 +356,7 @@ describe('learnerApi', () => {
 
       const result = await learnerApi.getRecentSessions();
 
-      expect(result.sessions[0].contentPack).toBeNull();
+      expect(result.sessions[0]!.contentPack).toBeNull();
     });
   });
 

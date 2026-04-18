@@ -3,7 +3,13 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { authApi, type BackendAuthResponse, type BackendRefreshResponse, type User } from './auth';
+import {
+  authApi,
+  type BackendAuthResponse,
+  type BackendRefreshResponse,
+  type BackendMeResponse,
+  type User,
+} from './auth';
 
 // Mock the api client
 vi.mock('./client', () => ({
@@ -184,12 +190,13 @@ describe('authApi', () => {
 
   describe('me', () => {
     it('should call GET /auth/me', async () => {
-      mockApi.get.mockResolvedValueOnce(mockUser);
+      const meResponse: BackendMeResponse = { user: mockUser };
+      mockApi.get.mockResolvedValueOnce(meResponse);
 
       const result = await authApi.me();
 
       expect(mockApi.get).toHaveBeenCalledWith('/auth/me');
-      expect(result).toEqual(mockUser);
+      expect(result).toEqual(meResponse);
     });
   });
 });

@@ -10,6 +10,7 @@ import { Search, BookOpen, CheckCircle2 } from 'lucide-react';
 import { cn, getLevelGradientFrom } from '@/lib/utils';
 import { contentApi, learnerApi } from '@/lib/api';
 import type { ContentPack, LearnerState } from '@/lib/api';
+import { pickGoldenPathPack } from '@/lib/golden-path';
 
 interface DisplayPack extends ContentPack {
   enrolled: boolean;
@@ -83,6 +84,7 @@ export default function ContentPage() {
 
   const enrolledPacks = filteredPacks.filter((p) => p.enrolled);
   const availablePacks = filteredPacks.filter((p) => !p.enrolled);
+  const starterPack = pickGoldenPathPack(availablePacks);
 
   if (isLoading) {
     return (
@@ -110,6 +112,34 @@ export default function ContentPage() {
         <h1 className="text-2xl font-bold md:text-3xl">Content Library</h1>
         <p className="text-muted-foreground">Choose your next learning adventure</p>
       </div>
+
+      {starterPack && enrolledPacks.length === 0 && (
+        <Card className="overflow-hidden border-primary/25 bg-gradient-to-r from-primary/10 to-transparent">
+          <CardContent className="flex flex-col gap-4 p-6 lg:flex-row lg:items-center lg:justify-between">
+            <div className="space-y-2">
+              <div className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-medium uppercase tracking-[0.18em] text-primary">
+                Start Here
+              </div>
+              <h2 className="text-xl font-semibold">Begin with {starterPack.title}</h2>
+              <p className="max-w-2xl text-sm text-muted-foreground">
+                This pack is already seeded and ready. If you want the shortest demo path, start
+                this course and go straight into the first block.
+              </p>
+            </div>
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <Link href={`/learn/${starterPack.id}`}>
+                <Button>
+                  <BookOpen className="mr-2 h-4 w-4" />
+                  Start First Lesson
+                </Button>
+              </Link>
+              <Link href={`/content/${starterPack.id}`}>
+                <Button variant="outline">See Course Details</Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Search & Filter */}
       <div className="flex flex-col gap-4 sm:flex-row">

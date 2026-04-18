@@ -1,33 +1,29 @@
+/**
+ * TopShelf Service LLC
+ * PROPRIETARY AND CONFIDENTIAL
+ * Copyright (c) 2026 TopShelf Service LLC. All Rights Reserved.
+ */
+
 'use client';
 
 import { createBrowserClient } from '@supabase/ssr';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
-type BrowserSupabaseClient = ReturnType<typeof createBrowserClient>;
+type BrowserSupabaseClient = SupabaseClient;
 
 let browserClient: BrowserSupabaseClient | undefined;
 
-function getSupabaseConfig() {
-	const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-	const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+export function getSupabaseBrowserClient(): BrowserSupabaseClient {
+  if (!browserClient) {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-	if (!supabaseUrl || !supabaseAnonKey) {
-		throw new Error('Missing Supabase environment variables.');
-	}
+    if (!url || !key) {
+      throw new Error('Missing Supabase environment variables');
+    }
 
-	return { supabaseUrl, supabaseAnonKey };
+    browserClient = createBrowserClient(url, key);
+  }
+
+  return browserClient;
 }
-
-export function createSupabaseBrowserClient() {
-	const { supabaseUrl, supabaseAnonKey } = getSupabaseConfig();
-	return createBrowserClient(supabaseUrl, supabaseAnonKey);
-}
-
-export function getSupabaseBrowserClient() {
-	if (!browserClient) {
-		browserClient = createSupabaseBrowserClient();
-	}
-
-	return browserClient;
-}
-
-export const supabase = getSupabaseBrowserClient();

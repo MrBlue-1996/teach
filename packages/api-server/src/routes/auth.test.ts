@@ -22,28 +22,72 @@ const mockDb = {
     authSessions: {
       findFirst: vi.fn(),
     },
+    passwordResetTokens: {
+      findFirst: vi.fn(),
+    },
+    emailVerificationTokens: {
+      findFirst: vi.fn(),
+    },
   },
   insert: vi.fn().mockReturnValue({
-    values: vi.fn().mockReturnValue({
-      returning: vi
-        .fn()
-        .mockResolvedValue([{ id: 'user-new-1', email: 'newuser@example.com', role: 'learner' }]),
-    }),
+    values: vi.fn().mockReturnValue(
+      Object.assign(
+        Promise.resolve([{ id: 'user-new-1', email: 'newuser@example.com', role: 'learner' }]),
+        {
+          returning: vi
+            .fn()
+            .mockResolvedValue([
+              { id: 'user-new-1', email: 'newuser@example.com', role: 'learner' },
+            ]),
+        }
+      )
+    ),
   }),
   update: vi.fn().mockReturnValue({
     set: vi.fn().mockReturnValue({
       where: vi.fn().mockResolvedValue(undefined),
     }),
   }),
+  transaction: vi.fn().mockImplementation((cb: (tx: unknown) => Promise<unknown>) => cb(mockDb)),
 };
 
 vi.mock('@topshelf/database', () => ({
   getDatabase: () => mockDb,
-  users: { id: 'id', email: 'email', deletedAt: 'deletedAt', isActive: 'isActive' },
+  users: {
+    id: 'id',
+    email: 'email',
+    deletedAt: 'deletedAt',
+    isActive: 'isActive',
+    firstName: 'firstName',
+    lastName: 'lastName',
+    timezone: 'timezone',
+    displayName: 'displayName',
+    updatedAt: 'updatedAt',
+  },
   authSessions: { userId: 'userId', token: 'token', revokedAt: 'revokedAt' },
+  passwordResetTokens: { userId: 'userId', tokenHash: 'tokenHash', usedAt: 'usedAt', id: 'id' },
+  emailVerificationTokens: {
+    userId: 'userId',
+    tokenHash: 'tokenHash',
+    usedAt: 'usedAt',
+    id: 'id',
+    expiresAt: 'expiresAt',
+  },
   eq: (...args: unknown[]) => args,
   and: (...args: unknown[]) => args,
   isNull: (field: unknown) => field,
+}));
+
+vi.mock('@topshelf/email', () => ({
+  EmailService: vi.fn().mockImplementation(() => ({
+    sendTemplate: vi.fn().mockResolvedValue({ success: true }),
+    send: vi.fn().mockResolvedValue({ success: true }),
+  })),
+  EMAIL_TEMPLATES: {
+    PASSWORD_RESET: 'password-reset',
+    VERIFY_EMAIL: 'verify-email',
+    WELCOME: 'welcome',
+  },
 }));
 
 vi.mock('@topshelf/auth', () => ({
@@ -85,13 +129,14 @@ describe('Auth Routes', () => {
 
     // Reset default mock returns
     mockDb.query.users.findFirst.mockResolvedValue(null);
-    mockDb.insert.mockReturnValue({
-      values: vi.fn().mockReturnValue({
-        returning: vi
-          .fn()
-          .mockResolvedValue([{ id: 'user-new-1', email: 'newuser@example.com', role: 'learner' }]),
-      }),
-    });
+    const returningMock = vi
+      .fn()
+      .mockResolvedValue([{ id: 'user-new-1', email: 'newuser@example.com', role: 'learner' }]);
+    const valuesResult = Object.assign(
+      Promise.resolve([{ id: 'user-new-1', email: 'newuser@example.com', role: 'learner' }]),
+      { returning: returningMock }
+    );
+    mockDb.insert.mockReturnValue({ values: vi.fn().mockReturnValue(valuesResult) });
   });
 
   // ---------------------------------------------------------------------------

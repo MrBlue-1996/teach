@@ -12,7 +12,6 @@ export default defineConfig({
       ),
       '@topshelf/content-authoring': resolve(__dirname, '../content-authoring/src/index.ts'),
       '@topshelf/nlp': resolve(__dirname, '../_future/nlp/src/index.ts'),
-      '@topshelf/mcp-server': resolve(__dirname, '../_future/mcp-server/src/index.ts'),
     },
   },
   test: {

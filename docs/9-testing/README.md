@@ -247,7 +247,7 @@ Tests run automatically on:
 - All pull requests
 - Before deployment
 
-See `.github/workflows/ci.yml` for configuration.
+See `.github/workflows/ci.yml` for the primary quality/build pipeline and `.github/workflows/ci-parity-playwright.yml` for extended parity and content validation.
 
 ## Debugging Tests
 

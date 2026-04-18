@@ -9,41 +9,42 @@
 
 import { TriggerType, TeachingContext, TeachingMode } from './types.js';
 
-export class TriggerDetector {
-  private static readonly ERROR_REPEAT_THRESHOLD = 3;
-  private static readonly STUCK_TIME_THRESHOLD_MS = 300000; // 5 minutes
+const ERROR_REPEAT_THRESHOLD = 3;
+const STUCK_TIME_THRESHOLD_MS = 300000; // 5 minutes
 
+export const TriggerDetector = {
   /**
    * Detect triggers based on teaching context
    */
-  static detectTriggers(context: TeachingContext): TriggerType[] {
+  detectTriggers(context: TeachingContext): TriggerType[] {
     const triggers: TriggerType[] = [];
 
     // Detect repeated errors
-    if (context.errorsEncountered >= this.ERROR_REPEAT_THRESHOLD) {
+    if (context.errorsEncountered >= ERROR_REPEAT_THRESHOLD) {
       triggers.push(TriggerType.ERROR_REPEATED);
     }
 
     // Detect stuck state (time spent without progress)
     const timeElapsed = Date.now() - context.sessionStartTime.getTime();
-    const progressRate = context.problemsSolved / (timeElapsed / 60000); // problems per minute
+    const elapsedMinutes = Math.max(timeElapsed / 60000, 0.01);
+    const progressRate = context.problemsSolved / elapsedMinutes; // problems per minute
 
-    if (timeElapsed > this.STUCK_TIME_THRESHOLD_MS && progressRate < 0.1) {
+    if (timeElapsed > STUCK_TIME_THRESHOLD_MS && progressRate < 0.1) {
       triggers.push(TriggerType.STUCK_DETECTED);
     }
 
     // Time threshold trigger
-    if (timeElapsed > this.STUCK_TIME_THRESHOLD_MS) {
+    if (timeElapsed > STUCK_TIME_THRESHOLD_MS) {
       triggers.push(TriggerType.TIME_THRESHOLD);
     }
 
     return triggers;
-  }
+  },
 
   /**
    * Determine if teaching should be triggered based on mode and triggers
    */
-  static shouldTeach(mode: TeachingMode, triggers: TriggerType[]): boolean {
+  shouldTeach(mode: TeachingMode, triggers: TriggerType[]): boolean {
     switch (mode) {
       case TeachingMode.L0_SILENT:
         return false;
@@ -68,12 +69,12 @@ export class TriggerDetector {
       default:
         return false;
     }
-  }
+  },
 
   /**
    * Suggest mode elevation based on triggers
    */
-  static suggestModeElevation(currentMode: TeachingMode, triggers: TriggerType[]): TeachingMode {
+  suggestModeElevation(currentMode: TeachingMode, triggers: TriggerType[]): TeachingMode {
     if (currentMode >= TeachingMode.L4_TUTORIAL) {
       return currentMode;
     }
@@ -91,5 +92,5 @@ export class TriggerDetector {
     }
 
     return currentMode;
-  }
-}
+  },
+};

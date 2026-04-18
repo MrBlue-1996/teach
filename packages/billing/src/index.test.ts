@@ -91,7 +91,6 @@ import {
   PRICING_PLANS,
   type BillingConfig,
   type PlanTier,
-  // type BillingInterval,
 } from './index.js';
 
 // =============================================================================
@@ -705,9 +704,14 @@ describe('BillingService', () => {
           quantity: 50,
         });
 
-        const call = mockStripe.subscriptionItems.createUsageRecord.mock.calls[0]!;
-        expect(call[1]?.timestamp).toBeDefined();
-        expect(call[1]?.action).toBe('increment');
+        const call = mockStripe.subscriptionItems.createUsageRecord.mock.calls[0];
+        expect(call).toBeDefined();
+        if (call === undefined) {
+          throw new Error('Expected usage record call to be captured');
+        }
+
+        expect(call[1].timestamp).toBeDefined();
+        expect(call[1].action).toBe('increment');
       });
 
       it('should accept custom action', async () => {
@@ -777,7 +781,13 @@ describe('BillingService', () => {
           cancelUrl: 'https://app.example.com/cancel',
         });
 
-        const callArgs = mockStripe.checkout.sessions.create.mock.calls[0]![0];
+        const firstCall = mockStripe.checkout.sessions.create.mock.calls[0];
+        expect(firstCall).toBeDefined();
+        if (firstCall === undefined) {
+          throw new Error('Expected checkout session call to be captured');
+        }
+
+        const callArgs = firstCall[0];
         expect(callArgs).toMatchObject({ customer: 'cus_existing' });
         expect(callArgs).not.toHaveProperty('customer_email');
       });

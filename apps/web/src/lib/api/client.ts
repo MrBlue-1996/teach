@@ -87,24 +87,24 @@ export async function apiRequest<T>(endpoint: string, options: RequestOptions = 
 // Convenience methods
 export const api = {
   get: <T>(endpoint: string, params?: Record<string, string>) =>
-    apiRequest<T>(endpoint, { method: 'GET', params }),
+    apiRequest<T>(endpoint, { method: 'GET', ...(params !== undefined ? { params } : {}) }),
 
   post: <T>(endpoint: string, body?: unknown) =>
     apiRequest<T>(endpoint, {
       method: 'POST',
-      body: body ? JSON.stringify(body) : undefined,
+      ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
     }),
 
   put: <T>(endpoint: string, body?: unknown) =>
     apiRequest<T>(endpoint, {
       method: 'PUT',
-      body: body ? JSON.stringify(body) : undefined,
+      ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
     }),
 
   patch: <T>(endpoint: string, body?: unknown) =>
     apiRequest<T>(endpoint, {
       method: 'PATCH',
-      body: body ? JSON.stringify(body) : undefined,
+      ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
     }),
 
   delete: <T>(endpoint: string) => apiRequest<T>(endpoint, { method: 'DELETE' }),
