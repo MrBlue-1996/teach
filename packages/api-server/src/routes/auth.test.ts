@@ -22,6 +22,9 @@ const mockDb = {
     authSessions: {
       findFirst: vi.fn(),
     },
+    passwordResetTokens: {
+      findFirst: vi.fn(),
+    },
   },
   insert: vi.fn().mockReturnValue({
     values: vi.fn().mockReturnValue({
@@ -35,15 +38,29 @@ const mockDb = {
       where: vi.fn().mockResolvedValue(undefined),
     }),
   }),
+  transaction: vi.fn().mockImplementation((cb: (tx: unknown) => Promise<unknown>) => cb(mockDb)),
 };
 
 vi.mock('@topshelf/database', () => ({
   getDatabase: () => mockDb,
-  users: { id: 'id', email: 'email', deletedAt: 'deletedAt', isActive: 'isActive' },
+  users: { id: 'id', email: 'email', deletedAt: 'deletedAt', isActive: 'isActive', firstName: 'firstName', lastName: 'lastName', timezone: 'timezone', displayName: 'displayName', updatedAt: 'updatedAt' },
   authSessions: { userId: 'userId', token: 'token', revokedAt: 'revokedAt' },
+  passwordResetTokens: { userId: 'userId', tokenHash: 'tokenHash', usedAt: 'usedAt', id: 'id' },
   eq: (...args: unknown[]) => args,
   and: (...args: unknown[]) => args,
   isNull: (field: unknown) => field,
+}));
+
+vi.mock('@topshelf/email', () => ({
+  EmailService: vi.fn().mockImplementation(() => ({
+    sendTemplate: vi.fn().mockResolvedValue({ success: true }),
+    send: vi.fn().mockResolvedValue({ success: true }),
+  })),
+  EMAIL_TEMPLATES: {
+    PASSWORD_RESET: 'password-reset',
+    VERIFY_EMAIL: 'verify-email',
+    WELCOME: 'welcome',
+  },
 }));
 
 vi.mock('@topshelf/auth', () => ({

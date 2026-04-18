@@ -301,6 +301,9 @@ importers:
       '@topshelf/database':
         specifier: workspace:*
         version: link:../database
+      '@topshelf/email':
+        specifier: workspace:^
+        version: link:../email
       '@topshelf/engine':
         specifier: workspace:*
         version: link:../engine

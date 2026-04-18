@@ -26,8 +26,33 @@ import {
   isNull,
 } from '@topshelf/database';
 import { createHash } from 'crypto';
+import { EmailService, EMAIL_TEMPLATES } from '@topshelf/email';
 import { badRequest, unauthorized, conflict, serverError } from '../middleware/error-handler.js';
 import { authMiddleware } from '../middleware/auth.js';
+
+// ---------------------------------------------------------------------------
+// Email service — lazily initialised (console provider in dev, real in prod)
+// ---------------------------------------------------------------------------
+let _emailService: EmailService | null = null;
+function getEmailService(): EmailService {
+  if (!_emailService) {
+    const provider = (process.env['EMAIL_PROVIDER'] ?? 'console') as
+      | 'console'
+      | 'sendgrid'
+      | 'smtp';
+    _emailService = new EmailService({
+      provider,
+      from: {
+        email: process.env['EMAIL_FROM'] ?? 'noreply@topshelfteaching.com',
+        name: 'TopShelf Teaching',
+      },
+      ...(provider === 'sendgrid' && process.env['SENDGRID_API_KEY']
+        ? { sendgrid: { apiKey: process.env['SENDGRID_API_KEY'] } }
+        : {}),
+    });
+  }
+  return _emailService;
+}
 
 // =============================================================================
 // SCHEMAS
@@ -355,10 +380,15 @@ export function createAuthRoutes() {
         expiresAt,
       });
 
-      // Email sending is wired in the email service — rawToken would be included
-      // in the reset link: /auth/reset-password?token=<rawToken>
-      // For now the token is stored; email delivery requires the email package.
-      void rawToken;
+      // Send password reset email
+      const appUrl = process.env['APP_URL'] ?? 'https://app.topshelfteaching.com';
+      const resetUrl = `${appUrl}/auth/reset-password?token=${rawToken}`;
+      const emailSvc = getEmailService();
+      void emailSvc.sendTemplate(
+        EMAIL_TEMPLATES.PASSWORD_RESET,
+        { email: user.email, ...(user.firstName ? { name: user.firstName } : {}) },
+        { firstName: user.firstName ?? undefined, resetUrl }
+      );
     }
 
     // Always return success to prevent email enumeration

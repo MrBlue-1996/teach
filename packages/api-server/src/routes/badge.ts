@@ -68,6 +68,31 @@ export function createBadgeRoutes() {
     return c.json({ badge });
   });
 
+  // POST /badge/:badgeId/share - Generate a shareable public link for a badge
+  router.post('/:badgeId/share', async (c) => {
+    const badgeId = c.req.param('badgeId');
+    const userId = c.get('userId');
+    const db = getDatabase();
+
+    const badge = await db.query.badges.findFirst({
+      where: and(eq(badges.id, badgeId), eq(badges.userId, userId)),
+      columns: { id: true, verificationHash: true, status: true },
+    });
+
+    if (!badge) {
+      throw notFound('Badge', badgeId);
+    }
+
+    if (badge.status !== 'issued') {
+      return c.json({ error: 'Only issued badges can be shared' }, 400);
+    }
+
+    const appUrl = process.env['APP_URL'] ?? 'https://app.topshelfteaching.com';
+    const shareUrl = `${appUrl}/badges/verify/${badge.verificationHash}`;
+
+    return c.json({ shareUrl, verificationHash: badge.verificationHash });
+  });
+
   // GET /badge/verify/:hash - Verify badge by hash (public)
   router.get('/verify/:hash', async (c) => {
     const hash = c.req.param('hash');

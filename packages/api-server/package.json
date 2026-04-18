@@ -23,6 +23,7 @@
     "@topshelf/auth": "workspace:*",
     "@topshelf/config": "workspace:*",
     "@topshelf/database": "workspace:*",
+    "@topshelf/email": "workspace:^",
     "@topshelf/engine": "workspace:*",
     "@topshelf/observability": "workspace:*",
     "@topshelf/shared": "workspace:*",
