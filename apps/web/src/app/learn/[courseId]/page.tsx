@@ -232,7 +232,7 @@ export default function LearnPage({ params }: { params: { courseId: string } }) 
       return null;
     }
 
-    const staticHint = lesson.content.hints[nextHintIndex];
+    const staticHint = lesson.content.hints.at(nextHintIndex);
     if (staticHint) {
       return {
         guidance: {
@@ -317,7 +317,7 @@ export default function LearnPage({ params }: { params: { courseId: string } }) 
           sequenceOrder: nextData.nextBlock.sequenceOrder,
           timeBudgetSeconds: 0,
         })
-      : blocks[fallbackIndex];
+      : blocks.at(fallbackIndex);
 
     if (!blockSummary) {
       throw new Error('No blocks are available for this course.');

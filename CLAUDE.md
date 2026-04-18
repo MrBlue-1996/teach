@@ -7,6 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 TopShelf Teaching is a pnpm monorepo implementing a device-aware AI teaching kernel with a "Solve First, Teach Second" pedagogy. The system delivers adaptive teaching interventions based on detected triggers and device capability constraints (Chromebook-first design).
 
 **Structure:**
+
 - `apps/` — User-facing products (Next.js web app)
 - `packages/` — Reusable platform building blocks (engine, api-server, shared, database)
 - `implementations/` — Focused prototypes (MCP server MVP)
@@ -70,13 +71,13 @@ The core of the system. Three collaborating classes:
 
 **Teaching Modes (gradient of intervention):**
 
-| Level | Constant | Behavior | Prefix |
-|---|---|---|---|
-| 0 | `L0_SILENT` | Never teach | *(none)* |
-| 1 | `L1_MINIMAL` | Only on `HELP_REQUESTED` | `💡 Hint:` |
-| 2 | `L2_CONTEXTUAL` | On ERROR_REPEATED / STUCK / HELP (default) | `📚 Guidance:` |
-| 3 | `L3_ACTIVE` | Any trigger | `🎓 Teaching:` |
-| 4 | `L4_TUTORIAL` | Always | `📖 Tutorial:` |
+| Level | Constant        | Behavior                                   | Prefix         |
+| ----- | --------------- | ------------------------------------------ | -------------- |
+| 0     | `L0_SILENT`     | Never teach                                | _(none)_       |
+| 1     | `L1_MINIMAL`    | Only on `HELP_REQUESTED`                   | `💡 Hint:`     |
+| 2     | `L2_CONTEXTUAL` | On ERROR_REPEATED / STUCK / HELP (default) | `📚 Guidance:` |
+| 3     | `L3_ACTIVE`     | Any trigger                                | `🎓 Teaching:` |
+| 4     | `L4_TUTORIAL`   | Always                                     | `📖 Tutorial:` |
 
 **Device profiles:** `CHROMEBOOK_LOW`, `CHROMEBOOK_STANDARD`, `DESKTOP_LOW`, `DESKTOP_STANDARD`, `DESKTOP_HIGH`. Chromebook profiles block heavy frameworks and large assets.
 
@@ -102,6 +103,7 @@ Hono framework. Auth, learner, content, session, policy, badge, and admin routes
 ## Key Conventions
 
 **Copyright header required on all source files:**
+
 ```typescript
 /**
  * TopShelf Service LLC

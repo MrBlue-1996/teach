@@ -2,12 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  authApi,
-  type User,
-  type BackendAuthResponse,
-  type BackendMeResponse,
-} from '@/lib/api';
+import { authApi, type User, type BackendAuthResponse, type BackendMeResponse } from '@/lib/api';
 import { useAuthStore } from '@/stores/auth-store';
 
 interface AuthState {

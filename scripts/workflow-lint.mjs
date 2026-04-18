@@ -29,7 +29,9 @@ for (const workflowFile of workflowFiles) {
 if (results.length > 0) {
   for (const result of results) {
     const relativeFile = result.file.replace(`${process.cwd()}/`, '');
-    console.error(`${relativeFile}:${result.line}:${result.column} ${result.kind} ${result.message}`);
+    console.error(
+      `${relativeFile}:${result.line}:${result.column} ${result.kind} ${result.message}`
+    );
   }
 
   process.exit(1);

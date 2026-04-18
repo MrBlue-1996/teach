@@ -1,3 +1,9 @@
+/**
+ * TopShelf Service LLC
+ * PROPRIETARY AND CONFIDENTIAL
+ * Copyright (c) 2026 TopShelf Service LLC. All Rights Reserved.
+ */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -6,6 +12,8 @@
   :root {
     --background: 0 0% 100%;
     --foreground: 216 11% 19%;
+    --font-inter: 'Inter';
+    --font-montserrat: 'Montserrat';
     --card: 0 0% 100%;
     --card-foreground: 216 11% 19%;
     --popover: 0 0% 100%;
