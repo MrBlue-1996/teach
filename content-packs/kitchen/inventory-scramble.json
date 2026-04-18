@@ -8,5 +8,24 @@
   "difficultyLevel": 2,
   "recipeId": "recipe-walkin-org-v1",
   "containsTraps": true,
-  "hiddenDomains": ["inventory", "waste_management", "sanitation", "food_safety"]
+  "hiddenDomains": ["inventory", "waste_management", "sanitation", "food_safety"],
+  "expertRecipe": {
+    "id": "recipe-walkin-org-v1",
+    "name": "Walk-In FIFO Standard",
+    "station": "cold_station",
+    "targetTimeSeconds": 200,
+    "wasteValuePerPlate": 0,
+    "platingStandard": "Oldest product in front, all items dated, spoiled product pulled.",
+    "idealSequence": ["glove_up", "pull_spoiled", "date_new", "rotate_old_forward", "new_to_back", "check_temps"],
+    "steps": [
+      { "id": "inv1", "order": 1, "instruction": "Glove up and grab a marker.", "whyExplanation": "Bare hands in a walk-in = cross-contamination between ready-to-eat and raw.", "timeSeconds": 10, "isCCP": true, "tools": ["gloves", "marker"] },
+      { "id": "inv2", "order": 2, "instruction": "Pull any product past use-by date.", "whyExplanation": "Expired product must be discarded, not pushed to the back. One spoiled item can contaminate the shelf.", "timeSeconds": 40, "isCCP": true, "tools": [] },
+      { "id": "inv3", "order": 3, "instruction": "Date-label all new delivery items.", "whyExplanation": "Undated product becomes mystery meat. Without a date, FIFO is impossible.", "timeSeconds": 30, "isCCP": false, "tools": ["marker", "labels"] },
+      { "id": "inv4", "order": 4, "instruction": "Rotate existing stock to front of shelf.", "whyExplanation": "FIFO: First In, First Out. Oldest product gets used first to prevent waste.", "timeSeconds": 40, "isCCP": false, "tools": [] },
+      { "id": "inv5", "order": 5, "instruction": "Place new delivery behind existing stock.", "whyExplanation": "New product behind old ensures the next cook grabs the oldest first.", "timeSeconds": 30, "isCCP": false, "tools": [] }
+    ],
+    "criticalControlPoints": [
+      { "id": "ccp-spoil", "stepId": "inv2", "type": "sanitation", "target": "All expired product removed", "tolerance": "zero expired on shelf", "consequence": "Serving expired product is a health code violation and potential lawsuit." }
+    ]
+  }
 }

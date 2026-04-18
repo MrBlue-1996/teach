@@ -8,5 +8,23 @@
   "difficultyLevel": 2,
   "recipeId": "recipe-osha-standard-v1",
   "containsTraps": true,
-  "hiddenDomains": ["osha_safety", "judgment", "sanitation"]
+  "hiddenDomains": ["judgment", "sanitation"],
+  "expertRecipe": {
+    "id": "recipe-osha-standard-v1",
+    "name": "Kitchen Safety Walkthrough",
+    "station": "prep_table",
+    "targetTimeSeconds": 60,
+    "wasteValuePerPlate": 0,
+    "platingStandard": "All hazards identified, corrective actions noted, zero missed critical hazards.",
+    "idealSequence": ["scan_floors", "scan_exits", "scan_equipment", "scan_storage", "report"],
+    "steps": [
+      { "id": "hz1", "order": 1, "instruction": "Scan floors for wet spots, debris, and tripping hazards.", "whyExplanation": "Slips and falls are the #1 kitchen injury. A wet floor near the fryer is a burn risk.", "timeSeconds": 15, "isCCP": true, "tools": [] },
+      { "id": "hz2", "order": 2, "instruction": "Check all exits are unblocked.", "whyExplanation": "Blocked exits violate fire code. In a grease fire, seconds matter.", "timeSeconds": 10, "isCCP": true, "tools": [] },
+      { "id": "hz3", "order": 3, "instruction": "Verify fire extinguisher is charged and accessible.", "whyExplanation": "An expired or buried extinguisher is the same as no extinguisher.", "timeSeconds": 10, "isCCP": true, "tools": [] },
+      { "id": "hz4", "order": 4, "instruction": "Check knife storage: blades sheathed or in magnetic strip.", "whyExplanation": "Loose knives in a drawer cause lacerations. Proper storage is non-negotiable.", "timeSeconds": 10, "isCCP": false, "tools": [] }
+    ],
+    "criticalControlPoints": [
+      { "id": "ccp-exit", "stepId": "hz2", "type": "sanitation", "target": "All exits clear", "tolerance": "zero blocked exits", "consequence": "OSHA fine up to $15,625 per violation. Fire marshal can close the kitchen immediately." }
+    ]
+  }
 }
