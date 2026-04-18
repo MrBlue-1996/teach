@@ -10,6 +10,8 @@ on:
 env:
   NODE_VERSION: '20'
   PNPM_VERSION: '8'
+  NEXT_PUBLIC_SUPABASE_URL: 'http://localhost:54321'
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: 'ci-placeholder-anon-key'
 
 jobs:
   lint-typecheck:

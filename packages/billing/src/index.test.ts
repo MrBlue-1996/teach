@@ -91,7 +91,7 @@ import {
   PRICING_PLANS,
   type BillingConfig,
   type PlanTier,
-  type BillingInterval,
+  // type BillingInterval,
 } from './index.js';
 
 // =============================================================================
@@ -705,9 +705,9 @@ describe('BillingService', () => {
           quantity: 50,
         });
 
-        const call = mockStripe.subscriptionItems.createUsageRecord.mock.calls[0];
-        expect(call[1].timestamp).toBeDefined();
-        expect(call[1].action).toBe('increment');
+        const call = mockStripe.subscriptionItems.createUsageRecord.mock.calls[0]!;
+        expect(call[1]?.timestamp).toBeDefined();
+        expect(call[1]?.action).toBe('increment');
       });
 
       it('should accept custom action', async () => {
@@ -777,7 +777,7 @@ describe('BillingService', () => {
           cancelUrl: 'https://app.example.com/cancel',
         });
 
-        const callArgs = mockStripe.checkout.sessions.create.mock.calls[0][0];
+        const callArgs = mockStripe.checkout.sessions.create.mock.calls[0]![0];
         expect(callArgs).toMatchObject({ customer: 'cus_existing' });
         expect(callArgs).not.toHaveProperty('customer_email');
       });
