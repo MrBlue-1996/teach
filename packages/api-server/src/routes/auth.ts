@@ -21,6 +21,7 @@ import {
   users,
   authSessions,
   passwordResetTokens,
+  emailVerificationTokens,
   eq,
   and,
   isNull,
@@ -81,6 +82,10 @@ const ForgotPasswordSchema = z.object({
 const ResetPasswordSchema = z.object({
   token: z.string().min(1, 'Reset token is required'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
+});
+
+const VerifyEmailSchema = z.object({
+  token: z.string().min(1, 'Verification token is required'),
 });
 
 // =============================================================================
@@ -160,6 +165,24 @@ export function createAuthRoutes() {
       role: newUser.role,
       sessionId,
     });
+
+    // Send verification email (fire-and-forget — email failure must not break signup)
+    const rawVerifyToken = generateSecureToken(32);
+    const verifyTokenHash = createHash('sha256').update(rawVerifyToken).digest('hex');
+    const verifyExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+    void db
+      .insert(emailVerificationTokens)
+      .values({ userId: newUser.id, tokenHash: verifyTokenHash, expiresAt: verifyExpiresAt })
+      .then(() => {
+        const appUrl = process.env['APP_URL'] ?? 'https://app.topshelfteaching.com';
+        const verifyUrl = `${appUrl}/auth/verify-email?token=${rawVerifyToken}`;
+        const emailSvc = getEmailService();
+        void emailSvc.sendTemplate(
+          EMAIL_TEMPLATES.VERIFY_EMAIL,
+          { email: newUser.email },
+          { firstName: firstName ?? undefined, verifyUrl }
+        );
+      });
 
     return c.json(
       {
@@ -448,6 +471,41 @@ export function createAuthRoutes() {
     });
 
     return c.json({ message: 'Password reset successfully. You can now sign in.' });
+  });
+
+  // ---------------------------------------------------------------------------
+  // POST /auth/verify-email - Verify email address with one-time token
+  // ---------------------------------------------------------------------------
+  router.post('/verify-email', zValidator('json', VerifyEmailSchema), async (c) => {
+    const { token } = c.req.valid('json');
+    const db = getDatabase();
+
+    const tokenHash = createHash('sha256').update(token).digest('hex');
+
+    const record = await db.query.emailVerificationTokens.findFirst({
+      where: and(
+        eq(emailVerificationTokens.tokenHash, tokenHash),
+        isNull(emailVerificationTokens.usedAt)
+      ),
+    });
+
+    if (!record || record.expiresAt < new Date()) {
+      throw badRequest('Verification link is invalid or has expired. Please request a new one.');
+    }
+
+    await db.transaction(async (tx) => {
+      await tx
+        .update(users)
+        .set({ emailVerified: true, updatedAt: new Date() })
+        .where(eq(users.id, record.userId));
+
+      await tx
+        .update(emailVerificationTokens)
+        .set({ usedAt: new Date() })
+        .where(eq(emailVerificationTokens.id, record.id));
+    });
+
+    return c.json({ message: 'Email verified successfully. You can now sign in.' });
   });
 
   // ---------------------------------------------------------------------------
