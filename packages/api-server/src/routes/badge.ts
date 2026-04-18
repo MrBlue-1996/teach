@@ -4,9 +4,60 @@
  * Copyright (c) 2026 TopShelf Service LLC. All Rights Reserved.
  */
 
-import { Hono } from 'hono';
+import { Hono, type Context } from 'hono';
 import { getDatabase, badges, eq, and, desc } from '@topshelf/database';
 import { notFound } from '../middleware/error-handler.js';
+
+async function verifyBadgeByHash(c: Context) {
+  const hash = c.req.param('hash');
+  const db = getDatabase();
+
+  const badge = await db.query.badges.findFirst({
+    where: and(eq(badges.verificationHash, hash), eq(badges.status, 'issued')),
+    with: {
+      contentPack: {
+        columns: {
+          title: true,
+          certificationTarget: true,
+        },
+      },
+      user: {
+        columns: {
+          displayName: true,
+        },
+      },
+    },
+  });
+
+  if (!badge) {
+    return c.json({
+      valid: false,
+      message: 'Badge not found or has been revoked',
+    });
+  }
+
+  // Check expiry
+  if (badge.expiresAt && badge.expiresAt < new Date()) {
+    return c.json({
+      valid: false,
+      message: 'Badge has expired',
+      expiredAt: badge.expiresAt,
+    });
+  }
+
+  return c.json({
+    valid: true,
+    badge: {
+      holder: badge.user?.displayName,
+      achievement: badge.contentPack?.title,
+      certification: badge.contentPack?.certificationTarget,
+      level: badge.level,
+      masteryScore: badge.masteryScore,
+      issuedAt: badge.issuedAt,
+      expiresAt: badge.expiresAt,
+    },
+  });
+}
 
 export function createBadgeRoutes() {
   const router = new Hono();
@@ -93,57 +144,17 @@ export function createBadgeRoutes() {
     return c.json({ shareUrl, verificationHash: badge.verificationHash });
   });
 
+  // GET /badge/verify/:hash - Verify badge by hash
+  router.get('/verify/:hash', verifyBadgeByHash);
+
+  return router;
+}
+
+export function createPublicBadgeRoutes() {
+  const router = new Hono();
+
   // GET /badge/verify/:hash - Verify badge by hash (public)
-  router.get('/verify/:hash', async (c) => {
-    const hash = c.req.param('hash');
-    const db = getDatabase();
-
-    const badge = await db.query.badges.findFirst({
-      where: and(eq(badges.verificationHash, hash), eq(badges.status, 'issued')),
-      with: {
-        contentPack: {
-          columns: {
-            title: true,
-            certificationTarget: true,
-          },
-        },
-        user: {
-          columns: {
-            displayName: true,
-          },
-        },
-      },
-    });
-
-    if (!badge) {
-      return c.json({
-        valid: false,
-        message: 'Badge not found or has been revoked',
-      });
-    }
-
-    // Check expiry
-    if (badge.expiresAt && badge.expiresAt < new Date()) {
-      return c.json({
-        valid: false,
-        message: 'Badge has expired',
-        expiredAt: badge.expiresAt,
-      });
-    }
-
-    return c.json({
-      valid: true,
-      badge: {
-        holder: badge.user?.displayName,
-        achievement: badge.contentPack?.title,
-        certification: badge.contentPack?.certificationTarget,
-        level: badge.level,
-        masteryScore: badge.masteryScore,
-        issuedAt: badge.issuedAt,
-        expiresAt: badge.expiresAt,
-      },
-    });
-  });
+  router.get('/verify/:hash', verifyBadgeByHash);
 
   return router;
 }
