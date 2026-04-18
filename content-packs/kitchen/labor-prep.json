@@ -1,0 +1,85 @@
+{
+  "id": "labor-prep-v1",
+  "slug": "labor-prep",
+  "type": "labor_prep",
+  "title": "Sous Chef: Schedule the Line",
+  "briefing": "Four cooks. Eight prep tasks. Two hours until doors open. Assign smart or burn labor dollars.",
+  "timeLimitSeconds": 300,
+  "difficultyLevel": 4,
+  "recipeId": "recipe-labor-plan-v1",
+  "containsTraps": false,
+  "hiddenDomains": ["labor_cost", "sequencing", "efficiency", "judgment"],
+  "expertRecipe": {
+    "id": "recipe-labor-plan-v1",
+    "name": "Prep Schedule Standard",
+    "station": "prep_table",
+    "targetTimeSeconds": 240,
+    "wasteValuePerPlate": 0,
+    "platingStandard": "All 8 tasks assigned, no cook idle, total labor under $144 (4 cooks x 2 hrs x $18/hr).",
+    "idealSequence": [
+      "assess_tasks",
+      "assign_proteins_first",
+      "assign_sauces",
+      "assign_cold_prep",
+      "assign_dry_prep",
+      "verify_timeline"
+    ],
+    "steps": [
+      {
+        "id": "lp1",
+        "order": 1,
+        "instruction": "Assess all 8 tasks by time and skill required.",
+        "whyExplanation": "Assigning a 90-minute braise to a cook who has 30 minutes left wastes labor and delays service.",
+        "timeSeconds": 30,
+        "isCCP": false,
+        "tools": []
+      },
+      {
+        "id": "lp2",
+        "order": 2,
+        "instruction": "Assign protein prep first (longest lead time).",
+        "whyExplanation": "Proteins need marination, tempering, or brining time. Late start = raw protein at service.",
+        "timeSeconds": 40,
+        "isCCP": false,
+        "tools": []
+      },
+      {
+        "id": "lp3",
+        "order": 3,
+        "instruction": "Assign sauces and stocks second.",
+        "whyExplanation": "Sauces reduce and need time to develop. A rushed sauce is a thin sauce.",
+        "timeSeconds": 40,
+        "isCCP": false,
+        "tools": []
+      },
+      {
+        "id": "lp4",
+        "order": 4,
+        "instruction": "Assign cold prep and garnishes last.",
+        "whyExplanation": "Cold items done too early wilt or oxidize. Herbs cut at 10am are brown by noon.",
+        "timeSeconds": 30,
+        "isCCP": false,
+        "tools": []
+      },
+      {
+        "id": "lp5",
+        "order": 5,
+        "instruction": "Verify no cook is double-booked during the same window.",
+        "whyExplanation": "Overlapping assignments mean one task gets neglected. That's the task that burns.",
+        "timeSeconds": 20,
+        "isCCP": false,
+        "tools": []
+      }
+    ],
+    "criticalControlPoints": [
+      {
+        "id": "ccp-labor",
+        "stepId": "lp1",
+        "type": "time",
+        "target": "Total labor under budget",
+        "tolerance": "zero overtime without approval",
+        "consequence": "Every hour of unplanned overtime costs $27 (time-and-a-half) and erodes margins."
+      }
+    ]
+  }
+}

@@ -1,0 +1,261 @@
+{
+  "id": "rush-hour-v1",
+  "slug": "rush-hour",
+  "type": "rush_hour",
+  "title": "Saturday 8pm Rush",
+  "briefing": "Five tickets. Ten minutes. Keep the line moving. Fire, plate, serve.",
+  "timeLimitSeconds": 600,
+  "difficultyLevel": 3,
+  "recipeId": "recipe-burger-smash-v1",
+  "containsTraps": true,
+  "equipmentFocus": ["grill", "flat_top"],
+  "hiddenDomains": ["speed", "sanitation", "sequencing", "food_safety", "waste_management"],
+  "expertRecipe": {
+    "id": "recipe-burger-smash-v1",
+    "name": "Smash Burger",
+    "station": "flat_top",
+    "targetTimeSeconds": 180,
+    "wasteValuePerPlate": 0.2,
+    "platingStandard": "Bun up, patty centered, cheese melted full cover.",
+    "idealSequence": [
+      "wash_hands",
+      "portion_beef",
+      "season",
+      "smash",
+      "flip",
+      "cheese",
+      "toast_bun",
+      "assemble"
+    ],
+    "steps": [
+      {
+        "id": "s1",
+        "order": 1,
+        "instruction": "Wash hands, glove up.",
+        "whyExplanation": "Sanitation reset before every new protein contact prevents cross-contamination.",
+        "timeSeconds": 10,
+        "isCCP": true,
+        "tools": ["sink", "gloves"]
+      },
+      {
+        "id": "s2",
+        "order": 2,
+        "instruction": "Portion 4oz beef ball from fresh lot.",
+        "whyExplanation": "FIFO: always pull the oldest non-spoiled lot, never the back-of-walk-in mystery pack.",
+        "timeSeconds": 15,
+        "isCCP": false,
+        "tools": ["scale"]
+      },
+      {
+        "id": "s3",
+        "order": 3,
+        "instruction": "Season with salt on the flat-top, not in the mix.",
+        "whyExplanation": "Pre-mixing salt with ground beef draws out moisture and makes the patty dense.",
+        "timeSeconds": 5,
+        "isCCP": false,
+        "tools": ["salt"]
+      },
+      {
+        "id": "s4",
+        "order": 4,
+        "instruction": "Smash at 450°F for 60s until crust forms.",
+        "whyExplanation": "Maillard reaction at 450°F+ creates flavor. Lower and you get a gray steamed puck.",
+        "timeSeconds": 60,
+        "isCCP": true,
+        "tools": ["spatula"],
+        "targetTemp": 450,
+        "tempRange": { "min": 440, "max": 500 }
+      },
+      {
+        "id": "s5",
+        "order": 5,
+        "instruction": "Flip once; cheese on. Internal 160°F minimum.",
+        "whyExplanation": "USDA requires 160°F internal for ground beef — lower risks E. coli.",
+        "timeSeconds": 45,
+        "isCCP": true,
+        "tools": ["thermometer"],
+        "targetTemp": 160,
+        "tempRange": { "min": 160, "max": 175 }
+      },
+      {
+        "id": "s6",
+        "order": 6,
+        "instruction": "Toast bun cut-side in patty fond.",
+        "whyExplanation": "The rendered fat flavors the bun and seals it against sogging.",
+        "timeSeconds": 30,
+        "isCCP": false,
+        "tools": ["spatula"]
+      },
+      {
+        "id": "s7",
+        "order": 7,
+        "instruction": "Assemble and send within 30s of plating.",
+        "whyExplanation": "Every minute in the window zaps juiciness. Expo lives or dies by pickup speed.",
+        "timeSeconds": 15,
+        "isCCP": false,
+        "tools": []
+      }
+    ],
+    "criticalControlPoints": [
+      {
+        "id": "ccp1",
+        "stepId": "s1",
+        "type": "sanitation",
+        "target": "Hands washed within 30s of protein contact",
+        "tolerance": "zero missed washes",
+        "consequence": "Cross-contamination, foodborne illness lawsuit."
+      },
+      {
+        "id": "ccp2",
+        "stepId": "s5",
+        "type": "temperature",
+        "target": "160°F internal",
+        "tolerance": "+/- 0°F below",
+        "consequence": "E. coli risk. Single undercooked patty can close a kitchen."
+      }
+    ]
+  },
+  "tickets": [
+    {
+      "id": "tk-1",
+      "orderNumber": 101,
+      "items": [
+        {
+          "id": "it-1",
+          "name": "Smash Burger",
+          "recipeId": "recipe-burger-smash-v1",
+          "modifiers": [],
+          "isImpossible": false,
+          "quantity": 1
+        }
+      ],
+      "submittedAt": 0,
+      "priority": "normal",
+      "isTrapped": false,
+      "timeWindowSeconds": 300
+    },
+    {
+      "id": "tk-2",
+      "orderNumber": 102,
+      "items": [
+        {
+          "id": "it-2",
+          "name": "Double Smash",
+          "recipeId": "recipe-burger-smash-v1",
+          "modifiers": ["double", "no onion"],
+          "isImpossible": false,
+          "quantity": 1
+        }
+      ],
+      "submittedAt": 30000,
+      "priority": "rush",
+      "isTrapped": false,
+      "timeWindowSeconds": 240
+    },
+    {
+      "id": "tk-3",
+      "orderNumber": 103,
+      "items": [
+        {
+          "id": "it-3",
+          "name": "Smash Burger",
+          "recipeId": "recipe-burger-smash-v1",
+          "modifiers": ["medium rare"],
+          "isImpossible": true,
+          "impossibleReason": "Ground beef must be cooked to 160°F internal. Medium rare is a food-safety violation.",
+          "quantity": 1
+        }
+      ],
+      "submittedAt": 60000,
+      "priority": "normal",
+      "isTrapped": true,
+      "timeWindowSeconds": 300
+    },
+    {
+      "id": "tk-4",
+      "orderNumber": 104,
+      "items": [
+        {
+          "id": "it-4",
+          "name": "Smash Burger",
+          "recipeId": "recipe-burger-smash-v1",
+          "modifiers": ["extra cheese"],
+          "isImpossible": false,
+          "quantity": 2
+        }
+      ],
+      "submittedAt": 120000,
+      "priority": "normal",
+      "isTrapped": false,
+      "timeWindowSeconds": 240
+    },
+    {
+      "id": "tk-5",
+      "orderNumber": 105,
+      "items": [
+        {
+          "id": "it-5",
+          "name": "Smash Burger",
+          "recipeId": "recipe-burger-smash-v1",
+          "modifiers": [],
+          "isImpossible": false,
+          "quantity": 1
+        }
+      ],
+      "submittedAt": 180000,
+      "priority": "vip",
+      "isTrapped": false,
+      "timeWindowSeconds": 240
+    }
+  ],
+  "availableIngredients": [
+    {
+      "id": "ing-beef-fresh",
+      "name": "Ground beef 80/20 (fresh)",
+      "category": "protein",
+      "receivedAt": 1712000000000,
+      "useByDate": 1713500000000,
+      "isSpoiled": false,
+      "costPerUnit": 4.5,
+      "unit": "lb",
+      "allergens": [],
+      "requiresRefrigeration": true
+    },
+    {
+      "id": "ing-beef-spoiled",
+      "name": "Ground beef 80/20 (old lot)",
+      "category": "protein",
+      "receivedAt": 1710000000000,
+      "useByDate": 1712100000000,
+      "isSpoiled": true,
+      "costPerUnit": 4.5,
+      "unit": "lb",
+      "allergens": [],
+      "requiresRefrigeration": true
+    },
+    {
+      "id": "ing-bun",
+      "name": "Brioche bun",
+      "category": "dry_goods",
+      "receivedAt": 1712700000000,
+      "useByDate": 1714000000000,
+      "isSpoiled": false,
+      "costPerUnit": 0.4,
+      "unit": "ea",
+      "allergens": ["wheat", "egg", "dairy"],
+      "requiresRefrigeration": false
+    },
+    {
+      "id": "ing-cheese",
+      "name": "American cheese",
+      "category": "dairy",
+      "receivedAt": 1712500000000,
+      "useByDate": 1714500000000,
+      "isSpoiled": false,
+      "costPerUnit": 0.15,
+      "unit": "slice",
+      "allergens": ["dairy"],
+      "requiresRefrigeration": true
+    }
+  ]
+}

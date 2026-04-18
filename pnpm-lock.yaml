@@ -116,6 +116,12 @@ importers:
       '@supabase/supabase-js':
         specifier: ^2.103.0
         version: 2.103.0
+      '@tanstack/react-query':
+        specifier: ^5.17.19
+        version: 5.99.0(react@18.3.1)
+      '@topshelf/engine':
+        specifier: workspace:*
+        version: link:../../packages/engine
       class-variance-authority:
         specifier: ^0.7.0
         version: 0.7.1
@@ -3544,6 +3550,19 @@ packages:
     dependencies:
       '@swc/counter': 0.1.3
       tslib: 2.8.1
+    dev: false
+
+  /@tanstack/query-core@5.99.0:
+    resolution: {integrity: sha512-3Jv3WQG0BCcH7G+7lf/bP8QyBfJOXeY+T08Rin3GZ1bshvwlbPt7NrDHMEzGdKIOmOzvIQmxjk28YEQX60k7pQ==}
+    dev: false
+
+  /@tanstack/react-query@5.99.0(react@18.3.1):
+    resolution: {integrity: sha512-OY2bCqPemT1LlqJ8Y2CUau4KELnIhhG9Ol3ZndPbdnB095pRbPo1cHuXTndg8iIwtoHTgwZjyaDnQ0xD0mYwAw==}
+    peerDependencies:
+      react: ^18 || ^19
+    dependencies:
+      '@tanstack/query-core': 5.99.0
+      react: 18.3.1
     dev: false
 
   /@testing-library/dom@10.4.1:

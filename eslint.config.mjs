@@ -20,6 +20,8 @@ export default tseslint.config(
       '**/.turbo/',
       '**/coverage/',
       '**/*.min.js',
+      '**/next.config.js',
+      '**/postcss.config.js',
     ],
   },
 

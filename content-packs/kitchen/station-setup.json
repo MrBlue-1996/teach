@@ -1,0 +1,175 @@
+{
+  "id": "station-setup-v1",
+  "slug": "station-setup",
+  "type": "station_setup",
+  "title": "Pre-Brunch Mise en Place",
+  "briefing": "Before service hits, set your station. You have 3 minutes. Get it right or fight the clock all shift.",
+  "timeLimitSeconds": 180,
+  "difficultyLevel": 2,
+  "recipeId": "recipe-brunch-setup-v1",
+  "containsTraps": false,
+  "equipmentFocus": ["cold_station", "prep_table"],
+  "hiddenDomains": ["sequencing", "efficiency", "sanitation"],
+  "stationLayout": {
+    "id": "brunch-station",
+    "name": "Brunch Line",
+    "maxCapacity": 12,
+    "requiredTools": ["tongs", "spatula", "chef-knife", "sani-bucket"],
+    "requiredIngredients": ["eggs", "bacon", "hollandaise", "english-muffin"],
+    "positions": [
+      {
+        "slotId": "s-1",
+        "label": "Hot zone A",
+        "x": 0,
+        "y": 0,
+        "width": 1,
+        "height": 1,
+        "zone": "hot",
+        "idealItemId": "i-pan"
+      },
+      {
+        "slotId": "s-2",
+        "label": "Hot zone B",
+        "x": 1,
+        "y": 0,
+        "width": 1,
+        "height": 1,
+        "zone": "hot",
+        "idealItemId": "i-tongs"
+      },
+      {
+        "slotId": "s-3",
+        "label": "Cold rail A",
+        "x": 2,
+        "y": 0,
+        "width": 1,
+        "height": 1,
+        "zone": "cold",
+        "idealItemId": "i-eggs"
+      },
+      {
+        "slotId": "s-4",
+        "label": "Cold rail B",
+        "x": 3,
+        "y": 0,
+        "width": 1,
+        "height": 1,
+        "zone": "cold",
+        "idealItemId": "i-bacon"
+      },
+      {
+        "slotId": "s-5",
+        "label": "Prep A",
+        "x": 0,
+        "y": 1,
+        "width": 1,
+        "height": 1,
+        "zone": "prep",
+        "idealItemId": "i-knife"
+      },
+      {
+        "slotId": "s-6",
+        "label": "Prep B",
+        "x": 1,
+        "y": 1,
+        "width": 1,
+        "height": 1,
+        "zone": "prep",
+        "idealItemId": "i-board"
+      },
+      {
+        "slotId": "s-7",
+        "label": "Plating",
+        "x": 2,
+        "y": 1,
+        "width": 1,
+        "height": 1,
+        "zone": "plating",
+        "idealItemId": "i-muffins"
+      },
+      {
+        "slotId": "s-8",
+        "label": "Sani bucket",
+        "x": 3,
+        "y": 1,
+        "width": 1,
+        "height": 1,
+        "zone": "prep",
+        "idealItemId": "i-sani"
+      }
+    ]
+  },
+  "expertRecipe": {
+    "id": "recipe-brunch-setup-v1",
+    "name": "Brunch Station Setup",
+    "station": "prep_table",
+    "targetTimeSeconds": 150,
+    "wasteValuePerPlate": 0,
+    "platingStandard": "All 8 positions filled, hot/cold separation maintained, sani bucket within reach.",
+    "idealSequence": [
+      "wash_hands",
+      "sani_bucket",
+      "cold_rail",
+      "hot_zone",
+      "prep_tools",
+      "final_check"
+    ],
+    "steps": [
+      {
+        "id": "ss1",
+        "order": 1,
+        "instruction": "Wash hands, glove up.",
+        "whyExplanation": "Sanitation reset before touching any food contact surfaces.",
+        "timeSeconds": 10,
+        "isCCP": true,
+        "tools": ["sink", "gloves"]
+      },
+      {
+        "id": "ss2",
+        "order": 2,
+        "instruction": "Place sani bucket with fresh solution at prep station.",
+        "whyExplanation": "Sani bucket must be mixed fresh every 2 hours. Starting with old solution means everything you wipe is still dirty.",
+        "timeSeconds": 15,
+        "isCCP": true,
+        "tools": ["sani-bucket"]
+      },
+      {
+        "id": "ss3",
+        "order": 3,
+        "instruction": "Stock cold rail: eggs, bacon, hollandaise at 40°F or below.",
+        "whyExplanation": "Cold items go out first — they start warming the moment they leave the walk-in.",
+        "timeSeconds": 40,
+        "isCCP": false,
+        "tools": ["sheet_pan"]
+      },
+      {
+        "id": "ss4",
+        "order": 4,
+        "instruction": "Set hot zone: pans, tongs, spatula in reach order.",
+        "whyExplanation": "Tools should be in order of first use. Reaching across a hot flat-top for tongs burns you and slows service.",
+        "timeSeconds": 30,
+        "isCCP": false,
+        "tools": ["tongs", "spatula"]
+      },
+      {
+        "id": "ss5",
+        "order": 5,
+        "instruction": "Prep area: knife, board, muffins within arm's reach.",
+        "whyExplanation": "Every step away from your station during service costs 3-5 seconds per ticket.",
+        "timeSeconds": 25,
+        "isCCP": false,
+        "tools": ["chef-knife", "cutting_board"]
+      }
+    ],
+    "criticalControlPoints": [
+      {
+        "id": "ccp-sani",
+        "stepId": "ss2",
+        "type": "sanitation",
+        "target": "Fresh sani solution at correct concentration",
+        "tolerance": "zero old solution",
+        "consequence": "Cross-contamination risk on every surface wiped."
+      }
+    ]
+  }
+}

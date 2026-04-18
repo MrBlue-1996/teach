@@ -18,3 +18,6 @@ export {
 export { PedagogyEngine } from './pedagogy-engine.js';
 export { TriggerDetector } from './trigger-detector.js';
 export { ConstraintEngine } from './constraint-engine.js';
+
+// Kitchen Training Engine
+export * from './kitchen/index.js';

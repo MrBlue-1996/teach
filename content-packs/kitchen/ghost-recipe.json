@@ -1,0 +1,80 @@
+{
+  "id": "ghost-recipe-v1",
+  "slug": "ghost-recipe",
+  "type": "ghost_recipe",
+  "title": "Double the Recipe",
+  "briefing": "Chef just told you the party of 12 became a party of 28. Scale the hollandaise, right now. No calculator.",
+  "timeLimitSeconds": 180,
+  "difficultyLevel": 3,
+  "recipeId": "recipe-hollandaise-v1",
+  "containsTraps": false,
+  "hiddenDomains": ["kitchen_math", "judgment", "efficiency"],
+  "expertRecipe": {
+    "id": "recipe-hollandaise-v1",
+    "name": "Hollandaise (Scaled)",
+    "station": "saute",
+    "targetTimeSeconds": 150,
+    "wasteValuePerPlate": 0.85,
+    "platingStandard": "Smooth emulsion, no breaking, correct yield for cover count.",
+    "idealSequence": ["calculate_yield", "scale_eggs", "scale_butter", "scale_acid", "execute"],
+    "steps": [
+      {
+        "id": "g1",
+        "order": 1,
+        "instruction": "Calculate new yield: 28 covers / 12 covers = 2.33x multiplier.",
+        "whyExplanation": "Wrong multiplier cascades through every ingredient. One math error = entire batch wasted.",
+        "timeSeconds": 20,
+        "isCCP": false,
+        "tools": []
+      },
+      {
+        "id": "g2",
+        "order": 2,
+        "instruction": "Scale egg yolks: 6 yolks x 2.33 = 14 yolks.",
+        "whyExplanation": "Eggs are the emulsifier. Too few and the sauce breaks; too many and it tastes eggy.",
+        "timeSeconds": 15,
+        "isCCP": false,
+        "tools": ["scale"]
+      },
+      {
+        "id": "g3",
+        "order": 3,
+        "instruction": "Scale clarified butter: 1.5 lb x 2.33 = 3.5 lb.",
+        "whyExplanation": "Butter is the bulk. Under-scaling means short portions; over-scaling wastes expensive product.",
+        "timeSeconds": 15,
+        "isCCP": false,
+        "tools": ["scale"]
+      },
+      {
+        "id": "g4",
+        "order": 4,
+        "instruction": "Scale acid (lemon juice): 2 oz x 2.33 = 4.66 oz, round to 4.5 oz.",
+        "whyExplanation": "Acid balances richness. Over-acidifying a batch this size ruins 28 plates.",
+        "timeSeconds": 15,
+        "isCCP": false,
+        "tools": ["measuring_cup"]
+      },
+      {
+        "id": "g5",
+        "order": 5,
+        "instruction": "Execute: temper yolks, stream butter at 145F, hold at 140F.",
+        "whyExplanation": "Hollandaise is a TCS food. Below 140F = danger zone. Above 160F = scrambled eggs.",
+        "timeSeconds": 60,
+        "isCCP": true,
+        "tools": ["double_boiler", "thermometer"],
+        "targetTemp": 145,
+        "tempRange": { "min": 140, "max": 160 }
+      }
+    ],
+    "criticalControlPoints": [
+      {
+        "id": "ccp-hold",
+        "stepId": "g5",
+        "type": "temperature",
+        "target": "Hold at 140F+",
+        "tolerance": "zero below 140F",
+        "consequence": "Hollandaise in the danger zone grows bacteria rapidly. Discard after 2 hours."
+      }
+    ]
+  }
+}
