@@ -15,9 +15,5 @@ export const viewport: Viewport = {
 };
 
 export default function KitchenLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="kitchen-ui min-h-screen">
-      {children}
-    </div>
-  );
+  return <div className="kitchen-ui min-h-screen">{children}</div>;
 }

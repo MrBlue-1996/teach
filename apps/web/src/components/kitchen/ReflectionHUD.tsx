@@ -64,9 +64,7 @@ export function ReflectionHUD({ consequence, events }: ReflectionHUDProps) {
           <ol>
             {consequence.infractions.map((inf) => (
               <li key={inf.id} className="reflection-hud__infraction">
-                <span className={clsx('sev-badge', `sev-${inf.severity}`)}>
-                  {inf.severity}
-                </span>
+                <span className={clsx('sev-badge', `sev-${inf.severity}`)}>{inf.severity}</span>
                 <div>
                   <strong>{inf.explanation}</strong>
                   <p>{inf.whyItMatters}</p>

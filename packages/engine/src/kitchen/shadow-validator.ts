@@ -170,18 +170,18 @@ const BUILTIN_RULES: ShadowValidatorRule[] = [
 // =============================================================================
 
 export class ShadowValidator {
-  private rules: ShadowValidatorRule[];
-  private availableIngredients: Ingredient[];
-  private idealSequence: string[];
+  private readonly rules: ShadowValidatorRule[];
+  private readonly availableIngredients: Ingredient[];
+  private readonly idealSequence: string[];
   private currentSequenceIndex: number;
   private totalIngredientsUsed: number;
   private totalIngredientsDiscarded: number;
   /** Recent ingredient categories touched (for cross-contamination detection) */
-  private recentTouched: Array<{ category: string; timestamp: number }>;
+  private readonly recentTouched: Array<{ category: string; timestamp: number }>;
   /** Items placed at station positions (for capacity/separation checks) */
-  private stationItems: Map<string, { itemId: string; zone: string; category?: string }>;
+  private readonly stationItems: Map<string, { itemId: string; zone: string; category?: string }>;
   /** Maximum station capacity */
-  private maxStationCapacity: number;
+  private readonly maxStationCapacity: number;
 
   constructor(
     availableIngredients: Ingredient[] = [],
@@ -259,9 +259,7 @@ export class ShadowValidator {
       if (timeSinceWash > 30_000) {
         // Only trigger once per interval — check if already flagged recently
         const recentHandwashInfraction = state.infractions.find(
-          (i) =>
-            i.type === InfractionType.HANDWASH_NEGLECT &&
-            Date.now() - i.timestamp < 30_000
+          (i) => i.type === InfractionType.HANDWASH_NEGLECT && Date.now() - i.timestamp < 30_000
         );
         if (!recentHandwashInfraction) {
           infractions.push(
@@ -359,10 +357,7 @@ export class ShadowValidator {
       (t) => t.category === 'protein' && Date.now() - t.timestamp < 10_000
     );
 
-    if (
-      recentProtein &&
-      (ingredient.category === 'produce' || ingredient.category === 'dairy')
-    ) {
+    if (recentProtein && (ingredient.category === 'produce' || ingredient.category === 'dairy')) {
       return this.createInfraction(
         rule.infractionType,
         rule.severity,
@@ -402,10 +397,7 @@ export class ShadowValidator {
     return null;
   }
 
-  private validateFIFO(
-    rule: ShadowValidatorRule,
-    event: ChallengeEvent
-  ): HiddenInfraction | null {
+  private validateFIFO(rule: ShadowValidatorRule, event: ChallengeEvent): HiddenInfraction | null {
     const ingredientId = event.data['ingredientId'] as string;
     const ingredient = this.findIngredient(ingredientId);
     if (!ingredient) return null;
@@ -415,17 +407,20 @@ export class ShadowValidator {
       .filter((i) => i.name === ingredient.name && !i.isSpoiled)
       .sort((a, b) => a.receivedAt - b.receivedAt);
 
-    if (sameIngredients.length > 1 && sameIngredients[0]!.id !== ingredient.id) {
-      return this.createInfraction(
-        rule.infractionType,
-        rule.severity,
-        rule.domain,
-        event.id,
-        rule.costPerOccurrence,
-        `Used newer ${ingredient.name} when older stock was available (FIFO violation).`,
-        'FIFO (First In, First Out) prevents spoilage and waste. Using newer stock first means older product expires unused, costing money.',
-        'Always check dates and use the oldest product first. Rotate stock during every delivery and every prep session.'
-      );
+    if (sameIngredients.length > 1) {
+      const oldest = sameIngredients[0];
+      if (oldest !== undefined && oldest.id !== ingredient.id) {
+        return this.createInfraction(
+          rule.infractionType,
+          rule.severity,
+          rule.domain,
+          event.id,
+          rule.costPerOccurrence,
+          `Used newer ${ingredient.name} when older stock was available (FIFO violation).`,
+          'FIFO (First In, First Out) prevents spoilage and waste. Using newer stock first means older product expires unused, costing money.',
+          'Always check dates and use the oldest product first. Rotate stock during every delivery and every prep session.'
+        );
+      }
     }
     return null;
   }
@@ -594,7 +589,7 @@ export class ShadowValidator {
     const isImpossible = event.data['isImpossible'] as boolean | undefined;
     const wasRejected = event.data['wasRejected'] as boolean | undefined;
 
-    if (isImpossible && !wasRejected) {
+    if (isImpossible === true && wasRejected !== true) {
       return this.createInfraction(
         rule.infractionType,
         rule.severity,
@@ -609,10 +604,7 @@ export class ShadowValidator {
     return null;
   }
 
-  private validateWaste(
-    rule: ShadowValidatorRule,
-    event: ChallengeEvent
-  ): HiddenInfraction | null {
+  private validateWaste(rule: ShadowValidatorRule, event: ChallengeEvent): HiddenInfraction | null {
     const total = this.totalIngredientsUsed + this.totalIngredientsDiscarded;
     if (total === 0) return null;
 

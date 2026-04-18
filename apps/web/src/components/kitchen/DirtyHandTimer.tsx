@@ -32,8 +32,7 @@ export function DirtyHandTimer({
   const anchor = lastHandwashAt ?? challengeStartedAt;
   const elapsedSec = Math.max(0, Math.floor((now - anchor) / 1000));
 
-  const state =
-    elapsedSec < 15 ? 'hands-clean' : elapsedSec < 30 ? 'hands-warning' : 'hands-dirty';
+  const state = elapsedSec < 15 ? 'hands-clean' : elapsedSec < 30 ? 'hands-warning' : 'hands-dirty';
 
   return (
     <button

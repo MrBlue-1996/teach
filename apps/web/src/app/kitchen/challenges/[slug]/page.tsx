@@ -4,16 +4,11 @@
  */
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
-import {
-  ChallengePhase,
-  ChallengeType,
-  EventType,
-  type ChallengeConfig,
-} from '@topshelf/engine';
+import { ChallengePhase, ChallengeType, EventType, type ChallengeConfig } from '@topshelf/engine';
 import { useChallenge } from '@/hooks/use-challenge';
 import { RushTimer } from '@/components/kitchen/RushTimer';
 import { DirtyHandTimer } from '@/components/kitchen/DirtyHandTimer';
@@ -42,7 +37,9 @@ export default function ChallengeRunnerPage() {
         </header>
         <div className="kitchen-card">
           <h1>Challenge not found</h1>
-          <p>No content pack for <code>{params.slug}</code>.</p>
+          <p>
+            No content pack for <code>{params.slug}</code>.
+          </p>
         </div>
       </main>
     );
@@ -115,23 +112,44 @@ function SetupView({ config, onStart }: { config: ChallengeConfig; onStart: () =
       <h2>{config.title}</h2>
       <p className="challenge-setup__briefing">{config.briefing}</p>
       <dl className="challenge-setup__meta">
-        <div><dt>Time</dt><dd>{min}:{sec}</dd></div>
-        <div><dt>Difficulty</dt><dd>{'★'.repeat(config.difficultyLevel)}</dd></div>
+        <div>
+          <dt>Time</dt>
+          <dd>
+            {min}:{sec}
+          </dd>
+        </div>
+        <div>
+          <dt>Difficulty</dt>
+          <dd>{'★'.repeat(config.difficultyLevel)}</dd>
+        </div>
       </dl>
-      <button type="button" className="btn-action btn-primary" onClick={onStart}>Fire</button>
+      <button type="button" className="btn-action btn-primary" onClick={onStart}>
+        Fire
+      </button>
     </section>
   );
 }
 
 // ---------- SOLVE ----------
 
-function SolveView({ config, ch }: { config: ChallengeConfig; ch: ReturnType<typeof useChallenge> }) {
+function SolveView({
+  config,
+  ch,
+}: {
+  config: ChallengeConfig;
+  ch: ReturnType<typeof useChallenge>;
+}) {
   switch (config.type) {
     case ChallengeType.RUSH_HOUR:
       return <RushHourView config={config} ch={ch} />;
     case ChallengeType.TEMP_CHECK:
       return <TempCheckView config={config} ch={ch} />;
-    default:
+    case ChallengeType.GHOST_RECIPE:
+    case ChallengeType.STATION_SETUP:
+    case ChallengeType.INVENTORY_SCRAMBLE:
+    case ChallengeType.LABOR_PREP:
+    case ChallengeType.HAZARD_SCAN:
+    case ChallengeType.MOCK_IMPOSSIBLE:
       return <SimpleSolveView config={config} ch={ch} />;
   }
 }
@@ -208,7 +226,7 @@ function RushHourView({
       <SafetyAlert
         open={alert !== null}
         headline={alert?.headline ?? ''}
-        subtext={alert?.sub}
+        {...(alert?.sub ? { subtext: alert.sub } : {})}
         onDismiss={() => setAlert(null)}
       />
     </div>
@@ -229,7 +247,7 @@ function TempCheckView({
       { id: 'hothold', label: 'Hot hold', min: 140, max: 165 },
       { id: 'line-reach', label: 'Line reach-in', min: 33, max: 40 },
     ],
-    [],
+    []
   );
   const [values, setValues] = useState<Record<string, number>>({
     walkin: 38,
@@ -260,7 +278,7 @@ function TempCheckView({
           <TempGauge
             key={s.id}
             label={s.label}
-            value={values[s.id]}
+            value={values[s.id] ?? 0}
             min={s.min}
             max={s.max}
             editable
@@ -312,7 +330,11 @@ function SimpleSolveView({
 
 function ConsequenceView({ ch }: { ch: ReturnType<typeof useChallenge> }) {
   if (!ch.consequence) {
-    return <div className="kitchen-card"><p>Computing…</p></div>;
+    return (
+      <div className="kitchen-card">
+        <p>Computing…</p>
+      </div>
+    );
   }
   return (
     <section className="kitchen-card challenge-consequence">
@@ -341,7 +363,8 @@ function TeachView({
       // Map infractions to recipe steps when possible (best effort).
       if (config.expertRecipe) {
         for (const step of config.expertRecipe.steps) {
-          if (step.instruction.toLowerCase().includes(inf.domain.split('_')[0])) {
+          const keyword = inf.domain.split('_')[0] ?? '';
+          if (keyword && step.instruction.toLowerCase().includes(keyword)) {
             set.add(step.id);
           }
         }
@@ -386,19 +409,11 @@ function TeachView({
 
 // ---------- MASTERY ----------
 
-function MasteryView({
-  ch,
-  onExit,
-}: {
-  ch: ReturnType<typeof useChallenge>;
-  onExit: () => void;
-}) {
+function MasteryView({ ch, onExit }: { ch: ReturnType<typeof useChallenge>; onExit: () => void }) {
   return (
     <section className="kitchen-card challenge-mastery">
       <h2>Mastery scored</h2>
-      {ch.grade && (
-        <GradeBadge grade={ch.grade as 'A+' | 'A' | 'B' | 'C' | 'D' | 'F'} size="lg" />
-      )}
+      {ch.grade && <GradeBadge grade={ch.grade as 'A+' | 'A' | 'B' | 'C' | 'D' | 'F'} size="lg" />}
       <p>
         {ch.events.length} events logged · {ch.infractionCount} hidden infractions caught
       </p>

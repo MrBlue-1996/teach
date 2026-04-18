@@ -54,7 +54,7 @@ describe('ShadowValidator', () => {
       for (const stepId of sequence) {
         const infractions = validator.evaluate(
           makeEvent({ type: EventType.SEQUENCE_STEP_DONE, data: { stepId } }),
-          state,
+          state
         );
         expect(infractions.filter((i) => i.type === InfractionType.WRONG_SEQUENCE)).toHaveLength(0);
       }
@@ -66,7 +66,7 @@ describe('ShadowValidator', () => {
 
       const infractions = validator.evaluate(
         makeEvent({ type: EventType.SEQUENCE_STEP_DONE, data: { stepId: 'cook' } }),
-        state,
+        state
       );
 
       const seqInfractions = infractions.filter((i) => i.type === InfractionType.WRONG_SEQUENCE);
@@ -77,12 +77,18 @@ describe('ShadowValidator', () => {
       const validator = new ShadowValidator([], ['a', 'b']);
       const state = makeState();
 
-      validator.evaluate(makeEvent({ type: EventType.SEQUENCE_STEP_DONE, data: { stepId: 'a' } }), state);
-      validator.evaluate(makeEvent({ type: EventType.SEQUENCE_STEP_DONE, data: { stepId: 'b' } }), state);
+      validator.evaluate(
+        makeEvent({ type: EventType.SEQUENCE_STEP_DONE, data: { stepId: 'a' } }),
+        state
+      );
+      validator.evaluate(
+        makeEvent({ type: EventType.SEQUENCE_STEP_DONE, data: { stepId: 'b' } }),
+        state
+      );
 
       const infractions = validator.evaluate(
         makeEvent({ type: EventType.SEQUENCE_STEP_DONE, data: { stepId: 'extra' } }),
-        state,
+        state
       );
 
       const seqInfractions = infractions.filter((i) => i.type === InfractionType.WRONG_SEQUENCE);
@@ -100,7 +106,7 @@ describe('ShadowValidator', () => {
           type: EventType.TEMP_ESTIMATED,
           data: { value: 38, target: { min: 33, max: 40 } },
         }),
-        state,
+        state
       );
 
       const tempInfractions = infractions.filter((i) => i.type === InfractionType.TEMP_DANGER_ZONE);
@@ -116,7 +122,7 @@ describe('ShadowValidator', () => {
           type: EventType.TEMP_ESTIMATED,
           data: { value: 75, target: { min: 33, max: 40 } },
         }),
-        state,
+        state
       );
 
       const tempInfractions = infractions.filter((i) => i.type === InfractionType.TEMP_DANGER_ZONE);
@@ -132,7 +138,7 @@ describe('ShadowValidator', () => {
           type: EventType.TEMP_ESTIMATED,
           data: { value: 170, target: { min: 140, max: 165 } },
         }),
-        state,
+        state
       );
 
       const tempInfractions = infractions.filter((i) => i.type === InfractionType.TEMP_DANGER_ZONE);
@@ -147,7 +153,7 @@ describe('ShadowValidator', () => {
 
       const infractions = validator.evaluate(
         makeEvent({ type: EventType.INGREDIENT_SELECTED, data: { ingredientId: 'ing-1' } }),
-        state,
+        state
       );
 
       const hwInfractions = infractions.filter((i) => i.type === InfractionType.HANDWASH_NEGLECT);
@@ -161,7 +167,7 @@ describe('ShadowValidator', () => {
 
       const infractions = validator.evaluate(
         makeEvent({ type: EventType.INGREDIENT_SELECTED, data: { ingredientId: 'ing-1' } }),
-        state,
+        state
       );
 
       const hwInfractions = infractions.filter((i) => i.type === InfractionType.HANDWASH_NEGLECT);
@@ -190,10 +196,12 @@ describe('ShadowValidator', () => {
 
       const infractions = validator.evaluate(
         makeEvent({ type: EventType.INGREDIENT_SELECTED, data: { ingredientId: 'bad-beef' } }),
-        state,
+        state
       );
 
-      const spoilInfractions = infractions.filter((i) => i.type === InfractionType.SPOILED_INGREDIENT_USED);
+      const spoilInfractions = infractions.filter(
+        (i) => i.type === InfractionType.SPOILED_INGREDIENT_USED
+      );
       expect(spoilInfractions).toHaveLength(1);
     });
   });
@@ -205,7 +213,7 @@ describe('ShadowValidator', () => {
 
       const infractions = validator.evaluate(
         makeEvent({ type: EventType.HAND_WASH, data: {} }),
-        state,
+        state
       );
 
       const seqInfractions = infractions.filter((i) => i.type === InfractionType.WRONG_SEQUENCE);

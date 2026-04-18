@@ -14,9 +14,32 @@
       "id": "imp-1",
       "orderNumber": 666,
       "items": [
-        { "id": "im-1", "name": "Medium-Rare Pork Belly", "recipeId": "r-pork", "modifiers": ["medium rare"], "isImpossible": true, "impossibleReason": "Pork must reach 145F minimum per FDA.", "quantity": 1 },
-        { "id": "im-2", "name": "Gluten-Free Pasta Bowl", "recipeId": "r-pasta", "modifiers": ["gluten-free", "cooked in shared water"], "isImpossible": true, "impossibleReason": "Cross-contact with wheat pasta water voids gluten-free claim.", "quantity": 1 },
-        { "id": "im-3", "name": "Caesar Salad", "recipeId": "r-caesar", "modifiers": ["vegan", "no anchovy", "no egg", "no cheese"], "isImpossible": false, "quantity": 1 }
+        {
+          "id": "im-1",
+          "name": "Medium-Rare Pork Belly",
+          "recipeId": "r-pork",
+          "modifiers": ["medium rare"],
+          "isImpossible": true,
+          "impossibleReason": "Pork must reach 145F minimum per FDA.",
+          "quantity": 1
+        },
+        {
+          "id": "im-2",
+          "name": "Gluten-Free Pasta Bowl",
+          "recipeId": "r-pasta",
+          "modifiers": ["gluten-free", "cooked in shared water"],
+          "isImpossible": true,
+          "impossibleReason": "Cross-contact with wheat pasta water voids gluten-free claim.",
+          "quantity": 1
+        },
+        {
+          "id": "im-3",
+          "name": "Caesar Salad",
+          "recipeId": "r-caesar",
+          "modifiers": ["vegan", "no anchovy", "no egg", "no cheese"],
+          "isImpossible": false,
+          "quantity": 1
+        }
       ],
       "submittedAt": 0,
       "priority": "vip",
@@ -31,15 +54,60 @@
     "targetTimeSeconds": 90,
     "wasteValuePerPlate": 0,
     "platingStandard": "All impossible items identified and rejected. Safe items fired.",
-    "idealSequence": ["read_ticket", "check_each_item", "flag_impossible", "reject_unsafe", "fire_safe"],
+    "idealSequence": [
+      "read_ticket",
+      "check_each_item",
+      "flag_impossible",
+      "reject_unsafe",
+      "fire_safe"
+    ],
     "steps": [
-      { "id": "or1", "order": 1, "instruction": "Read the full ticket before touching anything.", "whyExplanation": "Firing before reading means you might cook an impossible order and waste product.", "timeSeconds": 10, "isCCP": false, "tools": [] },
-      { "id": "or2", "order": 2, "instruction": "Check each modifier against food safety rules.", "whyExplanation": "Medium-rare pork violates FDA temp rules. Gluten-free in shared water is cross-contact. The cook is the last line of defense.", "timeSeconds": 20, "isCCP": true, "tools": [] },
-      { "id": "or3", "order": 3, "instruction": "Reject impossible items and notify front-of-house.", "whyExplanation": "Serving unsafe food to avoid a complaint creates a bigger problem: a lawsuit or a hospitalization.", "timeSeconds": 15, "isCCP": true, "tools": [] },
-      { "id": "or4", "order": 4, "instruction": "Fire the safe items normally.", "whyExplanation": "Vegan Caesar with no anchovy/egg/cheese is safe and possible. Don't hold safe items because unsafe ones exist on the same ticket.", "timeSeconds": 30, "isCCP": false, "tools": [] }
+      {
+        "id": "or1",
+        "order": 1,
+        "instruction": "Read the full ticket before touching anything.",
+        "whyExplanation": "Firing before reading means you might cook an impossible order and waste product.",
+        "timeSeconds": 10,
+        "isCCP": false,
+        "tools": []
+      },
+      {
+        "id": "or2",
+        "order": 2,
+        "instruction": "Check each modifier against food safety rules.",
+        "whyExplanation": "Medium-rare pork violates FDA temp rules. Gluten-free in shared water is cross-contact. The cook is the last line of defense.",
+        "timeSeconds": 20,
+        "isCCP": true,
+        "tools": []
+      },
+      {
+        "id": "or3",
+        "order": 3,
+        "instruction": "Reject impossible items and notify front-of-house.",
+        "whyExplanation": "Serving unsafe food to avoid a complaint creates a bigger problem: a lawsuit or a hospitalization.",
+        "timeSeconds": 15,
+        "isCCP": true,
+        "tools": []
+      },
+      {
+        "id": "or4",
+        "order": 4,
+        "instruction": "Fire the safe items normally.",
+        "whyExplanation": "Vegan Caesar with no anchovy/egg/cheese is safe and possible. Don't hold safe items because unsafe ones exist on the same ticket.",
+        "timeSeconds": 30,
+        "isCCP": false,
+        "tools": []
+      }
     ],
     "criticalControlPoints": [
-      { "id": "ccp-reject", "stepId": "or3", "type": "sanitation", "target": "All impossible items rejected", "tolerance": "zero unsafe items served", "consequence": "Serving medium-rare pork = potential trichinosis. Cross-contact = anaphylaxis risk for celiac." }
+      {
+        "id": "ccp-reject",
+        "stepId": "or3",
+        "type": "sanitation",
+        "target": "All impossible items rejected",
+        "tolerance": "zero unsafe items served",
+        "consequence": "Serving medium-rare pork = potential trichinosis. Cross-contact = anaphylaxis risk for celiac."
+      }
     ]
   }
 }

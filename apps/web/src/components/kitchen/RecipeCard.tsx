@@ -33,7 +33,9 @@ export function RecipeCard({ recipe, locked, highlightStepIds }: RecipeCardProps
     <article className="recipe-card">
       <header className="recipe-card__header">
         <h3>{recipe.name}</h3>
-        <small>Target: {recipe.targetTimeSeconds}s · Station: {recipe.station}</small>
+        <small>
+          Target: {recipe.targetTimeSeconds}s · Station: {recipe.station}
+        </small>
       </header>
 
       <ol className="recipe-card__steps">
@@ -46,7 +48,7 @@ export function RecipeCard({ recipe, locked, highlightStepIds }: RecipeCardProps
               className={clsx(
                 'recipe-step',
                 isHighlighted && 'recipe-step--highlight',
-                step.isCCP && 'recipe-step--ccp',
+                step.isCCP && 'recipe-step--ccp'
               )}
             >
               <div className="recipe-step__head">

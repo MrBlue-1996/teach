@@ -330,10 +330,22 @@ CREATE POLICY kitchen_profiles_team ON kitchen_profiles
   );
 
 CREATE POLICY kitchen_profiles_insert ON kitchen_profiles
-  FOR INSERT WITH CHECK (auth.uid() = user_id);
+  FOR INSERT WITH CHECK (
+    auth.uid() = user_id
+    AND kitchen_role = 'dishwasher'
+    AND can_view_team_data = FALSE
+    AND can_validate = FALSE
+  );
 
 CREATE POLICY kitchen_profiles_update ON kitchen_profiles
-  FOR UPDATE USING (auth.uid() = user_id);
+  FOR UPDATE USING (auth.uid() = user_id)
+  WITH CHECK (
+    -- Users cannot self-promote: privileged fields must remain unchanged.
+    kitchen_role = (SELECT kp.kitchen_role FROM kitchen_profiles kp WHERE kp.user_id = auth.uid())
+    AND can_view_team_data = (SELECT kp.can_view_team_data FROM kitchen_profiles kp WHERE kp.user_id = auth.uid())
+    AND can_validate = (SELECT kp.can_validate FROM kitchen_profiles kp WHERE kp.user_id = auth.uid())
+    AND organization_id = (SELECT kp.organization_id FROM kitchen_profiles kp WHERE kp.user_id = auth.uid())
+  );
 
 -- Recipes: anyone can read published recipes in their org
 CREATE POLICY recipes_read ON recipes
@@ -398,9 +410,11 @@ CREATE POLICY infractions_team_read ON hidden_infractions
     )
   );
 
--- Service role can insert infractions (from Edge Functions)
+-- Service role can insert infractions (from Edge Functions).
+-- RLS is bypassed by service_role, so this policy is a no-op guard.
+-- Authenticated users must NOT insert infractions directly.
 CREATE POLICY infractions_service_insert ON hidden_infractions
-  FOR INSERT WITH CHECK (TRUE);
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 -- User Mastery: own data only
 CREATE POLICY mastery_own ON user_mastery

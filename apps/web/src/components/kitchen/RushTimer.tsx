@@ -17,7 +17,13 @@ export function RushTimer({ remainingMs, totalMs, className, label }: RushTimerP
   const pct = totalMs > 0 ? Math.max(0, remainingMs / totalMs) : 0;
 
   const severity =
-    pct < 0.1 ? 'timer-critical' : pct < 0.25 ? 'timer-red' : pct < 0.5 ? 'timer-amber' : 'timer-green';
+    pct < 0.1
+      ? 'timer-critical'
+      : pct < 0.25
+        ? 'timer-red'
+        : pct < 0.5
+          ? 'timer-amber'
+          : 'timer-green';
 
   const totalSec = Math.max(0, Math.ceil(remainingMs / 1000));
   const min = Math.floor(totalSec / 60);

@@ -17,17 +17,86 @@
     "targetTimeSeconds": 120,
     "wasteValuePerPlate": 0,
     "platingStandard": "All four stations logged within range. Zero readings in the danger zone.",
-    "idealSequence": ["calibrate_thermometer", "walk_in", "freezer", "hot_hold", "line_reach", "log_results"],
+    "idealSequence": [
+      "calibrate_thermometer",
+      "walk_in",
+      "freezer",
+      "hot_hold",
+      "line_reach",
+      "log_results"
+    ],
     "steps": [
-      { "id": "t1", "order": 1, "instruction": "Calibrate thermometer in ice bath (32°F).", "whyExplanation": "An uncalibrated thermometer can read 10°F off — that's the difference between safe and spoiled.", "timeSeconds": 15, "isCCP": true, "tools": ["thermometer", "ice_bath"] },
-      { "id": "t2", "order": 2, "instruction": "Walk-in cooler: probe air temp, confirm 33–40°F.", "whyExplanation": "Above 40°F, bacteria double every 20 minutes. Below 33°F, fresh produce freezes and breaks down.", "timeSeconds": 20, "isCCP": true, "tools": ["thermometer"], "targetTemp": 38, "tempRange": { "min": 33, "max": 40 } },
-      { "id": "t3", "order": 3, "instruction": "Freezer: confirm 0°F or below.", "whyExplanation": "Freezer above 0°F allows slow bacterial growth and ice crystal damage to proteins.", "timeSeconds": 20, "isCCP": true, "tools": ["thermometer"], "targetTemp": -5, "tempRange": { "min": -10, "max": 0 } },
-      { "id": "t4", "order": 4, "instruction": "Hot hold: confirm 140°F or above.", "whyExplanation": "Below 140°F food enters the danger zone. Health department can shut you down on sight.", "timeSeconds": 20, "isCCP": true, "tools": ["thermometer"], "targetTemp": 150, "tempRange": { "min": 140, "max": 165 } },
-      { "id": "t5", "order": 5, "instruction": "Line reach-in: confirm 33–40°F.", "whyExplanation": "Reach-ins hold prepped proteins for service. Out of range means the entire prep is suspect.", "timeSeconds": 20, "isCCP": true, "tools": ["thermometer"], "targetTemp": 38, "tempRange": { "min": 33, "max": 40 } }
+      {
+        "id": "t1",
+        "order": 1,
+        "instruction": "Calibrate thermometer in ice bath (32°F).",
+        "whyExplanation": "An uncalibrated thermometer can read 10°F off — that's the difference between safe and spoiled.",
+        "timeSeconds": 15,
+        "isCCP": true,
+        "tools": ["thermometer", "ice_bath"]
+      },
+      {
+        "id": "t2",
+        "order": 2,
+        "instruction": "Walk-in cooler: probe air temp, confirm 33–40°F.",
+        "whyExplanation": "Above 40°F, bacteria double every 20 minutes. Below 33°F, fresh produce freezes and breaks down.",
+        "timeSeconds": 20,
+        "isCCP": true,
+        "tools": ["thermometer"],
+        "targetTemp": 38,
+        "tempRange": { "min": 33, "max": 40 }
+      },
+      {
+        "id": "t3",
+        "order": 3,
+        "instruction": "Freezer: confirm 0°F or below.",
+        "whyExplanation": "Freezer above 0°F allows slow bacterial growth and ice crystal damage to proteins.",
+        "timeSeconds": 20,
+        "isCCP": true,
+        "tools": ["thermometer"],
+        "targetTemp": -5,
+        "tempRange": { "min": -10, "max": 0 }
+      },
+      {
+        "id": "t4",
+        "order": 4,
+        "instruction": "Hot hold: confirm 140°F or above.",
+        "whyExplanation": "Below 140°F food enters the danger zone. Health department can shut you down on sight.",
+        "timeSeconds": 20,
+        "isCCP": true,
+        "tools": ["thermometer"],
+        "targetTemp": 150,
+        "tempRange": { "min": 140, "max": 165 }
+      },
+      {
+        "id": "t5",
+        "order": 5,
+        "instruction": "Line reach-in: confirm 33–40°F.",
+        "whyExplanation": "Reach-ins hold prepped proteins for service. Out of range means the entire prep is suspect.",
+        "timeSeconds": 20,
+        "isCCP": true,
+        "tools": ["thermometer"],
+        "targetTemp": 38,
+        "tempRange": { "min": 33, "max": 40 }
+      }
     ],
     "criticalControlPoints": [
-      { "id": "ccp-cal", "stepId": "t1", "type": "sanitation", "target": "Thermometer reads 32°F in ice bath", "tolerance": "+/- 2°F", "consequence": "All subsequent readings untrustworthy." },
-      { "id": "ccp-dz", "stepId": "t4", "type": "temperature", "target": "Hot hold above 140°F", "tolerance": "zero below", "consequence": "Food in danger zone must be discarded after 2 hours." }
+      {
+        "id": "ccp-cal",
+        "stepId": "t1",
+        "type": "sanitation",
+        "target": "Thermometer reads 32°F in ice bath",
+        "tolerance": "+/- 2°F",
+        "consequence": "All subsequent readings untrustworthy."
+      },
+      {
+        "id": "ccp-dz",
+        "stepId": "t4",
+        "type": "temperature",
+        "target": "Hot hold above 140°F",
+        "tolerance": "zero below",
+        "consequence": "Food in danger zone must be discarded after 2 hours."
+      }
     ]
   }
 }

@@ -10,14 +10,13 @@
 import { create } from 'zustand';
 import type {
   ChallengeConfig,
-  ChallengeState,
   ChallengeEvent,
   HiddenInfraction,
   ConsequencePayload,
   MasteryDomain,
   ChallengePhase,
-  EventType,
 } from '@topshelf/engine';
+import { InfractionSeverity } from '@topshelf/engine';
 
 // =============================================================================
 // STORE TYPES
@@ -129,7 +128,7 @@ export const useChallengeStore = create<ChallengeStore>((set) => ({
       domainScores: createInitialDomainScores(),
       isVerification: false,
       consequencePayload: null,
-    
+
       overallGrade: null,
       isTimerRunning: false,
       startedAt: Date.now(),
@@ -137,24 +136,20 @@ export const useChallengeStore = create<ChallengeStore>((set) => ({
 
   setPhase: (phase) => set({ phase }),
 
-  addEvent: (event) =>
-    set((state) => ({ events: [...state.events, event] })),
+  addEvent: (event) => set((state) => ({ events: [...state.events, event] })),
 
   addInfraction: (infraction) =>
     set((state) => {
       const deduction =
-        infraction.severity === 'critical'
+        infraction.severity === InfractionSeverity.CRITICAL
           ? 35
-          : infraction.severity === 'high'
+          : infraction.severity === InfractionSeverity.HIGH
             ? 20
-            : infraction.severity === 'medium'
+            : infraction.severity === InfractionSeverity.MEDIUM
               ? 10
               : 5;
       const newScores = { ...state.domainScores };
-      newScores[infraction.domain] = Math.max(
-        0,
-        (newScores[infraction.domain] ?? 100) - deduction
-      );
+      newScores[infraction.domain] = Math.max(0, (newScores[infraction.domain] ?? 100) - deduction);
       return {
         infractions: [...state.infractions, infraction],
         domainScores: newScores,
@@ -204,7 +199,7 @@ export const useChallengeStore = create<ChallengeStore>((set) => ({
       domainScores: createInitialDomainScores(),
       isVerification: false,
       consequencePayload: null,
-    
+
       overallGrade: null,
       isTimerRunning: false,
       challengeId: null,

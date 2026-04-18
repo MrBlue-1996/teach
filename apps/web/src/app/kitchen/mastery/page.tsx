@@ -26,8 +26,7 @@ export default function MasteryPage() {
   const overall = Math.round(
     Object.entries(domainScores)
       .filter(([k]) => !DOMAINS.find((d) => d.key === k)?.hidden)
-      .reduce((sum, [, v]) => sum + v, 0) /
-      DOMAINS.filter((d) => !d.hidden).length,
+      .reduce((sum, [, v]) => sum + v, 0) / DOMAINS.filter((d) => !d.hidden).length
   );
 
   return (
@@ -43,12 +42,15 @@ export default function MasteryPage() {
         <div>
           <h1>Your Mastery</h1>
           {hasData ? (
-            <p>Overall rating: <strong>{overall}</strong> / 100</p>
+            <p>
+              Overall rating: <strong>{overall}</strong> / 100
+            </p>
           ) : (
             <p>Complete a challenge to see your mastery scores.</p>
           )}
           <p className="mastery-hero__sub">
-            Keep plating. Some skills unlock as you rank up — there&apos;s more kitchen here than you know.
+            Keep plating. Some skills unlock as you rank up — there&apos;s more kitchen here than
+            you know.
           </p>
         </div>
       </section>
@@ -59,7 +61,7 @@ export default function MasteryPage() {
             <MasteryRing
               value={domainScores[d.key] ?? 0}
               label={d.label}
-              hidden={d.hidden}
+              {...(d.hidden !== undefined ? { hidden: d.hidden } : {})}
             />
             {d.hidden && <span className="mastery-grid__locked">Locked</span>}
           </div>

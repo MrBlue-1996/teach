@@ -160,7 +160,10 @@ function CircularProgress({
   const offset = circumference - (percent / 100) * circumference;
 
   return (
-    <div className="relative inline-flex items-center justify-center" style={{ width: size, height: size }}>
+    <div
+      className="relative inline-flex items-center justify-center"
+      style={{ width: size, height: size }}
+    >
       <svg width={size} height={size} className="-rotate-90">
         {/* Background track */}
         <circle
@@ -185,9 +188,7 @@ function CircularProgress({
           className="transition-[stroke-dashoffset] duration-700 ease-out"
         />
       </svg>
-      <div className="absolute inset-0 flex items-center justify-center">
-        {children}
-      </div>
+      <div className="absolute inset-0 flex items-center justify-center">{children}</div>
     </div>
   );
 }
@@ -204,7 +205,6 @@ export default function KitchenDashboardPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
-
       {/* ================================================================
           HEADER
           ================================================================ */}
@@ -267,9 +267,7 @@ export default function KitchenDashboardPage() {
             </div>
           </div>
           <Link href={`/kitchen/challenges/${spec.quickChallengeSlug}`}>
-            <button className="btn-action btn-caution whitespace-nowrap">
-              Quick Challenge
-            </button>
+            <button className="btn-action btn-caution whitespace-nowrap">Quick Challenge</button>
           </Link>
         </div>
       </section>
@@ -307,7 +305,9 @@ export default function KitchenDashboardPage() {
                 <h3 className="text-lg font-bold leading-snug">{c.title}</h3>
 
                 {/* Difficulty badge */}
-                <span className={`text-sm font-semibold uppercase tracking-wider ${c.difficultyColor}`}>
+                <span
+                  className={`text-sm font-semibold uppercase tracking-wider ${c.difficultyColor}`}
+                >
                   {c.difficulty}
                 </span>
               </div>
@@ -357,7 +357,13 @@ export default function KitchenDashboardPage() {
       <section className="mb-4">
         <h2 className="mb-4 text-xl font-bold uppercase tracking-wide">Quick Actions</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <Link href={`/kitchen/challenges/${(() => { const unlocked = challenges.filter((c) => !c.locked); return unlocked[Math.floor(Math.random() * unlocked.length)]; })().slug}`}>
+          <Link
+            href={`/kitchen/challenges/${(() => {
+              const unlocked = challenges.filter((c) => !c.locked);
+              const randomChallenge = unlocked[Math.floor(Math.random() * unlocked.length)];
+              return randomChallenge?.slug ?? 'rush-hour';
+            })()}`}
+          >
             <button className="btn-action btn-primary flex w-full items-center justify-center gap-3">
               <Shuffle className="h-6 w-6" />
               Start Random Challenge

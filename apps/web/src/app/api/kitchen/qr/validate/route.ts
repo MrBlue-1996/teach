@@ -3,24 +3,43 @@
  * PROPRIETARY AND CONFIDENTIAL
  * Copyright (c) 2026 TopShelf Service LLC. All Rights Reserved.
  *
- * Records a QR scan against the `qr_validations` table. In pilot mode the
- * code is auto-approved against a whitelist; in prod a manager approves
- * via the manager dashboard and this endpoint just records `pending`.
+ * Pilot implementation: validates a submitted QR code against a static
+ * whitelist and returns approved/rejected. Database persistence and
+ * manager approval flow are planned for production.
  */
 
 import { NextResponse } from 'next/server';
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
 
-const WHITELIST = new Set([
-  'WALK-IN-TMP-042',
-  'LINE-SANI-001',
-  'PREP-MISE-007',
-  'DISH-SANI-009',
-]);
+const WHITELIST = new Set(['WALK-IN-TMP-042', 'LINE-SANI-001', 'PREP-MISE-007', 'DISH-SANI-009']);
 
 export async function POST(req: Request) {
+  // Authenticate the request via Supabase session cookie
+  const cookieStore = cookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+
+        setAll() {},
+      },
+    }
+  );
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ status: 'rejected', reason: 'Unauthorized' }, { status: 401 });
+  }
+
   let body: { code?: string } = {};
   try {
-    body = await req.json();
+    body = (await req.json()) as { code?: string };
   } catch {
     return NextResponse.json({ status: 'rejected', reason: 'Invalid body' }, { status: 400 });
   }

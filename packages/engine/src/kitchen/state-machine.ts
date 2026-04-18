@@ -49,7 +49,7 @@ const HANDWASH_INTERVAL_MS = 30_000;
 
 export class ChallengeMachine {
   private state: ChallengeState;
-  private config: ChallengeConfig;
+  private readonly config: ChallengeConfig;
   private sequenceCounter: number;
 
   constructor(config: ChallengeConfig) {
@@ -105,10 +105,10 @@ export class ChallengeMachine {
    */
   transition(toPhase: ChallengePhase): ChallengeState {
     const validTargets = VALID_TRANSITIONS[this.state.phase];
-    if (!validTargets?.includes(toPhase)) {
+    if (!validTargets.includes(toPhase)) {
       throw new Error(
         `Invalid transition: ${this.state.phase} → ${toPhase}. ` +
-          `Valid targets: [${validTargets?.join(', ') ?? 'none'}]`
+          `Valid targets: [${validTargets.join(', ')}]`
       );
     }
 
@@ -158,7 +158,8 @@ export class ChallengeMachine {
     const totalCostLost = infractions.reduce((sum, inf) => sum + inf.costImpact, 0);
 
     const safetyInfractions = infractions.filter(
-      (inf) => inf.severity === InfractionSeverity.CRITICAL || inf.severity === InfractionSeverity.HIGH
+      (inf) =>
+        inf.severity === InfractionSeverity.CRITICAL || inf.severity === InfractionSeverity.HIGH
     );
 
     const primaryDomain = this.findPrimaryFailureDomain(infractions);
@@ -258,7 +259,7 @@ export class ChallengeMachine {
 
     // Deduct from the relevant domain score
     const deduction = this.getDeduction(infraction.severity);
-    const currentScore = this.state.domainScores[infraction.domain] ?? 100;
+    const currentScore = this.state.domainScores[infraction.domain];
     this.state.domainScores[infraction.domain] = Math.max(0, currentScore - deduction);
   }
 
@@ -427,15 +428,11 @@ export class ChallengeMachine {
     return maxDomain;
   }
 
-  private calculateGrade(
-    infractions: HiddenInfraction[]
-  ): 'F' | 'D' | 'C' | 'B' | 'A' | 'A+' {
+  private calculateGrade(infractions: HiddenInfraction[]): 'F' | 'D' | 'C' | 'B' | 'A' | 'A+' {
     const criticalCount = infractions.filter(
       (i) => i.severity === InfractionSeverity.CRITICAL
     ).length;
-    const highCount = infractions.filter(
-      (i) => i.severity === InfractionSeverity.HIGH
-    ).length;
+    const highCount = infractions.filter((i) => i.severity === InfractionSeverity.HIGH).length;
     const total = infractions.length;
 
     if (criticalCount > 0) return 'F';
@@ -464,11 +461,7 @@ export class ChallengeMachine {
     return Math.max(0, Math.round(actualTimePerTicket - expectedTimePerTicket));
   }
 
-  private generateHeadline(
-    grade: string,
-    primaryDomain: MasteryDomain,
-    costLost: number
-  ): string {
+  private generateHeadline(grade: string, primaryDomain: MasteryDomain, costLost: number): string {
     if (grade === 'F') {
       return `Critical safety failure. $${costLost.toFixed(2)} at risk. A real kitchen would shut this station down.`;
     }

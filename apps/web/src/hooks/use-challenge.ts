@@ -31,22 +31,27 @@ export function useChallenge(config: ChallengeConfig | null) {
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const lastTickRef = useRef<number>(Date.now());
 
+  const initChallenge = store.initChallenge;
+
   // Initialize engine once per config id
   useEffect(() => {
     if (!config) return;
     if (machineRef.current?.getConfig().id === config.id) return;
 
     machineRef.current = new ChallengeMachine(config);
-    validatorRef.current = new ShadowValidator();
-    store.initChallenge(config);
-  }, [config, store]);
+    validatorRef.current = new ShadowValidator(
+      config.availableIngredients ?? [],
+      config.expertRecipe?.steps?.map((s) => s.id) ?? [],
+      config.stationLayout?.maxCapacity ?? 8
+    );
+    initChallenge(config);
+  }, [config, initChallenge]);
 
   // Tick timer during SOLVE / VERIFY
   useEffect(() => {
     const isActive =
       store.isTimerRunning &&
-      (store.phase === ChallengePhase.SOLVE ||
-        store.phase === ChallengePhase.VERIFY);
+      (store.phase === ChallengePhase.SOLVE || store.phase === ChallengePhase.VERIFY);
 
     if (!isActive) {
       if (tickRef.current) {
@@ -77,8 +82,18 @@ export function useChallenge(config: ChallengeConfig | null) {
       }
 
       // Auto-transition when timer hits zero
-      if (machine.getState().timeRemainingMs === 0) {
+      const currentState = machine.getState();
+      if (currentState.timeRemainingMs === 0) {
         store.stopTimer();
+        // Sync phase from machine — it may have auto-transitioned
+        if (currentState.phase === ChallengePhase.CONSEQUENCE) {
+          const consequence = machine.buildConsequence();
+          store.setConsequencePayload(consequence);
+          store.setOverallGrade(consequence.overallGrade);
+          store.setPhase(ChallengePhase.CONSEQUENCE);
+        } else if (currentState.phase === ChallengePhase.COOLDOWN) {
+          store.setPhase(ChallengePhase.COOLDOWN);
+        }
       }
     }, TICK_MS);
 
@@ -107,7 +122,7 @@ export function useChallenge(config: ChallengeConfig | null) {
         store.addInfraction(inf);
       }
     },
-    [store],
+    [store]
   );
 
   const start = useCallback(() => {
@@ -121,12 +136,17 @@ export function useChallenge(config: ChallengeConfig | null) {
   const endSolve = useCallback(() => {
     const machine = machineRef.current;
     if (!machine) return;
-    machine.endSolve();
+    const nextState = machine.endSolve();
+    store.stopTimer();
+    if (nextState.phase === ChallengePhase.COOLDOWN) {
+      store.setPhase(ChallengePhase.COOLDOWN);
+      store.incrementFailures();
+      return;
+    }
     const consequence = machine.buildConsequence();
     store.setConsequencePayload(consequence);
     store.setOverallGrade(consequence.overallGrade);
     store.setPhase(ChallengePhase.CONSEQUENCE);
-    store.stopTimer();
   }, [store]);
 
   const toTeach = useCallback(() => {
@@ -174,7 +194,7 @@ export function useChallenge(config: ChallengeConfig | null) {
       machine.completeTicket(ticketId);
       store.completeTicket();
     },
-    [store],
+    [store]
   );
 
   const addWaste = useCallback(
@@ -182,7 +202,7 @@ export function useChallenge(config: ChallengeConfig | null) {
       machineRef.current?.addWaste(cost);
       store.addWaste(cost);
     },
-    [store],
+    [store]
   );
 
   const handsDirty = useMemo(() => {

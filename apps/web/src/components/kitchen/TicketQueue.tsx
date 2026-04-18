@@ -46,7 +46,7 @@ export function TicketQueue({
               t.priority === 'rush' && 'rush',
               t.priority === 'vip' && 'vip',
               done && 'completed',
-              activeTicketId === t.id && 'active',
+              activeTicketId === t.id && 'active'
             )}
           >
             <header className="ticket__header">

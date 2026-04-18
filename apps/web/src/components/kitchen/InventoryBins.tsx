@@ -41,7 +41,7 @@ export function InventoryBins({
               'inventory-bin',
               ing.isSpoiled && 'spoiled',
               expiringSoon && 'expiring',
-              isSelected && 'selected',
+              isSelected && 'selected'
             )}
             aria-label={`Select ${ing.name}${ing.isSpoiled ? ' (spoiled)' : ''}`}
           >

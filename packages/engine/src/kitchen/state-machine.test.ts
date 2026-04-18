@@ -27,7 +27,16 @@ function makeConfig(overrides: Partial<ChallengeConfig> = {}): ChallengeConfig {
       {
         id: 'tk-1',
         orderNumber: 1,
-        items: [{ id: 'it-1', name: 'Burger', recipeId: 'recipe-test', modifiers: [], isImpossible: false, quantity: 1 }],
+        items: [
+          {
+            id: 'it-1',
+            name: 'Burger',
+            recipeId: 'recipe-test',
+            modifiers: [],
+            isImpossible: false,
+            quantity: 1,
+          },
+        ],
         submittedAt: 0,
         priority: 'normal' as const,
         isTrapped: false,
@@ -45,11 +54,12 @@ function makeInfraction(overrides: Partial<HiddenInfraction> = {}): HiddenInfrac
     severity: InfractionSeverity.MEDIUM,
     domain: MasteryDomain.SANITATION,
     timestamp: Date.now(),
-    triggeredByEventId: 'evt_1',
+    triggerEventId: 'evt_1',
     costImpact: 5,
     explanation: 'Test infraction',
     whyItMatters: 'Sanitation matters',
     expertApproach: 'Wash hands',
+    silent: true,
     ...overrides,
   };
 }
@@ -128,7 +138,7 @@ describe('ChallengeMachine', () => {
       const events = machine.getEventLog();
       const seqNums = events.map((e) => e.sequenceNumber);
       for (let i = 1; i < seqNums.length; i++) {
-        expect(seqNums[i]).toBeGreaterThan(seqNums[i - 1]);
+        expect(seqNums[i]!).toBeGreaterThan(seqNums[i - 1]!);
       }
     });
   });
@@ -192,15 +202,17 @@ describe('ChallengeMachine', () => {
         const machine = new ChallengeMachine(makeConfig());
         machine.startSolve();
         for (let i = 0; i < count; i++) {
-          machine.addInfraction(makeInfraction({ severity: InfractionSeverity.MEDIUM, id: `inf_${i}` }));
+          machine.addInfraction(
+            makeInfraction({ severity: InfractionSeverity.MEDIUM, id: `inf_${i}` })
+          );
         }
         machine.endSolve();
         const consequence = machine.buildConsequence();
-        grades.push(gradeRank[consequence.overallGrade]);
+        grades.push(gradeRank[consequence.overallGrade]!);
       }
 
       for (let i = 1; i < grades.length; i++) {
-        expect(grades[i]).toBeLessThanOrEqual(grades[i - 1]);
+        expect(grades[i]!).toBeLessThanOrEqual(grades[i - 1]!);
       }
     });
   });

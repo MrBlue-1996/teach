@@ -33,15 +33,16 @@ export default function QRValidatePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code: code.trim() }),
       });
-      const data = await res.json();
+      const data = (await res.json()) as { status: string; reason?: string };
 
       if (data.status === 'approved') {
         setState({ kind: 'approved', code });
       } else {
+        const reason = data.reason ?? 'Code was not recognized or is expired.';
         setState({
           kind: 'rejected',
           code,
-          reason: data.reason ?? 'Code was not recognized or is expired.',
+          reason,
         });
       }
     } catch {
@@ -65,8 +66,8 @@ export default function QRValidatePage() {
         <QrCode size={64} aria-hidden />
         <h1>Prove the task</h1>
         <p>
-          Scan or enter the code posted on the station you just cleaned, temped, or stocked.
-          This confirms the physical work happened.
+          Scan or enter the code posted on the station you just cleaned, temped, or stocked. This
+          confirms the physical work happened.
         </p>
 
         <label className="qr-card__input">
