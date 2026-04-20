@@ -1,4 +1,10 @@
 #!/usr/bin/env tsx
+/**
+ * TopShelf Service LLC
+ * PROPRIETARY AND CONFIDENTIAL
+ * Copyright (c) 2026 TopShelf Service LLC. All Rights Reserved.
+ */
+
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -76,6 +82,16 @@ function inferPackIdentifier(data: PackLike, fallback: string): string {
   return fallback;
 }
 
+function isKitchenChallengeShape(data: PackLike): boolean {
+  return (
+    typeof data.type === 'string' &&
+    typeof data.briefing === 'string' &&
+    typeof data.timeLimitSeconds === 'number' &&
+    typeof data.difficultyLevel === 'number' &&
+    isPlainObject(data.expertRecipe)
+  );
+}
+
 function validatePackShape(relativePath: string, data: PackLike): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
 
@@ -88,6 +104,8 @@ function validatePackShape(relativePath: string, data: PackLike): ValidationIssu
     (key) => key in data
   );
 
+  const hasKitchenChallengeStructure = isKitchenChallengeShape(data);
+
   if (!hasIdentity) {
     issues.push({
       file: relativePath,
@@ -95,11 +113,11 @@ function validatePackShape(relativePath: string, data: PackLike): ValidationIssu
     });
   }
 
-  if (!hasStructure) {
+  if (!hasStructure && !hasKitchenChallengeStructure) {
     issues.push({
       file: relativePath,
       message:
-        'Expected one structural field: version, modules, lessons, units, content, or items.',
+        'Expected either a content-pack structure (version, modules, lessons, units, content, or items) or a kitchen challenge structure (type, briefing, timeLimitSeconds, difficultyLevel, expertRecipe).',
     });
   }
 

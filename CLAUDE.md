@@ -6,13 +6,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 TopShelf Teaching is a pnpm monorepo implementing a device-aware AI teaching kernel with a "Solve First, Teach Second" pedagogy. The system delivers adaptive teaching interventions based on detected triggers and device capability constraints (Chromebook-first design).
 
-**Structure:**
+**Workspace roots** (`pnpm-workspace.yaml`): `packages/*`, `apps/*`, `implementations/*`, `content-packs`, `policy`, `docs`, `pilot`.
 
-- `apps/` — User-facing products (Next.js web app)
-- `packages/` — Reusable platform building blocks (engine, api-server, shared, database)
-- `implementations/` — Focused prototypes (MCP server MVP)
-- `governance/` — Policies, standards, schemas
-- `content/` — Teaching materials and definitions
+**`packages/_future/`** is fully gated off — removed from the workspace. Packages there (`nlp`, `policy-engine`, `client-pwa`) are Phase 2 and must not be imported by active packages. `deterministic-formatter` was promoted to `packages/` as it has active dependents.
 
 ## Commands
 
@@ -21,33 +17,30 @@ TopShelf Teaching is a pnpm monorepo implementing a device-aware AI teaching ker
 pnpm install
 
 # Build
-pnpm build              # All packages via Turbo
+pnpm build              # All packages via Turbo (uses scripts/build.mjs)
 pnpm build:packages     # Only packages in ./packages/*
 
 # Dev
-pnpm dev                # All packages in parallel dev mode
+pnpm dev                # All packages (excludes @topshelf/tests)
 
 # Test
 pnpm test               # All packages
-pnpm test:ci            # With coverage (for CI)
-pnpm test:parity        # Parity tests
-pnpm test:e2e           # End-to-end tests
+pnpm test:ci            # With coverage
+pnpm test:parity        # Formatter parity tests only
+pnpm test:e2e           # Playwright end-to-end
 
-# Single package test
+# Single package
 pnpm --filter @topshelf/engine test
-pnpm --dir implementations/mcp-server test
-
-# Single test file (within a package)
 pnpm --filter @topshelf/engine test -- src/engine.test.ts
 
 # Lint / Format / Typecheck
-pnpm lint               # Lint all (NODE_OPTIONS memory limit: 4096)
+pnpm lint               # NODE_OPTIONS=--max-old-space-size=4096 enforced
 pnpm lint:fix
 pnpm typecheck
-pnpm format
 pnpm format:check
+pnpm format
 
-# Full CI validation (format:check + lint + typecheck + test)
+# Full CI gate (format:check + lint + typecheck + test)
 pnpm validate
 
 # Database
@@ -55,7 +48,7 @@ pnpm db:migrate
 pnpm db:generate
 pnpm db:studio
 
-# MCP Server
+# MCP Server prototype
 pnpm --dir implementations/mcp-server start   # http://localhost:3000/mvp
 ```
 
@@ -63,46 +56,76 @@ pnpm --dir implementations/mcp-server start   # http://localhost:3000/mvp
 
 ### Teaching Engine (`packages/engine/`)
 
-The core of the system. Three collaborating classes:
+The core decision system. Three plain objects (not classes) work together:
 
-- **`PedagogyEngine`** — Orchestrates the full teaching decision: detect triggers → check mode gate → validate device constraints → filter content → format response.
-- **`TriggerDetector`** — Detects five trigger types from session metrics: `ERROR_REPEATED` (3+ errors), `STUCK_DETECTED` (5+ min, <0.1 problems/min), `TIME_THRESHOLD` (5+ min elapsed), `HELP_REQUESTED`, `CONCEPT_GAP`. Also enforces mode gating (`shouldTeach()`).
-- **`ConstraintEngine`** — Maps device profiles to resource budgets (maxMemoryMB, maxCPUCores, maxResponseSize, offline flag, framework allowances) and truncates oversized content with `"[Response truncated for device constraints]"`.
+- **`TriggerDetector`** — pure functions; `detectTriggers(context)` returns `TriggerType[]`. Fires `ERROR_REPEATED` at 3+ errors, `STUCK_DETECTED` when >5 min and <0.1 problems/min, `TIME_THRESHOLD` at 5+ min, plus `HELP_REQUESTED` and `CONCEPT_GAP`. `shouldTeach(mode, triggers)` gates on mode. `suggestModeElevation()` escalates mode automatically.
+- **`ConstraintEngine`** — maps device profiles to budgets (`maxMemoryMB`, `maxResponseSize`, `offline`, framework allowances). `filterSuggestion()` truncates oversized content with the sentinel `"[Response truncated for device constraints]"`. `inferProfile(deviceInfo)` detects profile from UA/hardware hints.
+- **`PedagogyEngine`** — orchestrates: trigger detection → mode gate → device constraint filter → formatted response. Entry point: `processTeachingRequest(context, content)` → `TeachingResponse`.
 
-**Teaching Modes (gradient of intervention):**
+**`TeachingContext`** shape:
 
-| Level | Constant        | Behavior                                   | Prefix         |
-| ----- | --------------- | ------------------------------------------ | -------------- |
-| 0     | `L0_SILENT`     | Never teach                                | _(none)_       |
-| 1     | `L1_MINIMAL`    | Only on `HELP_REQUESTED`                   | `💡 Hint:`     |
-| 2     | `L2_CONTEXTUAL` | On ERROR_REPEATED / STUCK / HELP (default) | `📚 Guidance:` |
-| 3     | `L3_ACTIVE`     | Any trigger                                | `🎓 Teaching:` |
-| 4     | `L4_TUTORIAL`   | Always                                     | `📖 Tutorial:` |
+```ts
+{ mode: TeachingMode; deviceProfile: DeviceProfile; constraints: DeviceConstraints;
+  triggers: TriggerType[]; sessionStartTime: Date; problemsSolved: number; errorsEncountered: number }
+```
 
-**Device profiles:** `CHROMEBOOK_LOW`, `CHROMEBOOK_STANDARD`, `DESKTOP_LOW`, `DESKTOP_STANDARD`, `DESKTOP_HIGH`. Chromebook profiles block heavy frameworks and large assets.
+**Teaching mode table:**
 
-### Session Lifecycle
+| Level | Constant        | Triggers that fire                    | Response prefix |
+| ----- | --------------- | ------------------------------------- | --------------- |
+| 0     | `L0_SILENT`     | Never                                 | _(none)_        |
+| 1     | `L1_MINIMAL`    | HELP_REQUESTED only                   | `💡 Hint:`      |
+| 2     | `L2_CONTEXTUAL` | ERROR_REPEATED, STUCK, HELP (default) | `📚 Guidance:`  |
+| 3     | `L3_ACTIVE`     | Any trigger                           | `🎓 Teaching:`  |
+| 4     | `L4_TUTORIAL`   | Always                                | `📖 Tutorial:`  |
 
-1. `POST /api/session/init` — creates `TeachingContext` (mode, deviceProfile, constraints, empty triggers[], timestamps, counters)
-2. `POST /api/teach` — client sends current metrics; engine detects triggers, gates on mode, filters via device constraints, returns `TeachingResponse { shouldTeach, content?, mode, filtered }`
-3. `GET /api/session/:id` — retrieve current context
-4. `POST /api/triggers/detect` — detect triggers without committing a teach response
+**Kitchen training** (`packages/engine/src/kitchen/`) — separate pedagogical domain: `ChallengeMachine` state machine + `ShadowValidator` hidden rule checker. Exports 50+ types (ChallengePhase, MasteryProfile, TicketItem, etc.).
 
-### MCP Server (`implementations/mcp-server/`)
+**Device profiles:** `CHROMEBOOK_LOW`, `CHROMEBOOK_STANDARD`, `DESKTOP_LOW`, `DESKTOP_STANDARD`, `DESKTOP_HIGH`. Chromebook profiles block heavy frameworks and cap response size.
 
-Express.js prototype. Stores `TeachingContext` in-memory (`Map<sessionId, TeachingContext>`). The `/mvp` page provides a browser click-through UI for manual testing.
+### Session Lifecycle (API Server)
+
+1. `POST /learner/session/start` — creates or retrieves `LearnerState`, starts `LearningSession` with inferred `deviceProfile` and `TeachingMode.L2_CONTEXTUAL`
+2. `POST /learner/session/:id/event` — records `LearnerProgressEvent`, updates session counters, runs `TriggerDetector` and persists elevated `teachingMode` if triggered
+3. `POST /learner/session/:id/teach` — reconstructs `TeachingContext` from DB, runs `PedagogyEngine`, returns `TeachingResponse` + trigger state
+4. `POST /learner/session/:id/end` — marks session `completed`, sets `endedAt`
+5. `GET /learner/stats` — aggregates `totalTimeMinutes`, `totalBlocksCompleted`, `averageMastery`, `packsStarted`, `packsActive` (30-day window), `totalSessions` across all of a user's data
 
 ### API Server (`packages/api-server/`)
 
-Hono framework. Auth, learner, content, session, policy, badge, and admin routes — all protected except `/auth`, `/health`, `/ready`. Drizzle ORM + Postgres.
+Hono framework. Global middleware stack in order: `requestId → secureHeaders → compress → timing → cors → logger(dev) → rateLimiter → errorHandler`. Auth middleware (Bearer JWT) added per-router; extracts `userId` and `userRole` into Hono context vars. Routes: `/auth`, `/learner`, `/content`, `/session`, `/policy`, `/badge`, `/admin`. Public: `/health`, `/ready`.
 
-### Shared / Database Packages
+### Database (`packages/database/`)
 
-`packages/shared/` is the central export point for cross-package types and Zod schemas. `packages/database/` owns the Drizzle schema and migration tooling.
+Drizzle ORM + PostgreSQL. Key table clusters:
+
+- **Auth:** `users`, `organizations`, `authSessions`, `oauthAccounts`
+- **Content:** `contentPacks` (slug+version unique, signed), `contentBlocks` (blockId human-readable, targetMode L1–L5)
+- **Learning:** `learnerStates` (userId+packId unique, skillEstimates/retentionHistory JSONB), `learnerProgressEvents`, `learningSessions` (teachingMode int 0–4, triggersFired JSONB)
+- **Policy:** `policyEvaluations` (audit chain via chainHash/previousHash/signature)
+- **Billing:** `subscriptions`, `invoices`, `seatAssignments`
+- **Audit:** `auditLogs`, `dataExportRequests` (GDPR)
+
+### Inter-Package Contracts
+
+| Consumer            | Provider                  | Contract                                                                         |
+| ------------------- | ------------------------- | -------------------------------------------------------------------------------- |
+| `api-server`        | `engine`                  | `TeachingContext → TeachingResponse` via `PedagogyEngine.processTeachingRequest` |
+| `api-server`        | `database`                | All DB access through `getDatabase()` + Drizzle query builder                    |
+| `api-server`        | `shared`                  | Zod schemas for all request validation                                           |
+| `content-authoring` | `deterministic-formatter` | `CanonicalFormatter` + `ParityValidator` in validation pipeline                  |
+| `web`               | `api-server`              | Bearer JWT in `Authorization` header; token from `useAuthStore`                  |
+| `web`               | `shared`                  | Zod schemas reused for client-side form validation                               |
+
+### Supporting Packages
+
+- **`packages/shared/`** — single source of truth for TS types, Zod schemas, constants, and utility functions. All cross-package types live here.
+- **`packages/deterministic-formatter/`** — canonical content hashing + offline/online parity validation. Used in content pack publishing pipeline.
+- **`packages/content-authoring/`** — three-stage pipeline: `ContentPackValidator → ContentPackSigner → AuthoringPipeline` (state machine: draft → validation → parity_testing → human_review → signing → published).
 
 ## Key Conventions
 
-**Copyright header required on all source files:**
+**Copyright header required on every source file:**
 
 ```typescript
 /**
@@ -112,10 +135,12 @@ Hono framework. Auth, learner, content, session, policy, badge, and admin routes
  */
 ```
 
-**TypeScript:** strict mode with `exactOptionalPropertyTypes` enabled (see `tsconfig.base.json`). ES2022 target, ESNext modules.
+**TypeScript:** strict mode + `exactOptionalPropertyTypes` (see `tsconfig.base.json`). ES2022 target, ESNext modules. Optional properties must be explicitly `undefined`-typed — don't add optional fields that could be `| undefined` without acknowledging it.
 
-**Build tooling:** `tsup` for library packages, `tsc` for MCP server, Next.js for web app, Turbo for monorepo task orchestration.
+**Build tooling:** `tsup` for library packages, Next.js for web app, Turbo for task orchestration. Turbo caches `build/lint/test` outputs; `globalEnv` includes `NODE_ENV`, `CI`, `TOPSHELF_ENV`.
 
-**Tests:** Vitest with globals enabled. Tests live alongside source as `src/**/*.test.ts`. Coverage via v8.
+**Tests:** Vitest with globals. Tests colocated as `src/**/*.test.ts`. Mock `@topshelf/database` at module level in route tests — use the pattern established in existing `*.test.ts` files.
+
+**`pnpm dev` concurrency:** Turbo's default concurrency (CPU-based) is used. Do not add a global `"concurrency"` to `turbo.json` — the machine has 6 GB RAM and no swap; 20 parallel Node processes will OOM-kill.
 
 See `.github/instructions/workspace.instructions.md` for full monorepo conventions, and `.github/instructions/agent-comms.instructions.md` for agent communication standards.

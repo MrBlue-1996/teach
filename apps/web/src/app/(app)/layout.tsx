@@ -9,7 +9,6 @@ import { useAuth } from '@/hooks/use-auth';
 import {
   Zap,
   LayoutDashboard,
-  BookOpen,
   Award,
   Settings,
   Menu,
@@ -17,20 +16,69 @@ import {
   LogOut,
   User,
   ChevronDown,
+  ChevronLeft,
+  Wrench,
+  Cog,
+  FlaskConical,
+  GraduationCap,
+  BarChart3,
+  Users,
+  FolderOpen,
+  Bell,
+  HelpCircle,
   Loader2,
 } from 'lucide-react';
 
-const navigation = [
-  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Learn', href: '/content', icon: BookOpen },
-  { name: 'Achievements', href: '/achievements', icon: Award },
-  { name: 'Settings', href: '/settings', icon: Settings },
+interface NavSection {
+  title: string;
+  items: NavItem[];
+}
+
+interface NavItem {
+  name: string;
+  href: string;
+  icon: typeof LayoutDashboard;
+  badge?: string;
+}
+
+const navSections: NavSection[] = [
+  {
+    title: 'Overview',
+    items: [
+      { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+      { name: 'Analytics', href: '/analytics', icon: BarChart3 },
+    ],
+  },
+  {
+    title: 'Learning',
+    items: [
+      { name: 'Courses', href: '/content', icon: GraduationCap },
+      { name: 'Achievements', href: '/achievements', icon: Award },
+      { name: 'My Library', href: '/library', icon: FolderOpen },
+    ],
+  },
+  {
+    title: 'Resources',
+    items: [
+      { name: 'Tools & Equipment', href: '/tools', icon: Wrench },
+      { name: 'Machines', href: '/machines', icon: Cog },
+      { name: 'Ingredients', href: '/ingredients', icon: FlaskConical },
+    ],
+  },
+  {
+    title: 'Manage',
+    items: [
+      { name: 'Instructor Panel', href: '/instructor', icon: Users },
+      { name: 'Settings', href: '/settings', icon: Settings },
+    ],
+  },
 ];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const router = useRouter();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const { user: authUser, logout, isAuthenticated, isLoading } = useAuth();
 
@@ -65,43 +113,39 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Top Navigation */}
+      {/* Top Navigation Bar */}
       <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center justify-between">
-          {/* Logo */}
-          <div className="flex items-center gap-4">
+        <div className="flex h-14 items-center justify-between px-4">
+          {/* Left: Logo + Mobile Toggle */}
+          <div className="flex items-center gap-3">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="lg:hidden"
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+            >
+              {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </Button>
             <Link href="/dashboard" className="flex items-center space-x-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
                 <Zap className="h-5 w-5 text-primary-foreground" />
               </div>
-              <span className="hidden text-xl font-bold sm:inline">TopShelf</span>
+              <span className="text-xl font-bold">
+                Top<span className="text-primary">Shelf</span>
+              </span>
             </Link>
-
-            {/* Desktop Nav */}
-            <nav className="hidden items-center space-x-1 md:flex">
-              {navigation.map((item) => {
-                const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
-                return (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    className={cn(
-                      'flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors',
-                      isActive
-                        ? 'bg-primary/10 text-primary'
-                        : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                    )}
-                  >
-                    <item.icon className="h-4 w-4" />
-                    {item.name}
-                  </Link>
-                );
-              })}
-            </nav>
           </div>
 
-          {/* Right side */}
+          {/* Right: Actions */}
           <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" className="relative" aria-label="Notifications">
+              <Bell className="h-5 w-5" />
+              <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-destructive" />
+            </Button>
+            <Button variant="ghost" size="icon" aria-label="Help">
+              <HelpCircle className="h-5 w-5" />
+            </Button>
+
             {/* User menu */}
             <div className="relative">
               <button
@@ -154,51 +198,95 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 </>
               )}
             </div>
-
-            {/* Mobile menu button */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="md:hidden"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
-              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </Button>
           </div>
         </div>
-
-        {/* Mobile Nav */}
-        {mobileMenuOpen && (
-          <nav className="border-t p-4 md:hidden">
-            <div className="space-y-1">
-              {navigation.map((item) => {
-                const isActive = pathname === item.href;
-                return (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={cn(
-                      'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium',
-                      isActive
-                        ? 'bg-primary/10 text-primary'
-                        : 'text-muted-foreground hover:bg-muted'
-                    )}
-                  >
-                    <item.icon className="h-5 w-5" />
-                    {item.name}
-                  </Link>
-                );
-              })}
-            </div>
-          </nav>
-        )}
       </header>
 
-      {/* Main content */}
-      <main id="main-content" className="container py-6">
-        {children}
-      </main>
+      <div className="flex">
+        {/* Sidebar Overlay (Mobile) */}
+        {sidebarOpen && (
+          <div
+            className="fixed inset-0 z-30 bg-black/50 lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+
+        {/* Sidebar */}
+        <aside
+          className={cn(
+            'fixed left-0 top-14 z-40 h-[calc(100vh-3.5rem)] border-r bg-card transition-all duration-300',
+            'lg:sticky lg:z-0',
+            sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
+            sidebarCollapsed ? 'w-16' : 'w-64'
+          )}
+        >
+          <div className="flex h-full flex-col">
+            {/* Nav Sections */}
+            <nav className="flex-1 overflow-y-auto p-3">
+              {navSections.map((section) => (
+                <div key={section.title} className="mb-4">
+                  {!sidebarCollapsed && (
+                    <p className="mb-1 px-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      {section.title}
+                    </p>
+                  )}
+                  <div className="space-y-0.5">
+                    {section.items.map((item) => {
+                      const isActive =
+                        pathname === item.href || pathname.startsWith(item.href + '/');
+                      return (
+                        <Link
+                          key={item.name}
+                          href={item.href}
+                          onClick={() => setSidebarOpen(false)}
+                          title={sidebarCollapsed ? item.name : undefined}
+                          className={cn(
+                            'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+                            isActive
+                              ? 'bg-primary/10 text-primary'
+                              : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+                            sidebarCollapsed && 'justify-center px-2'
+                          )}
+                        >
+                          <item.icon className="h-4 w-4 flex-shrink-0" />
+                          {!sidebarCollapsed && (
+                            <>
+                              <span className="flex-1">{item.name}</span>
+                              {item.badge && (
+                                <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
+                                  {item.badge}
+                                </span>
+                              )}
+                            </>
+                          )}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </nav>
+
+            {/* Collapse Toggle (Desktop only) */}
+            <div className="hidden border-t p-3 lg:block">
+              <button
+                onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                className="flex w-full items-center justify-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              >
+                <ChevronLeft
+                  className={cn('h-4 w-4 transition-transform', sidebarCollapsed && 'rotate-180')}
+                />
+                {!sidebarCollapsed && <span>Collapse</span>}
+              </button>
+            </div>
+          </div>
+        </aside>
+
+        {/* Main content */}
+        <main id="main-content" className="flex-1 transition-all duration-300">
+          <div className="container max-w-7xl py-6">{children}</div>
+        </main>
+      </div>
     </div>
   );
 }

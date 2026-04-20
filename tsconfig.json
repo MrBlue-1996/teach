@@ -15,10 +15,7 @@
       "@topshelf/cli": ["packages/cli/src"],
       "@topshelf/content-authoring": ["packages/content-authoring/src"],
       "@topshelf/tests": ["packages/tests/src"],
-      "@topshelf/client-pwa": ["packages/_future/client-pwa/src"],
-      "@topshelf/policy-engine": ["packages/_future/policy-engine/src"],
-      "@topshelf/deterministic-formatter": ["packages/_future/deterministic-formatter/src"],
-      "@topshelf/nlp": ["packages/_future/nlp/src"]
+      "@topshelf/deterministic-formatter": ["packages/deterministic-formatter/src"]
     }
   },
   "references": [
@@ -34,10 +31,7 @@
     { "path": "./packages/cli" },
     { "path": "./packages/content-authoring" },
     { "path": "./packages/tests" },
-    { "path": "./packages/_future/policy-engine" },
-    { "path": "./packages/_future/deterministic-formatter" },
-    { "path": "./packages/_future/nlp" },
-    { "path": "./packages/_future/client-pwa" }
+    { "path": "./packages/deterministic-formatter" }
   ],
   "files": [],
   "include": []

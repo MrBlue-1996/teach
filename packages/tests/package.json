@@ -19,8 +19,6 @@
   "dependencies": {
     "@topshelf/content-authoring": "workspace:*",
     "@topshelf/deterministic-formatter": "workspace:*",
-    "@topshelf/nlp": "workspace:*",
-    "@topshelf/policy-engine": "workspace:*",
     "@topshelf/shared": "workspace:*"
   },
   "devDependencies": {

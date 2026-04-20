@@ -1,8 +1,30 @@
+/**
+ * TopShelf Service LLC
+ * PROPRIETARY AND CONFIDENTIAL
+ * Copyright (c) 2026 TopShelf Service LLC. All Rights Reserved.
+ */
+
+const path = require('node:path');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  transpilePackages: ['@topshelf/engine'],
   images: {
     domains: ['avatars.githubusercontent.com', 'lh3.googleusercontent.com'],
+  },
+  webpack(config) {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@topshelf/engine$': path.resolve(__dirname, '../../packages/engine/src/index.ts'),
+    };
+
+    config.resolve.extensionAlias = {
+      ...(config.resolve.extensionAlias ?? {}),
+      '.js': ['.ts', '.tsx', '.js'],
+    };
+
+    return config;
   },
   async headers() {
     return [

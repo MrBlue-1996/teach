@@ -5,7 +5,24 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Flame, Target, TrendingUp, Play, BookOpen, Award, ChevronRight } from 'lucide-react';
+import { StatCard } from '@/components/ui/stat-card';
+import { ImagePlaceholder, ImageBanner } from '@/components/ui/image-placeholder';
+import {
+  Flame,
+  Target,
+  TrendingUp,
+  Play,
+  BookOpen,
+  Award,
+  Clock,
+  Zap,
+  BarChart3,
+  ArrowRight,
+  GraduationCap,
+  Wrench,
+  FlaskConical,
+  Cog,
+} from 'lucide-react';
 import { getLevelColor, getLevelName } from '@/lib/utils';
 import { learnerApi, contentApi, badgesApi } from '@/lib/api';
 import type { LearnerState, LearningSession, ContentPack } from '@/lib/api';
@@ -33,7 +50,6 @@ export default function DashboardPage() {
   useEffect(() => {
     async function loadDashboard() {
       try {
-        // Fetch all dashboard data in parallel from real API endpoints
         const [statesRes, sessionsRes, packsRes, badgesRes] = await Promise.allSettled([
           learnerApi.getStates(),
           learnerApi.getRecentSessions(10),
@@ -85,21 +101,12 @@ export default function DashboardPage() {
     );
   }
 
-  // Derive dashboard metrics from real data
   const { states, sessions, packs, badgeCount } = data;
-
-  // Current course: the most recently active learner state
   const currentState = states.length > 0 ? states[0] : null;
-
-  // Total time from all states
   const totalBlocksCompleted = states.reduce((sum, s) => sum + (s.blocksCompleted || 0), 0);
-
-  // Recent sessions for activity feed
   const recentSessions = sessions.slice(0, 3);
-
-  // Packs user has NOT started (no learner state) for suggestions
   const enrolledPackIds = new Set(states.map((s) => s.contentPack?.id).filter(Boolean));
-  const suggestedPacks = packs.filter((p) => !enrolledPackIds.has(p.id)).slice(0, 2);
+  const suggestedPacks = packs.filter((p) => !enrolledPackIds.has(p.id)).slice(0, 3);
   const starterPack = pickGoldenPathPack(packs.filter((p) => !enrolledPackIds.has(p.id)));
 
   // Compute streak from consecutive session days
@@ -107,67 +114,91 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6 page-transition">
-      {/* Welcome + Quick Stats */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold md:text-3xl">Welcome back!</h1>
-          <p className="text-muted-foreground">Ready to continue learning?</p>
-        </div>
-        <div className="flex gap-4">
-          <div className="flex items-center gap-2 rounded-lg border bg-card px-4 py-2">
-            <Flame className="h-5 w-5 text-orange-500" />
-            <div>
-              <p className="text-lg font-bold">{streak}</p>
-              <p className="text-xs text-muted-foreground">day streak</p>
-            </div>
+      {/* Welcome Banner */}
+      <ImageBanner gradient="bg-gradient-to-br from-topshelf-500/15 via-topshelf-400/5 to-transparent">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h1 className="text-2xl font-bold md:text-3xl">Welcome back!</h1>
+            <p className="text-muted-foreground">Ready to continue your learning journey?</p>
           </div>
-          <div className="flex items-center gap-2 rounded-lg border bg-card px-4 py-2">
-            <Award className="h-5 w-5 text-primary" />
-            <div>
-              <p className="text-lg font-bold">{badgeCount}</p>
-              <p className="text-xs text-muted-foreground">badges</p>
-            </div>
+          <div className="flex gap-3">
+            <Link href="/content">
+              <Button>
+                <BookOpen className="mr-2 h-4 w-4" />
+                Browse Courses
+              </Button>
+            </Link>
           </div>
         </div>
+      </ImageBanner>
+
+      {/* Quick Stats */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard
+          icon={Flame}
+          label="Day Streak"
+          value={streak}
+          color="orange"
+          change={streak > 0 ? 'Keep it up!' : ''}
+          trend="up"
+        />
+        <StatCard icon={Award} label="Badges Earned" value={badgeCount} color="yellow" />
+        <StatCard icon={GraduationCap} label="Courses Active" value={states.length} color="blue" />
+        <StatCard icon={Zap} label="Blocks Completed" value={totalBlocksCompleted} color="purple" />
       </div>
 
       {/* Continue Learning - Primary CTA */}
       {currentState && currentState.contentPack && (
-        <Card className="overflow-hidden border-2 border-primary/20 bg-gradient-to-r from-primary/5 to-transparent">
-          <CardContent className="p-6">
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-              <div className="flex-1">
-                <div className="mb-2 flex items-center gap-2">
-                  <span
-                    className={`h-2 w-2 rounded-full ${getLevelColor(currentState.currentMode)}`}
-                  />
-                  <span className="text-sm text-muted-foreground">
-                    {getLevelName(currentState.currentMode)}
-                  </span>
+        <Card className="overflow-hidden border-2 border-primary/20">
+          <CardContent className="p-0">
+            <div className="flex flex-col lg:flex-row">
+              {/* Course Image */}
+              <div className="lg:w-72">
+                <ImagePlaceholder
+                  type="image"
+                  aspectRatio="video"
+                  label={currentState.contentPack.title}
+                  className="h-full rounded-none border-0 lg:aspect-auto"
+                />
+              </div>
+              {/* Course Info */}
+              <div className="flex flex-1 flex-col justify-between p-6">
+                <div>
+                  <div className="mb-2 flex items-center gap-2">
+                    <span
+                      className={`h-2 w-2 rounded-full ${getLevelColor(currentState.currentMode)}`}
+                    />
+                    <span className="text-sm text-muted-foreground">
+                      {getLevelName(currentState.currentMode)}
+                    </span>
+                    <span className="text-sm text-muted-foreground">-</span>
+                    <span className="text-sm text-muted-foreground">
+                      Continue where you left off
+                    </span>
+                  </div>
+                  <h2 className="mb-1 text-xl font-semibold">{currentState.contentPack.title}</h2>
+                  <p className="text-muted-foreground">
+                    {currentState.blocksCompleted} blocks completed
+                  </p>
                 </div>
-                <h2 className="mb-1 text-xl font-semibold">{currentState.contentPack.title}</h2>
-                <p className="text-muted-foreground">
-                  {currentState.blocksCompleted} blocks completed - Mastery:{' '}
-                  {Math.round(currentState.overallMastery * 100)}%
-                </p>
-                <div className="mt-4 flex items-center gap-4">
-                  <div className="flex-1">
-                    <div className="mb-1 flex justify-between text-sm">
-                      <span>Mastery</span>
-                      <span className="font-medium">
-                        {Math.round(currentState.overallMastery * 100)}%
-                      </span>
-                    </div>
-                    <Progress value={currentState.overallMastery * 100} className="h-2" />
+                <div className="mt-4">
+                  <div className="mb-2 flex items-center justify-between text-sm">
+                    <span>Mastery Progress</span>
+                    <span className="font-medium">
+                      {Math.round(currentState.overallMastery * 100)}%
+                    </span>
+                  </div>
+                  <Progress value={currentState.overallMastery * 100} className="h-2" />
+                  <div className="mt-4">
+                    <Link href={`/learn/${currentState.contentPack.id}`}>
+                      <Button size="lg">
+                        <Play className="mr-2 h-5 w-5" />
+                        Continue Learning
+                      </Button>
+                    </Link>
                   </div>
                 </div>
               </div>
-              <Link href={`/learn/${currentState.contentPack.id}`}>
-                <Button size="lg" className="w-full md:w-auto">
-                  <Play className="mr-2 h-5 w-5" />
-                  Continue
-                </Button>
-              </Link>
             </div>
           </CardContent>
         </Card>
@@ -245,98 +276,223 @@ export default function DashboardPage() {
         </Card>
 
         {/* Active Courses */}
-        <Card>
-          <CardHeader className="pb-2">
+        <Card className="lg:col-span-2">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="flex items-center gap-2 text-base font-medium">
               <Target className="h-4 w-4 text-primary" />
               Active Courses
             </CardTitle>
+            <Link href="/content" className="text-sm text-primary hover:underline">
+              View all
+            </Link>
           </CardHeader>
           <CardContent>
             {states.length > 0 ? (
               <div className="space-y-3">
-                {states.slice(0, 3).map((s) => (
-                  <div key={s.id} className="flex items-start gap-2 text-sm">
-                    <BookOpen className="mt-0.5 h-4 w-4 text-muted-foreground" />
-                    <div className="flex-1 truncate">
-                      <p className="truncate">{s.contentPack?.title || 'Unknown course'}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {s.blocksCompleted} blocks - {Math.round(s.overallMastery * 100)}% mastery
-                      </p>
+                {states.slice(0, 4).map((s) => (
+                  <Link key={s.id} href={`/learn/${s.contentPack?.id}`}>
+                    <div className="flex items-center gap-4 rounded-lg border p-3 transition-colors hover:bg-muted">
+                      <div className="hidden h-12 w-12 items-center justify-center rounded-lg bg-primary/10 sm:flex">
+                        <BookOpen className="h-5 w-5 text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium truncate">
+                          {s.contentPack?.title || 'Unknown course'}
+                        </p>
+                        <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
+                          <span>{s.blocksCompleted} blocks</span>
+                          <span>{getLevelName(s.currentMode)}</span>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-medium">{Math.round(s.overallMastery * 100)}%</p>
+                        <Progress value={s.overallMastery * 100} className="mt-1 h-1.5 w-20" />
+                      </div>
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">No courses started yet</p>
+              <div className="py-8 text-center">
+                <BookOpen className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
+                <p className="text-sm text-muted-foreground">No courses started yet</p>
+                <Link href="/content">
+                  <Button variant="link" className="mt-2">
+                    Browse courses
+                  </Button>
+                </Link>
+              </div>
             )}
           </CardContent>
         </Card>
 
-        {/* Recent Activity */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base font-medium">Recent Sessions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {recentSessions.length > 0 ? (
-              <div className="space-y-3">
-                {recentSessions.map((session) => (
-                  <div key={session.id} className="flex items-start gap-2 text-sm">
-                    <BookOpen className="mt-0.5 h-4 w-4 text-muted-foreground" />
-                    <div className="flex-1 truncate">
-                      <p className="truncate">{session.contentPack?.title || 'Learning session'}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {session.blocksCompleted} blocks - {session.status}
-                      </p>
+        {/* Right Column */}
+        <div className="space-y-6">
+          {/* Recent Activity */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-base font-medium">
+                <Clock className="h-4 w-4" />
+                Recent Activity
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {recentSessions.length > 0 ? (
+                <div className="space-y-3">
+                  {recentSessions.map((session) => (
+                    <div key={session.id} className="flex items-start gap-3 text-sm">
+                      <div className="mt-0.5 h-2 w-2 rounded-full bg-primary" />
+                      <div className="flex-1">
+                        <p className="truncate font-medium">
+                          {session.contentPack?.title || 'Learning session'}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {session.blocksCompleted} blocks - {session.status}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">No recent sessions</p>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Weekly Progress Chart Placeholder */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-base font-medium">
+                <BarChart3 className="h-4 w-4 text-primary" />
+                Weekly Progress
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ImagePlaceholder
+                type="animation"
+                aspectRatio="video"
+                label="Weekly Activity Chart"
+              />
+              <div className="mt-3 grid grid-cols-7 gap-1">
+                {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, i) => {
+                  const height = [40, 65, 30, 80, 55, 20, 70][i] ?? 0;
+                  return (
+                    <div key={day} className="flex flex-col items-center gap-1">
+                      <div className="w-full rounded-sm bg-muted" style={{ height: 60 }}>
+                        <div
+                          className="w-full rounded-sm bg-primary/70 transition-all"
+                          style={{ height: `${height}%`, marginTop: `${100 - height}%` }}
+                        />
+                      </div>
+                      <span className="text-[10px] text-muted-foreground">{day}</span>
+                    </div>
+                  );
+                })}
               </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">No recent sessions</p>
-            )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
-      {/* Explore More */}
+      {/* Quick Access Sections */}
       <div>
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Explore More Courses</h2>
-          <Link href="/content" className="text-sm text-primary hover:underline">
-            View all
+        <h2 className="mb-4 text-lg font-semibold">Quick Access</h2>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <Link href="/tools">
+            <Card className="card-hover cursor-pointer">
+              <CardContent className="flex items-center gap-3 p-4">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/50">
+                  <Wrench className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                </div>
+                <div>
+                  <p className="font-medium">Tools & Equipment</p>
+                  <p className="text-xs text-muted-foreground">Browse lab resources</p>
+                </div>
+              </CardContent>
+            </Card>
           </Link>
-        </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {suggestedPacks.map((pack) => (
-            <Link key={pack.id} href={`/content/${pack.id}`}>
-              <Card className="card-hover h-full cursor-pointer">
-                <CardContent className="flex items-center justify-between p-4">
-                  <div>
-                    <h3 className="font-medium">{pack.title}</h3>
-                    <p className="text-sm text-muted-foreground">{pack.description}</p>
-                  </div>
-                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
-          <Link href="/content">
-            <Card className="card-hover flex h-full cursor-pointer items-center justify-center border-dashed">
-              <CardContent className="py-8 text-center">
-                <BookOpen className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
-                <p className="text-sm text-muted-foreground">Browse all courses</p>
+          <Link href="/machines">
+            <Card className="card-hover cursor-pointer">
+              <CardContent className="flex items-center gap-3 p-4">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-100 dark:bg-purple-900/50">
+                  <Cog className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                </div>
+                <div>
+                  <p className="font-medium">Machines</p>
+                  <p className="text-xs text-muted-foreground">Monitor equipment</p>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+          <Link href="/ingredients">
+            <Card className="card-hover cursor-pointer">
+              <CardContent className="flex items-center gap-3 p-4">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100 dark:bg-green-900/50">
+                  <FlaskConical className="h-5 w-5 text-green-600 dark:text-green-400" />
+                </div>
+                <div>
+                  <p className="font-medium">Ingredients</p>
+                  <p className="text-xs text-muted-foreground">Manage inventory</p>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+          <Link href="/achievements">
+            <Card className="card-hover cursor-pointer">
+              <CardContent className="flex items-center gap-3 p-4">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-yellow-100 dark:bg-yellow-900/50">
+                  <Award className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+                </div>
+                <div>
+                  <p className="font-medium">Achievements</p>
+                  <p className="text-xs text-muted-foreground">View badges & progress</p>
+                </div>
               </CardContent>
             </Card>
           </Link>
         </div>
       </div>
+
+      {/* Explore More Courses */}
+      {suggestedPacks.length > 0 && (
+        <div>
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-lg font-semibold">Explore More Courses</h2>
+            <Link
+              href="/content"
+              className="flex items-center text-sm text-primary hover:underline"
+            >
+              View all <ArrowRight className="ml-1 h-3 w-3" />
+            </Link>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {suggestedPacks.map((pack) => (
+              <Link key={pack.id} href={`/content/${pack.id}`}>
+                <Card className="card-hover h-full cursor-pointer overflow-hidden">
+                  <CardContent className="p-0">
+                    <ImagePlaceholder
+                      type="image"
+                      aspectRatio="video"
+                      label={pack.title}
+                      className="rounded-none border-0"
+                    />
+                    <div className="p-4">
+                      <h3 className="font-medium">{pack.title}</h3>
+                      <p className="mt-1 text-sm text-muted-foreground line-clamp-2">
+                        {pack.description}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-/** Compute streak as number of consecutive days with sessions (ending today or yesterday). */
 function computeStreak(sessions: LearningSession[]): number {
   if (sessions.length === 0) {
     return 0;
@@ -345,7 +501,6 @@ function computeStreak(sessions: LearningSession[]): number {
   const uniqueDays = new Set(
     sessions.filter((s) => s.startedAt).map((s) => new Date(s.startedAt).toISOString().slice(0, 10))
   );
-
   const sortedDays = Array.from(uniqueDays).sort().reverse();
   if (sortedDays.length === 0) {
     return 0;
@@ -361,10 +516,14 @@ function computeStreak(sessions: LearningSession[]): number {
 
   let streak = 1;
   for (let i = 1; i < sortedDays.length; i++) {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const prev = new Date(sortedDays[i - 1]!);
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const curr = new Date(sortedDays[i]!);
+    const prevDay = sortedDays[i - 1];
+    const currDay = sortedDays[i];
+    if (!prevDay || !currDay) {
+      break;
+    }
+
+    const prev = new Date(prevDay);
+    const curr = new Date(currDay);
     const diffDays = (prev.getTime() - curr.getTime()) / 86400000;
     if (Math.round(diffDays) === 1) {
       streak++;
@@ -372,6 +531,5 @@ function computeStreak(sessions: LearningSession[]): number {
       break;
     }
   }
-
   return streak;
 }

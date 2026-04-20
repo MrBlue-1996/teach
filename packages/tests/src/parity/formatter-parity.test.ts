@@ -100,6 +100,23 @@ sudo passwd newuser
     expect(output.canonicalSolution).toContain('```');
   });
 
+  it('should respect configured space indentation width', () => {
+    const customFormatter = new CanonicalFormatter({ indentSize: 4 });
+    const blockWithIndentation: TeachingBlock = {
+      ...sampleBlock,
+      canonicalSolution: `\`\`\`bash
+    if true; then
+        echo "indented"
+    fi
+\`\`\``,
+    };
+
+    const output = customFormatter.formatBlock(blockWithIndentation);
+
+    expect(output.canonicalSolution).toContain('    if true; then');
+    expect(output.canonicalSolution).toContain('        echo "indented"');
+  });
+
   it('should include formatter version in output', () => {
     const output = formatter.formatBlock(sampleBlock);
 

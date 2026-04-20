@@ -97,6 +97,9 @@ const mockProgressEvents = [
   },
 ];
 
+const mockSelectWhere = vi.fn();
+const mockSelectFrom = vi.fn();
+
 const mockDb = {
   query: {
     learnerStates: {
@@ -105,11 +108,13 @@ const mockDb = {
     },
     learningSessions: {
       findFirst: vi.fn(),
+      findMany: vi.fn(),
     },
     learnerProgressEvents: {
       findMany: vi.fn(),
     },
   },
+  select: vi.fn(),
   insert: vi.fn().mockReturnValue({
     values: vi.fn().mockReturnValue({
       returning: vi.fn(),
@@ -123,11 +128,12 @@ const mockDb = {
 };
 
 vi.mock('@topshelf/database', () => ({
-  getDatabase: () => mockDb,
+  getDatabase: (): unknown => mockDb,
   learnerStates: {
     id: 'id',
     userId: 'userId',
     contentPackId: 'contentPackId',
+    blocksCompleted: 'blocksCompleted',
     lastActivityAt: 'lastActivityAt',
   },
   learnerProgressEvents: { learnerStateId: 'learnerStateId', occurredAt: 'occurredAt' },
@@ -136,14 +142,27 @@ vi.mock('@topshelf/database', () => ({
     userId: 'userId',
     status: 'status',
     learnerStateId: 'learnerStateId',
+    blocksCompleted: 'blocksCompleted',
+    blocksAttempted: 'blocksAttempted',
+    problemsSolved: 'problemsSolved',
+    errorsEncountered: 'errorsEncountered',
+    averageCorrectness: 'averageCorrectness',
   },
-  eq: (...args: unknown[]) => args,
-  and: (...args: unknown[]) => args,
-  desc: (field: unknown) => field,
+  eq: (...args: unknown[]): unknown[] => args,
+  and: (...args: unknown[]): unknown[] => args,
+  desc: (field: unknown): unknown => field,
+  gte: (a: unknown, b: unknown): unknown[] => [a, b],
+  sql: (
+    strings: TemplateStringsArray,
+    ...values: unknown[]
+  ): { strings: string[]; values: unknown[] } => ({
+    strings: Array.from(strings),
+    values,
+  }),
 }));
 
 vi.mock('@topshelf/config', () => ({
-  getConfig: () => ({
+  getConfig: (): { environment: string } => ({
     environment: 'development',
   }),
 }));
@@ -173,7 +192,11 @@ describe('Learner Routes', () => {
     mockDb.query.learnerStates.findFirst.mockResolvedValue(null);
     mockDb.query.learnerStates.findMany.mockResolvedValue(mockLearnerStates);
     mockDb.query.learningSessions.findFirst.mockResolvedValue(null);
+    mockDb.query.learningSessions.findMany.mockResolvedValue([]);
     mockDb.query.learnerProgressEvents.findMany.mockResolvedValue(mockProgressEvents);
+    mockDb.select.mockReturnValue({ from: mockSelectFrom });
+    mockSelectFrom.mockReturnValue({ where: mockSelectWhere });
+    mockSelectWhere.mockResolvedValue([{ totalSessions: 0 }]);
   });
 
   // ---------------------------------------------------------------------------
@@ -572,20 +595,31 @@ describe('Learner Routes', () => {
       });
 
       expect(res.status).toBe(200);
-      expect(setSpy).toHaveBeenNthCalledWith(
-        1,
+      const learnerStateUpdate = setSpy.mock.calls[0]?.[0];
+      const sessionUpdate = setSpy.mock.calls[1]?.[0];
+
+      expect(learnerStateUpdate).toEqual(
         expect.objectContaining({
           currentBlockId: 'block-7',
-          blocksCompleted: 6,
+          blocksCompleted: expect.objectContaining({
+            values: expect.arrayContaining(['blocksCompleted']),
+          }),
         })
       );
-      expect(setSpy).toHaveBeenNthCalledWith(
-        2,
+      expect(sessionUpdate).toEqual(
         expect.objectContaining({
-          blocksCompleted: 6,
-          blocksAttempted: 7,
-          problemsSolved: 2,
-          averageCorrectness: 0.55,
+          blocksCompleted: expect.objectContaining({
+            values: expect.arrayContaining(['blocksCompleted']),
+          }),
+          blocksAttempted: expect.objectContaining({
+            values: expect.arrayContaining(['blocksAttempted']),
+          }),
+          problemsSolved: expect.objectContaining({
+            values: expect.arrayContaining(['problemsSolved']),
+          }),
+          averageCorrectness: expect.objectContaining({
+            values: expect.arrayContaining(['averageCorrectness', 'blocksAttempted', 0.85]),
+          }),
           teachingMode: 2,
           triggersFired: [],
           deviceProfile: 'chromebook_standard',
@@ -643,14 +677,20 @@ describe('Learner Routes', () => {
 
       expect(res.status).toBe(200);
       expect(setSpy).toHaveBeenCalledTimes(1);
-      expect(setSpy).toHaveBeenCalledWith(
+      const sessionUpdate = setSpy.mock.calls[0]?.[0];
+
+      expect(sessionUpdate).toEqual(
         expect.objectContaining({
-          errorsEncountered: 2,
+          errorsEncountered: expect.objectContaining({
+            values: expect.arrayContaining(['errorsEncountered']),
+          }),
           teachingMode: 2,
           triggersFired: [],
           deviceProfile: 'chromebook_standard',
         })
       );
+      expect(sessionUpdate).not.toHaveProperty('blocksCompleted');
+      expect(sessionUpdate).not.toHaveProperty('blocksAttempted');
     });
 
     it('should record skipped event', async () => {
@@ -968,6 +1008,122 @@ describe('Learner Routes', () => {
       expect(res.status).toBe(200);
       const body = await res.json();
       expect(body.progress).toBeDefined();
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // GET /learner/stats
+  // ---------------------------------------------------------------------------
+
+  describe('GET /learner/stats', () => {
+    const mockStates = [
+      {
+        overallMastery: 0.5,
+        totalTimeSpentSeconds: 3600,
+        blocksCompleted: 10,
+        lastActivityAt: new Date(),
+      },
+      {
+        overallMastery: 0.75,
+        totalTimeSpentSeconds: 7200,
+        blocksCompleted: 20,
+        lastActivityAt: new Date(),
+      },
+    ];
+
+    beforeEach(() => {
+      mockDb.query.learnerStates.findMany.mockResolvedValue(mockStates);
+      mockSelectWhere.mockResolvedValue([{ totalSessions: 3 }]);
+    });
+
+    it('should return aggregated stats for the user', async () => {
+      const res = await app.request('/learner/stats');
+
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body).toHaveProperty('totalTimeMinutes');
+      expect(body).toHaveProperty('totalBlocksCompleted');
+      expect(body).toHaveProperty('averageMastery');
+      expect(body).toHaveProperty('packsStarted');
+      expect(body).toHaveProperty('packsActive');
+      expect(body).toHaveProperty('totalSessions');
+    });
+
+    it('should sum time correctly across packs', async () => {
+      const res = await app.request('/learner/stats');
+      const body = await res.json();
+      expect(body.totalTimeMinutes).toBe(180); // (3600 + 7200) / 60
+    });
+
+    it('should sum blocks completed across packs', async () => {
+      const res = await app.request('/learner/stats');
+      const body = await res.json();
+      expect(body.totalBlocksCompleted).toBe(30);
+    });
+
+    it('should compute average mastery across packs', async () => {
+      const res = await app.request('/learner/stats');
+      const body = await res.json();
+      expect(body.averageMastery).toBe(0.625);
+    });
+
+    it('should count packs started', async () => {
+      const res = await app.request('/learner/stats');
+      const body = await res.json();
+      expect(body.packsStarted).toBe(2);
+    });
+
+    it('should count active packs (activity within 30 days)', async () => {
+      const res = await app.request('/learner/stats');
+      const body = await res.json();
+      expect(body.packsActive).toBe(2);
+    });
+
+    it('should count total sessions', async () => {
+      const res = await app.request('/learner/stats');
+      const body = await res.json();
+      expect(body.totalSessions).toBe(3);
+      expect(mockDb.select).toHaveBeenCalled();
+      expect(mockDb.query.learningSessions.findMany).not.toHaveBeenCalled();
+    });
+
+    it('should return zeros when user has no data', async () => {
+      mockDb.query.learnerStates.findMany.mockResolvedValue([]);
+      mockSelectWhere.mockResolvedValue([{ totalSessions: 0 }]);
+
+      const res = await app.request('/learner/stats');
+      const body = await res.json();
+      expect(body.totalTimeMinutes).toBe(0);
+      expect(body.totalBlocksCompleted).toBe(0);
+      expect(body.averageMastery).toBe(0);
+      expect(body.packsStarted).toBe(0);
+      expect(body.packsActive).toBe(0);
+      expect(body.totalSessions).toBe(0);
+    });
+
+    it('should not count packs inactive for more than 30 days', async () => {
+      const oldDate = new Date();
+      oldDate.setDate(oldDate.getDate() - 31);
+
+      mockDb.query.learnerStates.findMany.mockResolvedValue([
+        { ...mockStates[0], lastActivityAt: oldDate },
+        { ...mockStates[1], lastActivityAt: new Date() },
+      ]);
+
+      const res = await app.request('/learner/stats');
+      const body = await res.json();
+      expect(body.packsActive).toBe(1);
+    });
+
+    it('should ignore packs with null last activity timestamps', async () => {
+      mockDb.query.learnerStates.findMany.mockResolvedValue([
+        { ...mockStates[0], lastActivityAt: null },
+        { ...mockStates[1], lastActivityAt: new Date() },
+      ]);
+
+      const res = await app.request('/learner/stats');
+      const body = await res.json();
+      expect(body.packsActive).toBe(1);
     });
   });
 

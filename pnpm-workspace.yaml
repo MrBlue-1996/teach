@@ -1,6 +1,5 @@
 packages:
   - 'packages/*'
-  - 'packages/_future/*'
   - 'apps/*'
   - 'implementations/*'
   - 'content-packs'

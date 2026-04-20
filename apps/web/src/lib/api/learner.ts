@@ -113,12 +113,20 @@ export interface LearningSession {
   blocksCompleted: number;
 }
 
+export interface LearnerStats {
+  totalTimeMinutes: number;
+  totalBlocksCompleted: number;
+  averageMastery: number;
+  packsStarted: number;
+  packsActive: number;
+  totalSessions: number;
+}
+
 export const learnerApi = {
-  /**
-   * GET /learner/states - Get all learner states for current user.
-   * TODO: Backend does not have a /learner/stats aggregate endpoint.
-   * This returns per-pack states instead. Dashboard should compute stats from these.
-   */
+  /** GET /learner/stats - Aggregated stats across all packs */
+  getStats: () => api.get<LearnerStats>('/learner/stats'),
+
+  /** GET /learner/states - Get all learner states for current user */
   getStates: () => api.get<{ states: LearnerState[] }>('/learner/states'),
 
   /** GET /learner/state/:contentPackId - Get learner state for a content pack */

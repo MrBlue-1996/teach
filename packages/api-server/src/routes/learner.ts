@@ -18,6 +18,7 @@ import {
   and,
   gte,
   desc,
+  sql,
 } from '@topshelf/database';
 import {
   PedagogyEngine,
@@ -54,7 +55,7 @@ const TeachRequestSchema = z.object({
 // ROUTES
 // =============================================================================
 
-export function createLearnerRoutes() {
+export function createLearnerRoutes(): Hono {
   const router = new Hono();
 
   // ---------------------------------------------------------------------------
@@ -123,6 +124,53 @@ export function createLearnerRoutes() {
   });
 
   // ---------------------------------------------------------------------------
+  // GET /learner/stats - Aggregate stats across all packs for the current user
+  // ---------------------------------------------------------------------------
+  router.get('/stats', async (c) => {
+    const userId = c.get('userId');
+    const db = getDatabase();
+
+    const [states, sessionCounts] = await Promise.all([
+      db.query.learnerStates.findMany({
+        where: eq(learnerStates.userId, userId),
+        columns: {
+          overallMastery: true,
+          totalTimeSpentSeconds: true,
+          blocksCompleted: true,
+          lastActivityAt: true,
+        },
+      }),
+      db
+        .select({ totalSessions: sql<number>`count(*)` })
+        .from(learningSessions)
+        .where(eq(learningSessions.userId, userId)),
+    ]);
+
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const totalTimeMinutes = Math.round(
+      states.reduce((sum, s) => sum + s.totalTimeSpentSeconds, 0) / 60
+    );
+    const totalBlocksCompleted = states.reduce((sum, s) => sum + s.blocksCompleted, 0);
+    const averageMastery =
+      states.length > 0 ? states.reduce((sum, s) => sum + s.overallMastery, 0) / states.length : 0;
+    const packsActive = states.filter(
+      (s) => s.lastActivityAt !== null && s.lastActivityAt >= thirtyDaysAgo
+    ).length;
+    const totalSessions = sessionCounts[0]?.totalSessions ?? 0;
+
+    return c.json({
+      totalTimeMinutes,
+      totalBlocksCompleted,
+      averageMastery: Math.round(averageMastery * 1000) / 1000,
+      packsStarted: states.length,
+      packsActive,
+      totalSessions,
+    });
+  });
+
+  // ---------------------------------------------------------------------------
   // POST /learner/session/start - Start a new learning session
   // ---------------------------------------------------------------------------
   router.post('/session/start', zValidator('json', StartSessionSchema), async (c) => {
@@ -155,9 +203,7 @@ export function createLearnerRoutes() {
     }
 
     // Infer device profile from client-provided deviceInfo
-    const deviceProfile = ConstraintEngine.inferProfile(
-      deviceInfo as Record<string, unknown> | undefined
-    );
+    const deviceProfile = ConstraintEngine.inferProfile(deviceInfo);
 
     // Create new session with teaching context
     const [session] = await db
@@ -250,19 +296,20 @@ export function createLearnerRoutes() {
     let nextErrorsEncountered = session.errorsEncountered ?? 0;
 
     if (eventData.eventType === 'completed') {
-      sessionUpdates['blocksCompleted'] = (session.blocksCompleted || 0) + 1;
-      sessionUpdates['blocksAttempted'] = (session.blocksAttempted || 0) + 1;
+      sessionUpdates['blocksCompleted'] = sql`coalesce(${learningSessions.blocksCompleted}, 0) + 1`;
+      sessionUpdates['blocksAttempted'] = sql`coalesce(${learningSessions.blocksAttempted}, 0) + 1`;
 
       // Correct answer → increment problems solved
       if (eventData.correctness !== undefined && eventData.correctness >= 0.5) {
         nextProblemsSolved += 1;
-        sessionUpdates['problemsSolved'] = nextProblemsSolved;
+        sessionUpdates['problemsSolved'] = sql`coalesce(${learningSessions.problemsSolved}, 0) + 1`;
       }
 
       // Wrong answer → increment errors
       if (eventData.correctness !== undefined && eventData.correctness < 0.5) {
         nextErrorsEncountered += 1;
-        sessionUpdates['errorsEncountered'] = nextErrorsEncountered;
+        sessionUpdates['errorsEncountered'] =
+          sql`coalesce(${learningSessions.errorsEncountered}, 0) + 1`;
       }
 
       // Update learner state
@@ -271,7 +318,7 @@ export function createLearnerRoutes() {
         .set({
           currentBlockId: eventData.blockId,
           lastActivityAt: new Date(),
-          blocksCompleted: session.blocksCompleted ? session.blocksCompleted + 1 : 1,
+          blocksCompleted: sql`coalesce(${learnerStates.blocksCompleted}, 0) + 1`,
         })
         .where(eq(learnerStates.id, session.learnerStateId));
     }
@@ -279,12 +326,14 @@ export function createLearnerRoutes() {
     if (eventData.eventType === 'hint_used') {
       // Requesting a hint counts as an implicit error signal
       nextErrorsEncountered += 1;
-      sessionUpdates['errorsEncountered'] = nextErrorsEncountered;
+      sessionUpdates['errorsEncountered'] =
+        sql`coalesce(${learningSessions.errorsEncountered}, 0) + 1`;
     }
 
     if (eventData.eventType === 'skipped') {
       nextErrorsEncountered += 1;
-      sessionUpdates['errorsEncountered'] = nextErrorsEncountered;
+      sessionUpdates['errorsEncountered'] =
+        sql`coalesce(${learningSessions.errorsEncountered}, 0) + 1`;
     }
 
     const deviceProfile = ConstraintEngine.inferProfile(
@@ -309,11 +358,12 @@ export function createLearnerRoutes() {
     sessionUpdates['deviceProfile'] = deviceProfile;
 
     if (eventData.correctness !== undefined && eventData.eventType === 'completed') {
-      const priorAttempts = session.blocksAttempted ?? 0;
-      const previousAverage = session.averageCorrectness ?? null;
-      const nextAttemptCount = priorAttempts + 1;
-      const correctnessTotal = (previousAverage ?? 0) * priorAttempts + eventData.correctness;
-      sessionUpdates['averageCorrectness'] = correctnessTotal / nextAttemptCount;
+      sessionUpdates['averageCorrectness'] = sql`
+        (
+          (coalesce(${learningSessions.averageCorrectness}, 0) * coalesce(${learningSessions.blocksAttempted}, 0))
+          + ${eventData.correctness}
+        ) / (coalesce(${learningSessions.blocksAttempted}, 0) + 1)
+      `;
     }
 
     if (Object.keys(sessionUpdates).length > 0) {
@@ -534,7 +584,7 @@ export function createLearnerRoutes() {
     // Resolve teaching content: prefer existing block hints, fall back to client
     let teachingContent = clientContent ?? '';
 
-    if (blockId) {
+    if (blockId !== undefined) {
       const block = await db.query.contentBlocks.findFirst({
         where: eq(contentBlocks.blockId, blockId),
       });

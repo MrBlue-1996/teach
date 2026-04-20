@@ -199,91 +199,6 @@ importers:
         specifier: ^2.1.9
         version: 2.1.9(@types/node@20.19.39)(jsdom@29.0.2)
 
-  packages/_future/client-pwa:
-    dependencies:
-      '@topshelf/deterministic-formatter':
-        specifier: workspace:*
-        version: link:../deterministic-formatter
-      '@topshelf/shared':
-        specifier: workspace:*
-        version: link:../../shared
-    devDependencies:
-      '@types/node':
-        specifier: ^20.11.0
-        version: 20.19.39
-      tsup:
-        specifier: ^8.0.1
-        version: 8.5.1(tsx@4.21.0)(typescript@5.9.3)
-      typescript:
-        specifier: ^5.3.3
-        version: 5.9.3
-      vitest:
-        specifier: ^2.1.9
-        version: 2.1.9(@types/node@20.19.39)(jsdom@29.0.2)
-
-  packages/_future/deterministic-formatter:
-    dependencies:
-      '@topshelf/shared':
-        specifier: workspace:*
-        version: link:../../shared
-    devDependencies:
-      '@types/node':
-        specifier: ^20.11.0
-        version: 20.19.39
-      tsup:
-        specifier: ^8.0.1
-        version: 8.5.1(tsx@4.21.0)(typescript@5.9.3)
-      typescript:
-        specifier: ^5.3.3
-        version: 5.9.3
-      vitest:
-        specifier: ^2.1.9
-        version: 2.1.9(@types/node@20.19.39)(jsdom@29.0.2)
-
-  packages/_future/nlp:
-    dependencies:
-      '@topshelf/shared':
-        specifier: workspace:*
-        version: link:../../shared
-    devDependencies:
-      '@types/node':
-        specifier: ^20.11.0
-        version: 20.19.39
-      tsup:
-        specifier: ^8.0.1
-        version: 8.5.1(tsx@4.21.0)(typescript@5.9.3)
-      typescript:
-        specifier: ^5.3.3
-        version: 5.9.3
-      vitest:
-        specifier: ^2.1.9
-        version: 2.1.9(@types/node@20.19.39)(jsdom@29.0.2)
-
-  packages/_future/policy-engine:
-    dependencies:
-      '@topshelf/shared':
-        specifier: workspace:*
-        version: link:../../shared
-      zod:
-        specifier: ^3.22.4
-        version: 3.25.76
-    devDependencies:
-      '@types/node':
-        specifier: ^20.11.0
-        version: 20.19.39
-      ts-node:
-        specifier: ^10.9.2
-        version: 10.9.2(@types/node@20.19.39)(typescript@5.9.3)
-      tsup:
-        specifier: ^8.0.1
-        version: 8.5.1(tsx@4.21.0)(typescript@5.9.3)
-      typescript:
-        specifier: ^5.3.3
-        version: 5.9.3
-      vitest:
-        specifier: ^2.1.9
-        version: 2.1.9(@types/node@20.19.39)(jsdom@29.0.2)
-
   packages/api-server:
     dependencies:
       '@hono/node-server':
@@ -446,7 +361,7 @@ importers:
     dependencies:
       '@topshelf/deterministic-formatter':
         specifier: workspace:*
-        version: link:../_future/deterministic-formatter
+        version: link:../deterministic-formatter
       '@topshelf/shared':
         specifier: workspace:*
         version: link:../shared
@@ -500,6 +415,25 @@ importers:
       tsx:
         specifier: ^4.7.0
         version: 4.21.0
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+      vitest:
+        specifier: ^2.1.9
+        version: 2.1.9(@types/node@20.19.39)(jsdom@29.0.2)
+
+  packages/deterministic-formatter:
+    dependencies:
+      '@topshelf/shared':
+        specifier: workspace:*
+        version: link:../shared
+    devDependencies:
+      '@types/node':
+        specifier: ^20.11.0
+        version: 20.19.39
+      tsup:
+        specifier: ^8.0.1
+        version: 8.5.1(tsx@4.21.0)(typescript@5.9.3)
       typescript:
         specifier: ^5.3.3
         version: 5.9.3
@@ -601,13 +535,7 @@ importers:
         version: link:../content-authoring
       '@topshelf/deterministic-formatter':
         specifier: workspace:*
-        version: link:../_future/deterministic-formatter
-      '@topshelf/nlp':
-        specifier: workspace:*
-        version: link:../_future/nlp
-      '@topshelf/policy-engine':
-        specifier: workspace:*
-        version: link:../_future/policy-engine
+        version: link:../deterministic-formatter
       '@topshelf/shared':
         specifier: workspace:*
         version: link:../shared
