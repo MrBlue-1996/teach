@@ -26,6 +26,7 @@ import { createPolicyRoutes } from './routes/policy.js';
 import { createBadgeRoutes } from './routes/badge.js';
 import { createAdminRoutes } from './routes/admin.js';
 import { createBillingRoutes } from './routes/billing.js';
+import { createMetricsRoutes } from './routes/metrics.js';
 
 // Import middleware
 import { rateLimiter } from './middleware/rate-limiter.js';
@@ -126,6 +127,9 @@ export function createApp(): Hono {
   // Billing webhook is public (verified by Stripe signature); non-webhook routes
   // apply their own authMiddleware() per route inside createBillingRoutes()
   api.route('/billing', createBillingRoutes());
+
+  // Metrics (public, no auth — for Prometheus scraping)
+  api.route('/metrics', createMetricsRoutes());
 
   // Protected routes (auth required)
   const protectedApi = new Hono();

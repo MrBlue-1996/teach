@@ -91,7 +91,19 @@ Files touched by multiple agents. **Always check these before and after changes.
 
 ### api-engineer
 
-**[2026-04-23]** ESLint compliance pass — 0 errors in all target files.
+**[2026-04-23] Batch 5 — Items 16 & 17**
+
+**Item 16 — `GET /metrics` endpoint:**
+- `packages/api-server/src/routes/metrics.ts` *(new)* — `createMetricsRoutes()` mounts `GET /` handler that calls `metrics.export()` from `@topshelf/observability` and returns Prometheus-format text with content-type `text/plain; version=0.0.4; charset=utf-8`.
+- `packages/api-server/src/routes/metrics.test.ts` *(new)* — 4 tests: returns 200, correct content-type, HELP/TYPE lines in body, no auth required. All 4 pass.
+- `packages/api-server/src/index.ts` — imported `createMetricsRoutes`, mounted at `api.route('/metrics', ...)` as a **public** route (no auth middleware).
+
+**Item 17 — `requestId` in route log calls:**
+- Audit of all route files (`packages/api-server/src/routes/*.ts`) found **zero** existing logger calls. The `no-change` rule ("only add requestId to existing log call objects") means there is nothing to modify. All log calls are in `index.ts` server startup code where there is no request context (`c`). No changes made.
+
+**Test results:** metrics tests 4/4 ✓ | api-server total 265 tests (261 pre-existing pass, 4 pre-existing `rate-limiter.test.ts` failures unrelated to this batch) | typecheck: clean ✓
+
+
 
 **Files fixed:**
 - `packages/api-server/src/routes/content.ts` — added `: Hono` return type to `createContentRoutes()`, fixed strict-boolean on nullable string (`certification !== undefined`), replaced all `||` with `??` for nullable string/number coalescing, added `: string` return type to inner `norm` arrow fn, removed unnecessary `?? 0` on non-nullable `blocksCompleted`.

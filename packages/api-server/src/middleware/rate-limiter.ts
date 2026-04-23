@@ -29,7 +29,7 @@ export function rateLimiter(
     const realIp = c.req.header('X-Real-IP');
     const ip = forwarded ?? realIp ?? 'unknown';
 
-    const identifier = userId.length > 0 ? userId : `ip:${ip}`;
+    const identifier = ((userId as string | undefined) ?? '') !== '' ? userId : `ip:${ip}`;
     const key = `ratelimit:${identifier}`;
 
     let count = 0;
