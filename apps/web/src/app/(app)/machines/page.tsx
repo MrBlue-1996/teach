@@ -5,7 +5,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { PageHeader } from '@/components/ui/page-header';
-import { ImagePlaceholder } from '@/components/ui/image-placeholder';
 import { DataTableShell } from '@/components/ui/data-table-shell';
 import { EmptyState } from '@/components/ui/empty-state';
 import { StatCard } from '@/components/ui/stat-card';
@@ -303,12 +302,9 @@ function MachineCard({ machine, onSelect }: { machine: Machine; onSelect: (m: Ma
     >
       <CardContent className="p-0">
         <div className="relative">
-          <ImagePlaceholder
-            type="image"
-            aspectRatio="video"
-            label={machine.type}
-            className="rounded-none border-0"
-          />
+          <div className="flex aspect-video items-center justify-center bg-muted/40">
+            <Cog className="h-14 w-14 text-muted-foreground/30" />
+          </div>
           <div className="absolute left-3 top-3">
             <span
               className={cn(
@@ -426,12 +422,9 @@ function MachineDetailPanel({ machine, onClose }: { machine: Machine; onClose: (
             </Button>
           </div>
 
-          <ImagePlaceholder
-            type="image"
-            aspectRatio="video"
-            label={machine.type}
-            className="mb-6"
-          />
+          <div className="mb-6 flex aspect-video items-center justify-center rounded-lg bg-muted/40">
+            <Cog className="h-16 w-16 text-muted-foreground/30" />
+          </div>
 
           <div className="space-y-6">
             <div>
@@ -542,13 +535,10 @@ function MachineDetailPanel({ machine, onClose }: { machine: Machine; onClose: (
               </div>
             )}
 
-            {/* Animation/Video placeholder */}
-            <ImagePlaceholder
-              type="animation"
-              aspectRatio="video"
-              label="Machine Performance Chart"
-              className="border-solid"
-            />
+            {/* Performance chart — visualization not yet implemented */}
+            <div className="flex aspect-video items-center justify-center rounded-lg border border-dashed">
+              <p className="text-xs text-muted-foreground">Performance chart coming soon</p>
+            </div>
 
             <div className="flex gap-2 pt-2">
               <Button className="flex-1">Schedule Maintenance</Button>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -21,8 +21,10 @@ import {
   Calendar,
   FileText,
   MessageSquare,
+  Loader2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { adminApi, type AdminUser, type AdminStats } from '@/lib/api';
 
 interface Student {
   id: string;
@@ -46,121 +48,60 @@ interface CourseOverview {
   status: 'published' | 'draft' | 'archived';
 }
 
-const mockStudents: Student[] = [
-  {
-    id: '1',
-    name: 'Sarah Chen',
-    email: 'sarah@example.com',
-    initials: 'SC',
-    enrolledCourses: 3,
-    overallProgress: 78,
-    lastActive: '2 hours ago',
-    streak: 14,
-    badgesEarned: 8,
-    status: 'active',
-  },
-  {
-    id: '2',
-    name: 'Marcus Johnson',
-    email: 'marcus@example.com',
-    initials: 'MJ',
-    enrolledCourses: 2,
-    overallProgress: 92,
-    lastActive: '1 hour ago',
-    streak: 21,
-    badgesEarned: 12,
-    status: 'active',
-  },
-  {
-    id: '3',
-    name: 'Emily Rodriguez',
-    email: 'emily@example.com',
-    initials: 'ER',
-    enrolledCourses: 4,
-    overallProgress: 45,
-    lastActive: '3 days ago',
-    streak: 0,
-    badgesEarned: 3,
-    status: 'at-risk',
-  },
-  {
-    id: '4',
-    name: 'David Kim',
-    email: 'david@example.com',
-    initials: 'DK',
-    enrolledCourses: 1,
-    overallProgress: 65,
-    lastActive: '5 hours ago',
-    streak: 7,
-    badgesEarned: 5,
-    status: 'active',
-  },
-  {
-    id: '5',
-    name: 'Lisa Thompson',
-    email: 'lisa@example.com',
-    initials: 'LT',
-    enrolledCourses: 2,
-    overallProgress: 15,
-    lastActive: '2 weeks ago',
+function getInitials(name: string | null): string {
+  if (!name) return '?';
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return (parts[0]?.[0] ?? '?').toUpperCase();
+  return ((parts[0]?.[0] ?? '') + (parts[parts.length - 1]?.[0] ?? '')).toUpperCase();
+}
+
+function formatLastActive(dateStr: string | null): string {
+  if (!dateStr) return 'Never';
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const minutes = Math.floor(diff / 60000);
+  if (minutes < 60) return `${minutes} min ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} hour${hours !== 1 ? 's' : ''} ago`;
+  const days = Math.floor(hours / 24);
+  return `${days} day${days !== 1 ? 's' : ''} ago`;
+}
+
+function mapUserToStudent(u: AdminUser): Student {
+  return {
+    id: u.id,
+    name: u.displayName ?? u.email,
+    email: u.email,
+    initials: getInitials(u.displayName ?? u.email),
+    enrolledCourses: 0,
+    overallProgress: 0,
+    lastActive: formatLastActive(u.lastLoginAt),
     streak: 0,
     badgesEarned: 0,
-    status: 'inactive',
-  },
-  {
-    id: '6',
-    name: 'James Wilson',
-    email: 'james@example.com',
-    initials: 'JW',
-    enrolledCourses: 3,
-    overallProgress: 88,
-    lastActive: '30 min ago',
-    streak: 30,
-    badgesEarned: 15,
-    status: 'active',
-  },
-];
+    status: u.isActive ? 'active' : 'inactive',
+  };
+}
 
-const mockCourses: CourseOverview[] = [
-  {
-    id: '1',
-    title: 'CompTIA Network+ Certification',
-    enrolledStudents: 24,
-    avgMastery: 62,
-    completionRate: 35,
-    status: 'published',
-  },
-  {
-    id: '2',
-    title: 'Linux+ Fundamentals',
-    enrolledStudents: 18,
-    avgMastery: 71,
-    completionRate: 45,
-    status: 'published',
-  },
-  {
-    id: '3',
-    title: 'Cybersecurity Essentials',
-    enrolledStudents: 31,
-    avgMastery: 48,
-    completionRate: 20,
-    status: 'published',
-  },
-  {
-    id: '4',
-    title: 'Advanced Networking Lab',
-    enrolledStudents: 0,
-    avgMastery: 0,
-    completionRate: 0,
-    status: 'draft',
-  },
-];
+// Placeholder courses shown while no course-analytics endpoint exists
+const placeholderCourses: CourseOverview[] = [];
 
 type InstructorTab = 'overview' | 'students' | 'courses' | 'content';
 
 export default function InstructorPage() {
   const [activeTab, setActiveTab] = useState<InstructorTab>('overview');
   const [studentSearch, setStudentSearch] = useState('');
+  const [adminStats, setAdminStats] = useState<AdminStats | null>(null);
+  const [students, setStudents] = useState<Student[]>([]);
+  const [dataLoading, setDataLoading] = useState(true);
+
+  useEffect(() => {
+    Promise.all([adminApi.getStats(), adminApi.getUsers()])
+      .then(([statsRes, usersRes]) => {
+        setAdminStats(statsRes);
+        setStudents(usersRes.users.map(mapUserToStudent));
+      })
+      .catch(() => {})
+      .finally(() => setDataLoading(false));
+  }, []);
 
   const tabs = [
     { id: 'overview' as const, label: 'Overview', icon: BarChart3 },
@@ -169,14 +110,16 @@ export default function InstructorPage() {
     { id: 'content' as const, label: 'Content', icon: FileText },
   ];
 
-  const totalStudents = mockStudents.length;
-  const activeStudents = mockStudents.filter((s) => s.status === 'active').length;
-  const atRiskStudents = mockStudents.filter(
+  const totalStudents = adminStats?.stats.totalUsers ?? students.length;
+  const activeStudents =
+    adminStats?.stats.activeLearners ?? students.filter((s) => s.status === 'active').length;
+  const atRiskStudents = students.filter(
     (s) => s.status === 'at-risk' || s.status === 'inactive'
   ).length;
-  const avgProgress = Math.round(
-    mockStudents.reduce((sum, s) => sum + s.overallProgress, 0) / totalStudents
-  );
+  const avgProgress =
+    students.length > 0
+      ? Math.round(students.reduce((sum, s) => sum + s.overallProgress, 0) / students.length)
+      : 0;
 
   return (
     <div className="space-y-6 page-transition">
@@ -289,7 +232,7 @@ export default function InstructorPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {mockStudents
+                  {students
                     .filter((s) => s.status === 'at-risk' || s.status === 'inactive')
                     .map((student) => (
                       <div
@@ -338,28 +281,34 @@ export default function InstructorPage() {
               </Button>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {mockCourses
-                  .filter((c) => c.status === 'published')
-                  .map((course) => (
-                    <div key={course.id} className="flex items-center gap-4">
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium truncate">{course.title}</p>
-                        <div className="mt-1 flex items-center gap-4 text-xs text-muted-foreground">
-                          <span>{course.enrolledStudents} students</span>
-                          <span>{course.completionRate}% completion</span>
+              {placeholderCourses.filter((c) => c.status === 'published').length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  Course analytics coming soon. See blockers.
+                </p>
+              ) : (
+                <div className="space-y-4">
+                  {placeholderCourses
+                    .filter((c) => c.status === 'published')
+                    .map((course) => (
+                      <div key={course.id} className="flex items-center gap-4">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium truncate">{course.title}</p>
+                          <div className="mt-1 flex items-center gap-4 text-xs text-muted-foreground">
+                            <span>{course.enrolledStudents} students</span>
+                            <span>{course.completionRate}% completion</span>
+                          </div>
+                        </div>
+                        <div className="w-32">
+                          <div className="mb-1 flex justify-between text-xs">
+                            <span className="text-muted-foreground">Avg Mastery</span>
+                            <span className="font-medium">{course.avgMastery}%</span>
+                          </div>
+                          <Progress value={course.avgMastery} className="h-1.5" />
                         </div>
                       </div>
-                      <div className="w-32">
-                        <div className="mb-1 flex justify-between text-xs">
-                          <span className="text-muted-foreground">Avg Mastery</span>
-                          <span className="font-medium">{course.avgMastery}%</span>
-                        </div>
-                        <Progress value={course.avgMastery} className="h-1.5" />
-                      </div>
-                    </div>
-                  ))}
-              </div>
+                    ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -383,134 +332,88 @@ export default function InstructorPage() {
             </Button>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b text-left text-xs font-medium text-muted-foreground">
-                  <th className="pb-3 pr-4">Student</th>
-                  <th className="pb-3 pr-4">Courses</th>
-                  <th className="pb-3 pr-4">Progress</th>
-                  <th className="pb-3 pr-4">Streak</th>
-                  <th className="pb-3 pr-4">Badges</th>
-                  <th className="pb-3 pr-4">Last Active</th>
-                  <th className="pb-3 pr-4">Status</th>
-                  <th className="pb-3">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {mockStudents
-                  .filter((s) => s.name.toLowerCase().includes(studentSearch.toLowerCase()))
-                  .map((student) => (
-                    <tr key={student.id} className="border-b text-sm hover:bg-muted/50">
-                      <td className="py-3 pr-4">
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-medium text-primary-foreground">
-                            {student.initials}
+          {dataLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b text-left text-xs font-medium text-muted-foreground">
+                    <th className="pb-3 pr-4">Student</th>
+                    <th className="pb-3 pr-4">Role</th>
+                    <th className="pb-3 pr-4">Last Active</th>
+                    <th className="pb-3 pr-4">Status</th>
+                    <th className="pb-3">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {students
+                    .filter((s) => s.name.toLowerCase().includes(studentSearch.toLowerCase()))
+                    .map((student) => (
+                      <tr key={student.id} className="border-b text-sm hover:bg-muted/50">
+                        <td className="py-3 pr-4">
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-medium text-primary-foreground">
+                              {student.initials}
+                            </div>
+                            <div>
+                              <p className="font-medium">{student.name}</p>
+                              <p className="text-xs text-muted-foreground">{student.email}</p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="font-medium">{student.name}</p>
-                            <p className="text-xs text-muted-foreground">{student.email}</p>
+                        </td>
+                        <td className="py-3 pr-4 text-muted-foreground capitalize">
+                          {student.email}
+                        </td>
+                        <td className="py-3 pr-4 text-muted-foreground">{student.lastActive}</td>
+                        <td className="py-3 pr-4">
+                          <span
+                            className={cn(
+                              'rounded-full px-2 py-0.5 text-xs font-medium',
+                              student.status === 'active' &&
+                                'bg-green-100 text-green-600 dark:bg-green-900/50 dark:text-green-400',
+                              student.status === 'at-risk' &&
+                                'bg-red-100 text-red-600 dark:bg-red-900/50 dark:text-red-400',
+                              student.status === 'inactive' &&
+                                'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
+                            )}
+                          >
+                            {student.status === 'at-risk'
+                              ? 'At Risk'
+                              : student.status.charAt(0).toUpperCase() + student.status.slice(1)}
+                          </span>
+                        </td>
+                        <td className="py-3">
+                          <div className="flex gap-1">
+                            <Button variant="ghost" size="icon" className="h-7 w-7">
+                              <Eye className="h-3 w-3" />
+                            </Button>
+                            <Button variant="ghost" size="icon" className="h-7 w-7">
+                              <MessageSquare className="h-3 w-3" />
+                            </Button>
                           </div>
-                        </div>
-                      </td>
-                      <td className="py-3 pr-4">{student.enrolledCourses}</td>
-                      <td className="py-3 pr-4">
-                        <div className="flex items-center gap-2">
-                          <Progress value={student.overallProgress} className="h-1.5 w-16" />
-                          <span>{student.overallProgress}%</span>
-                        </div>
-                      </td>
-                      <td className="py-3 pr-4">{student.streak} days</td>
-                      <td className="py-3 pr-4">{student.badgesEarned}</td>
-                      <td className="py-3 pr-4 text-muted-foreground">{student.lastActive}</td>
-                      <td className="py-3 pr-4">
-                        <span
-                          className={cn(
-                            'rounded-full px-2 py-0.5 text-xs font-medium',
-                            student.status === 'active' &&
-                              'bg-green-100 text-green-600 dark:bg-green-900/50 dark:text-green-400',
-                            student.status === 'at-risk' &&
-                              'bg-red-100 text-red-600 dark:bg-red-900/50 dark:text-red-400',
-                            student.status === 'inactive' &&
-                              'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
-                          )}
-                        >
-                          {student.status === 'at-risk'
-                            ? 'At Risk'
-                            : student.status.charAt(0).toUpperCase() + student.status.slice(1)}
-                        </span>
-                      </td>
-                      <td className="py-3">
-                        <div className="flex gap-1">
-                          <Button variant="ghost" size="icon" className="h-7 w-7">
-                            <Eye className="h-3 w-3" />
-                          </Button>
-                          <Button variant="ghost" size="icon" className="h-7 w-7">
-                            <MessageSquare className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
-          </div>
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       )}
 
       {/* Courses Tab */}
       {activeTab === 'courses' && (
-        <div className="grid gap-4 sm:grid-cols-2">
-          {mockCourses.map((course) => (
-            <Card key={course.id} className="card-hover">
-              <CardContent className="p-0">
-                <ImagePlaceholder
-                  type="image"
-                  aspectRatio="video"
-                  label={course.title}
-                  className="rounded-none border-0 rounded-t-lg"
-                />
-                <div className="p-4">
-                  <div className="mb-2 flex items-center justify-between">
-                    <h3 className="font-semibold">{course.title}</h3>
-                    <span
-                      className={cn(
-                        'rounded-full px-2 py-0.5 text-xs font-medium',
-                        course.status === 'published' && 'bg-green-100 text-green-600',
-                        course.status === 'draft' && 'bg-yellow-100 text-yellow-600',
-                        course.status === 'archived' && 'bg-gray-100 text-gray-600'
-                      )}
-                    >
-                      {course.status.charAt(0).toUpperCase() + course.status.slice(1)}
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-3 gap-4 text-center">
-                    <div>
-                      <p className="text-lg font-bold">{course.enrolledStudents}</p>
-                      <p className="text-xs text-muted-foreground">Students</p>
-                    </div>
-                    <div>
-                      <p className="text-lg font-bold">{course.avgMastery}%</p>
-                      <p className="text-xs text-muted-foreground">Avg Mastery</p>
-                    </div>
-                    <div>
-                      <p className="text-lg font-bold">{course.completionRate}%</p>
-                      <p className="text-xs text-muted-foreground">Completion</p>
-                    </div>
-                  </div>
-                  <div className="mt-4 flex gap-2">
-                    <Button variant="outline" size="sm" className="flex-1">
-                      <Eye className="mr-2 h-3 w-3" />
-                      View
-                    </Button>
-                    <Button size="sm" className="flex-1">
-                      Manage
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+        <div className="space-y-4">
+          <div className="rounded-lg border border-dashed p-8 text-center">
+            <GraduationCap className="mx-auto mb-3 h-10 w-10 text-muted-foreground/40" />
+            <p className="font-medium">Course analytics coming soon</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Per-course enrollment and mastery stats require a dedicated instructor endpoint.
+            </p>
+          </div>
         </div>
       )}
 

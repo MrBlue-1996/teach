@@ -14,6 +14,8 @@ import { compress } from 'hono/compress';
 
 import { loadConfig, getConfig } from '@topshelf/config';
 import { connectDatabase, disconnectDatabase, checkDatabaseHealth } from '@topshelf/database';
+import { getLogger } from '@topshelf/observability';
+import { closeRedisClient } from './lib/redis-client.js';
 
 // Import routes
 import { createAuthRoutes } from './routes/auth.js';
@@ -23,6 +25,7 @@ import { createSessionRoutes } from './routes/session.js';
 import { createPolicyRoutes } from './routes/policy.js';
 import { createBadgeRoutes } from './routes/badge.js';
 import { createAdminRoutes } from './routes/admin.js';
+import { createBillingRoutes } from './routes/billing.js';
 
 // Import middleware
 import { rateLimiter } from './middleware/rate-limiter.js';
@@ -34,7 +37,7 @@ import { authMiddleware } from './middleware/auth.js';
 // APPLICATION FACTORY
 // =============================================================================
 
-export function createApp() {
+export function createApp(): Hono {
   const config = getConfig();
   const app = new Hono();
 
@@ -120,6 +123,9 @@ export function createApp() {
 
   // Public routes (no auth required)
   api.route('/auth', createAuthRoutes());
+  // Billing webhook is public (verified by Stripe signature); non-webhook routes
+  // apply their own authMiddleware() per route inside createBillingRoutes()
+  api.route('/billing', createBillingRoutes());
 
   // Protected routes (auth required)
   const protectedApi = new Hono();
@@ -159,37 +165,32 @@ export function createApp() {
 // SERVER STARTUP
 // =============================================================================
 
-async function startServer() {
-  console.log('╔════════════════════════════════════════════════════════════════╗');
-  console.log('║     TopShelf Teaching Platform - API Server                    ║');
-  console.log('║     Copyright (c) 2026 TopShelf Service LLC                    ║');
-  console.log('║     PROPRIETARY AND CONFIDENTIAL                               ║');
-  console.log('╚════════════════════════════════════════════════════════════════╝');
-  console.log('');
+async function startServer(): Promise<void> {
+  const log = getLogger();
+  log.info('TopShelf Teaching Platform - API Server starting');
 
   // Load configuration
-  console.log('→ Loading configuration...');
+  log.info('Loading configuration...');
   const config = loadConfig();
-  console.log(`  Environment: ${config.environment}`);
-  console.log(`  Version: ${config.version}`);
+  log.info({ environment: config.environment, version: config.version }, 'Configuration loaded');
 
   // Connect to database
-  console.log('→ Connecting to database...');
+  log.info('Connecting to database...');
   try {
     await connectDatabase();
-    console.log('  Database connected successfully');
+    log.info('Database connected successfully');
   } catch (error) {
-    console.error('  Failed to connect to database:', error);
+    log.error({ err: error }, 'Failed to connect to database');
     process.exit(1);
   }
 
   // Create application
-  console.log('→ Initializing application...');
+  log.info('Initializing application...');
   const app = createApp();
 
   // Start server
   const { host, port } = config.api;
-  console.log(`→ Starting server on ${host}:${port}...`);
+  log.info({ host, port }, 'Starting server...');
 
   const server = serve({
     fetch: app.fetch,
@@ -197,27 +198,31 @@ async function startServer() {
     port: port,
   });
 
-  console.log('');
-  console.log('╔════════════════════════════════════════════════════════════════╗');
-  console.log(`║  Server running at http://${host}:${port}                       ║`);
-  console.log(`║  API base path: ${config.api.basePath.padEnd(38)}          ║`);
-  console.log('╚════════════════════════════════════════════════════════════════╝');
-  console.log('');
+  log.info({ url: `http://${host}:${port}`, basePath: config.api.basePath }, 'Server running');
 
   // Graceful shutdown
-  const shutdown = async (signal: string) => {
-    console.log(`\n→ Received ${signal}, shutting down gracefully...`);
+  const shutdown = async (signal: string): Promise<void> => {
+    log.info({ signal }, 'Received signal, shutting down gracefully...');
 
     server.close();
+    await closeRedisClient();
     await disconnectDatabase();
 
-    console.log('→ Server shut down complete');
+    log.info('Server shut down complete');
     process.exit(0);
   };
 
-  process.on('SIGTERM', () => shutdown('SIGTERM'));
-  process.on('SIGINT', () => shutdown('SIGINT'));
+  process.on('SIGTERM', (): void => {
+    void shutdown('SIGTERM');
+  });
+  process.on('SIGINT', (): void => {
+    void shutdown('SIGINT');
+  });
 }
 
 // Run if executed directly
-startServer().catch(console.error);
+startServer().catch((err: unknown) => {
+  const log = getLogger();
+  log.error({ err }, 'Server startup failed');
+  process.exit(1);
+});

@@ -56,6 +56,26 @@ const RedisConfigSchema = z.object({
 export type RedisConfig = z.infer<typeof RedisConfigSchema>;
 
 // =============================================================================
+// EMAIL CONFIGURATION
+// =============================================================================
+
+const EmailConfigSchema = z.object({
+  provider: z.enum(['sendgrid', 'smtp']).default('smtp'),
+  sendgridApiKey: z.string().optional(),
+  smtp: z
+    .object({
+      host: z.string().default('localhost'),
+      port: z.coerce.number().default(587),
+      user: z.string().optional(),
+      pass: z.string().optional(),
+    })
+    .default({}),
+  fromAddress: z.string().default('noreply@topshelf.app'),
+});
+
+export type EmailConfig = z.infer<typeof EmailConfigSchema>;
+
+// =============================================================================
 // AUTH CONFIGURATION
 // =============================================================================
 
@@ -208,6 +228,31 @@ const FeatureFlagsSchema = z.object({
 export type FeatureFlags = z.infer<typeof FeatureFlagsSchema>;
 
 // =============================================================================
+// BILLING CONFIGURATION
+// =============================================================================
+
+const BillingConfigSchema = z.object({
+  stripeSecretKey: z.string().default(''),
+  stripeWebhookSecret: z.string().default(''),
+  trialDays: z.coerce.number().default(14),
+  taxEnabled: z.boolean().default(true),
+  priceIds: z
+    .object({
+      individualMonthly: z.string().default(''),
+      individualAnnual: z.string().default(''),
+      schoolMonthly: z.string().default(''),
+      schoolAnnual: z.string().default(''),
+      districtMonthly: z.string().default(''),
+      districtAnnual: z.string().default(''),
+      enterpriseMonthly: z.string().default(''),
+      enterpriseAnnual: z.string().default(''),
+    })
+    .default({}),
+});
+
+export type BillingConfig = z.infer<typeof BillingConfigSchema>;
+
+// =============================================================================
 // FULL APPLICATION CONFIGURATION
 // =============================================================================
 
@@ -217,12 +262,14 @@ const AppConfigSchema = z.object({
   version: z.string().default('1.0.0'),
   database: DatabaseConfigSchema,
   redis: RedisConfigSchema,
+  email: EmailConfigSchema.default({}),
   auth: AuthConfigSchema,
   api: ApiServerConfigSchema,
   llm: LLMConfigSchema,
   storage: StorageConfigSchema,
   observability: ObservabilityConfigSchema,
   features: FeatureFlagsSchema,
+  billing: BillingConfigSchema.default({}),
 });
 
 export type AppConfig = z.infer<typeof AppConfigSchema>;
@@ -245,9 +292,7 @@ export class ConfigurationManager {
   private constructor() {}
 
   static getInstance(): ConfigurationManager {
-    if (!ConfigurationManager.instance) {
-      ConfigurationManager.instance = new ConfigurationManager();
-    }
+    ConfigurationManager.instance ??= new ConfigurationManager();
     return ConfigurationManager.instance;
   }
 
@@ -260,7 +305,7 @@ export class ConfigurationManager {
     }
 
     const rawConfig = {
-      environment: process.env.NODE_ENV || 'development',
+      environment: process.env.NODE_ENV ?? 'development',
       serviceName: process.env.SERVICE_NAME,
       version: process.env.APP_VERSION,
       database: {
@@ -281,6 +326,17 @@ export class ConfigurationManager {
         db: process.env.REDIS_DB,
         tls: process.env.REDIS_TLS === 'true',
         keyPrefix: process.env.REDIS_KEY_PREFIX,
+      },
+      email: {
+        provider: process.env.EMAIL_PROVIDER,
+        sendgridApiKey: process.env.SENDGRID_API_KEY,
+        smtp: {
+          host: process.env.SMTP_HOST,
+          port: process.env.SMTP_PORT,
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS,
+        },
+        fromAddress: process.env.EMAIL_FROM_ADDRESS,
       },
       auth: {
         jwtSecret: process.env.JWT_SECRET,
@@ -305,7 +361,7 @@ export class ConfigurationManager {
       },
       api: {
         host: process.env.API_HOST,
-        port: process.env.API_PORT || process.env.PORT,
+        port: process.env.API_PORT ?? process.env.PORT,
         basePath: process.env.API_BASE_PATH,
         trustProxy: process.env.TRUST_PROXY === 'true',
         corsEnabled: process.env.CORS_ENABLED !== 'false',
@@ -358,6 +414,22 @@ export class ConfigurationManager {
           serviceName: process.env.TRACING_SERVICE_NAME,
           endpoint: process.env.TRACING_ENDPOINT,
           sampleRate: process.env.TRACING_SAMPLE_RATE,
+        },
+      },
+      billing: {
+        stripeSecretKey: process.env.STRIPE_SECRET_KEY,
+        stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
+        trialDays: process.env.STRIPE_TRIAL_DAYS,
+        taxEnabled: process.env.STRIPE_TAX_ENABLED !== 'false',
+        priceIds: {
+          individualMonthly: process.env.STRIPE_PRICE_INDIVIDUAL_MONTHLY,
+          individualAnnual: process.env.STRIPE_PRICE_INDIVIDUAL_ANNUAL,
+          schoolMonthly: process.env.STRIPE_PRICE_SCHOOL_MONTHLY,
+          schoolAnnual: process.env.STRIPE_PRICE_SCHOOL_ANNUAL,
+          districtMonthly: process.env.STRIPE_PRICE_DISTRICT_MONTHLY,
+          districtAnnual: process.env.STRIPE_PRICE_DISTRICT_ANNUAL,
+          enterpriseMonthly: process.env.STRIPE_PRICE_ENTERPRISE_MONTHLY,
+          enterpriseAnnual: process.env.STRIPE_PRICE_ENTERPRISE_ANNUAL,
         },
       },
       features: {
@@ -458,7 +530,12 @@ export class ConfigurationManager {
     for (const [key, value] of Object.entries(obj)) {
       if (this.sensitiveKeys.some((k) => key.toLowerCase().includes(k.toLowerCase()))) {
         result[key] = '[REDACTED]';
-      } else if (value && typeof value === 'object' && !Array.isArray(value)) {
+      } else if (
+        value !== null &&
+        value !== undefined &&
+        typeof value === 'object' &&
+        !Array.isArray(value)
+      ) {
         result[key] = this.redactSensitive(value as Record<string, unknown>);
       } else {
         result[key] = value;
@@ -493,6 +570,7 @@ export {
   StorageConfigSchema,
   ObservabilityConfigSchema,
   FeatureFlagsSchema,
+  BillingConfigSchema,
   EnvironmentSchema,
 };
 

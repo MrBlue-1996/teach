@@ -1,33 +1,22 @@
 /**
- * TopShelf Service LLC - Rate Limiter Middleware
+ * TopShelf Service LLC
  * PROPRIETARY AND CONFIDENTIAL
  * Copyright (c) 2026 TopShelf Service LLC. All Rights Reserved.
  */
 
 import { createMiddleware } from 'hono/factory';
-
-interface RateLimitEntry {
-  count: number;
-  resetAt: number;
-}
-
-// In-memory rate limit store (use Redis in production)
-const rateLimitStore = new Map<string, RateLimitEntry>();
-
-// Cleanup old entries periodically
-setInterval(() => {
-  const now = Date.now();
-  for (const [key, entry] of rateLimitStore.entries()) {
-    if (entry.resetAt < now) {
-      rateLimitStore.delete(key);
-    }
-  }
-}, 60000);
+import { getLogger } from '@topshelf/observability';
+import { getRedisClient } from '../lib/redis-client.js';
 
 /**
- * Rate limiting middleware
+ * Rate limiting middleware backed by Redis INCR + PEXPIRE.
+ *
+ * Falls back to allowing the request through if Redis is unavailable.
  */
-export function rateLimiter(maxRequests: number, windowMs: number) {
+export function rateLimiter(
+  maxRequests: number,
+  windowMs: number
+): ReturnType<typeof createMiddleware> {
   return createMiddleware(async (c, next) => {
     // Skip rate limiting for health checks
     if (c.req.path === '/health' || c.req.path === '/ready') {
@@ -36,37 +25,44 @@ export function rateLimiter(maxRequests: number, windowMs: number) {
 
     // Get client identifier (prefer user ID if authenticated, fallback to IP)
     const userId = c.get('userId');
-    const ip =
-      c.req.header('X-Forwarded-For')?.split(',')[0]?.trim() ||
-      c.req.header('X-Real-IP') ||
-      'unknown';
+    const forwarded = c.req.header('X-Forwarded-For')?.split(',')[0]?.trim();
+    const realIp = c.req.header('X-Real-IP');
+    const ip = forwarded ?? realIp ?? 'unknown';
 
-    const identifier = userId || `ip:${ip}`;
-    const now = Date.now();
+    const identifier = userId.length > 0 ? userId : `ip:${ip}`;
+    const key = `ratelimit:${identifier}`;
 
-    // Get or create rate limit entry
-    let entry = rateLimitStore.get(identifier);
+    let count = 0;
+    let ttlMs = windowMs;
 
-    if (!entry || entry.resetAt < now) {
-      entry = {
-        count: 0,
-        resetAt: now + windowMs,
-      };
+    try {
+      const redis = getRedisClient();
+      count = await redis.incr(key);
+
+      if (count === 1) {
+        // First request in window — set expiry
+        await redis.pexpire(key, windowMs);
+        ttlMs = windowMs;
+      } else {
+        const remaining = await redis.pttl(key);
+        ttlMs = remaining > 0 ? remaining : windowMs;
+      }
+    } catch (err) {
+      // Redis unavailable — fail open (allow request) and log warning
+      getLogger().warn({ err }, 'Redis unavailable for rate limiting; allowing request through');
+      return next();
     }
 
-    entry.count++;
-    rateLimitStore.set(identifier, entry);
-
     // Set rate limit headers
-    const remaining = Math.max(0, maxRequests - entry.count);
-    const resetSeconds = Math.ceil((entry.resetAt - now) / 1000);
+    const remaining = Math.max(0, maxRequests - count);
+    const resetSeconds = Math.ceil(ttlMs / 1000);
 
     c.header('X-RateLimit-Limit', maxRequests.toString());
     c.header('X-RateLimit-Remaining', remaining.toString());
     c.header('X-RateLimit-Reset', resetSeconds.toString());
 
     // Check if rate limited
-    if (entry.count > maxRequests) {
+    if (count > maxRequests) {
       c.header('Retry-After', resetSeconds.toString());
 
       return c.json(

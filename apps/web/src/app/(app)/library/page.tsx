@@ -1,11 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { PageHeader } from '@/components/ui/page-header';
-import { ImagePlaceholder } from '@/components/ui/image-placeholder';
 import { EmptyState } from '@/components/ui/empty-state';
 import {
   FolderOpen,
@@ -18,9 +17,11 @@ import {
   Video,
   Link2,
   Plus,
+  Loader2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
+import { learnerApi } from '@/lib/api';
 
 type LibraryTab = 'all' | 'bookmarked' | 'downloads' | 'notes';
 type ResourceType = 'course' | 'document' | 'video' | 'link';
@@ -39,76 +40,6 @@ interface LibraryItem {
   notes?: string;
 }
 
-const mockLibrary: LibraryItem[] = [
-  {
-    id: '1',
-    title: 'CompTIA Network+ Study Guide',
-    description: 'Comprehensive study guide covering all N10-009 exam objectives.',
-    type: 'course',
-    category: 'Networking',
-    bookmarked: true,
-    downloaded: true,
-    addedAt: '2026-01-15',
-    lastAccessed: '2026-04-04',
-    progress: 65,
-  },
-  {
-    id: '2',
-    title: 'Linux Command Line Reference',
-    description: 'Quick reference guide for essential Linux commands and scripting.',
-    type: 'document',
-    category: 'Linux',
-    bookmarked: true,
-    downloaded: false,
-    addedAt: '2026-02-20',
-    lastAccessed: '2026-04-03',
-    notes: 'Great for quick lookups during lab exercises',
-  },
-  {
-    id: '3',
-    title: 'Subnetting Made Easy',
-    description: 'Step-by-step video tutorial on IP subnetting and CIDR notation.',
-    type: 'video',
-    category: 'Networking',
-    bookmarked: false,
-    downloaded: true,
-    addedAt: '2026-03-01',
-    lastAccessed: '2026-03-28',
-  },
-  {
-    id: '4',
-    title: 'Wireshark Packet Analysis Lab',
-    description: 'Hands-on lab guide for network traffic analysis with Wireshark.',
-    type: 'document',
-    category: 'Security',
-    bookmarked: true,
-    downloaded: false,
-    addedAt: '2026-03-10',
-  },
-  {
-    id: '5',
-    title: 'OSPF Configuration Tutorial',
-    description: 'External link to Cisco OSPF configuration best practices.',
-    type: 'link',
-    category: 'Routing',
-    bookmarked: false,
-    downloaded: false,
-    addedAt: '2026-03-15',
-  },
-  {
-    id: '6',
-    title: 'Linux+ Certification Prep',
-    description: 'Full certification preparation course with practice exams.',
-    type: 'course',
-    category: 'Linux',
-    bookmarked: true,
-    downloaded: true,
-    addedAt: '2026-02-01',
-    lastAccessed: '2026-04-05',
-    progress: 42,
-  },
-];
-
 const typeIcons: Record<ResourceType, typeof BookOpen> = {
   course: BookOpen,
   document: FileText,
@@ -123,11 +54,44 @@ const typeColors: Record<ResourceType, string> = {
   link: 'bg-orange-100 text-orange-600 dark:bg-orange-900/50 dark:text-orange-400',
 };
 
+const typeCardBg: Record<ResourceType, string> = {
+  course: 'bg-blue-50 text-blue-400 dark:bg-blue-950/40 dark:text-blue-600',
+  document: 'bg-green-50 text-green-400 dark:bg-green-950/40 dark:text-green-600',
+  video: 'bg-purple-50 text-purple-400 dark:bg-purple-950/40 dark:text-purple-600',
+  link: 'bg-orange-50 text-orange-400 dark:bg-orange-950/40 dark:text-orange-600',
+};
+
 export default function LibraryPage() {
   const [activeTab, setActiveTab] = useState<LibraryTab>('all');
   const [search, setSearch] = useState('');
+  const [libraryItems, setLibraryItems] = useState<LibraryItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const filteredItems = mockLibrary.filter((item) => {
+  useEffect(() => {
+    learnerApi
+      .getStates()
+      .then(({ states }) => {
+        const items: LibraryItem[] = states.map((s) => ({
+          id: s.id,
+          title: s.contentPack.title,
+          description: s.contentPack.certificationTarget
+            ? `Certification: ${s.contentPack.certificationTarget}`
+            : 'Learning pack',
+          type: 'course' as const,
+          category: s.contentPack.certificationTarget || 'Course',
+          bookmarked: false,
+          downloaded: false,
+          addedAt: s.lastActivityAt,
+          lastAccessed: s.lastActivityAt,
+          progress: Math.round(s.overallMastery * 100),
+        }));
+        setLibraryItems(items);
+      })
+      .catch(() => {})
+      .finally(() => setIsLoading(false));
+  }, []);
+
+  const filteredItems = libraryItems.filter((item) => {
     const matchesSearch =
       item.title.toLowerCase().includes(search.toLowerCase()) ||
       item.description.toLowerCase().includes(search.toLowerCase());
@@ -140,18 +104,22 @@ export default function LibraryPage() {
   });
 
   const tabs = [
-    { id: 'all' as const, label: 'All Resources', count: mockLibrary.length },
+    { id: 'all' as const, label: 'All Resources', count: libraryItems.length },
     {
       id: 'bookmarked' as const,
       label: 'Bookmarked',
-      count: mockLibrary.filter((i) => i.bookmarked).length,
+      count: libraryItems.filter((i) => i.bookmarked).length,
     },
     {
       id: 'downloads' as const,
       label: 'Downloads',
-      count: mockLibrary.filter((i) => i.downloaded).length,
+      count: libraryItems.filter((i) => i.downloaded).length,
     },
-    { id: 'notes' as const, label: 'With Notes', count: mockLibrary.filter((i) => i.notes).length },
+    {
+      id: 'notes' as const,
+      label: 'With Notes',
+      count: libraryItems.filter((i) => i.notes).length,
+    },
   ];
 
   return (
@@ -199,7 +167,11 @@ export default function LibraryPage() {
       </div>
 
       {/* Library Items */}
-      {filteredItems.length === 0 ? (
+      {isLoading ? (
+        <div className="flex items-center justify-center py-16">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </div>
+      ) : filteredItems.length === 0 ? (
         <EmptyState
           icon={FolderOpen}
           title="No items found"
@@ -226,12 +198,14 @@ function LibraryCard({ item }: { item: LibraryItem }) {
   return (
     <Card className="card-hover overflow-hidden">
       <CardContent className="p-0">
-        <ImagePlaceholder
-          type={item.type === 'video' ? 'video' : 'image'}
-          aspectRatio="video"
-          label={item.category}
-          className="rounded-none border-0"
-        />
+        <div
+          className={cn(
+            'flex aspect-video items-center justify-center rounded-none',
+            typeCardBg[item.type]
+          )}
+        >
+          <TypeIcon className="h-12 w-12 opacity-30" />
+        </div>
         <div className="p-4">
           <div className="mb-2 flex items-start justify-between">
             <span

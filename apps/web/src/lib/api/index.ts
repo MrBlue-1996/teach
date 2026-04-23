@@ -7,3 +7,4 @@ export * from './auth';
 export * from './learner';
 export * from './content';
 export * from './badges';
+export * from './admin';

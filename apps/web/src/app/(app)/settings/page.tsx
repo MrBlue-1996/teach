@@ -45,6 +45,16 @@ export default function SettingsPage() {
   const [saved, setSaved] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
+  // Password change form state
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  });
+  const [passwordLoading, setPasswordLoading] = useState(false);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [passwordSaved] = useState(false);
+
   // Profile state — initialised from real auth user
   const [profile, setProfile] = useState({
     firstName: '',
@@ -132,6 +142,32 @@ export default function SettingsPage() {
       setSaveError(err instanceof Error ? err.message : 'Failed to save settings.');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handlePasswordChange = () => {
+    setPasswordError(null);
+    if (!passwordForm.currentPassword || !passwordForm.newPassword) {
+      setPasswordError('All password fields are required.');
+      return;
+    }
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      setPasswordError('New passwords do not match.');
+      return;
+    }
+    if (passwordForm.newPassword.length < 8) {
+      setPasswordError('New password must be at least 8 characters.');
+      return;
+    }
+    setPasswordLoading(true);
+    try {
+      // POST /auth/change-password is not yet implemented on the backend.
+      // See .github/state/blockers.md — api-engineer blocker #change-password.
+      throw new Error('Password change is not available yet. Please use forgot password instead.');
+    } catch (err) {
+      setPasswordError(err instanceof Error ? err.message : 'Failed to update password.');
+    } finally {
+      setPasswordLoading(false);
     }
   };
 
@@ -588,17 +624,46 @@ export default function SettingsPage() {
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Current Password</label>
-                    <Input type="password" placeholder="Enter current password" />
+                    <Input
+                      type="password"
+                      placeholder="Enter current password"
+                      value={passwordForm.currentPassword}
+                      onChange={(e) =>
+                        setPasswordForm({ ...passwordForm, currentPassword: e.target.value })
+                      }
+                    />
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium">New Password</label>
-                    <Input type="password" placeholder="Enter new password" />
+                    <Input
+                      type="password"
+                      placeholder="Enter new password"
+                      value={passwordForm.newPassword}
+                      onChange={(e) =>
+                        setPasswordForm({ ...passwordForm, newPassword: e.target.value })
+                      }
+                    />
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Confirm New Password</label>
-                    <Input type="password" placeholder="Confirm new password" />
+                    <Input
+                      type="password"
+                      placeholder="Confirm new password"
+                      value={passwordForm.confirmPassword}
+                      onChange={(e) =>
+                        setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })
+                      }
+                    />
                   </div>
-                  <Button variant="outline">Update Password</Button>
+                  {passwordError && <p className="text-sm text-destructive">{passwordError}</p>}
+                  {passwordSaved && <p className="text-sm text-green-600">Password updated.</p>}
+                  <Button
+                    variant="outline"
+                    onClick={() => void handlePasswordChange()}
+                    disabled={passwordLoading}
+                  >
+                    {passwordLoading ? 'Updating...' : 'Update Password'}
+                  </Button>
                 </CardContent>
               </Card>
               <Card>

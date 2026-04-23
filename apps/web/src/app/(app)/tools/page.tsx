@@ -5,7 +5,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { PageHeader } from '@/components/ui/page-header';
-import { ImagePlaceholder } from '@/components/ui/image-placeholder';
 import { DataTableShell } from '@/components/ui/data-table-shell';
 import { EmptyState } from '@/components/ui/empty-state';
 import { StatCard } from '@/components/ui/stat-card';
@@ -317,12 +316,9 @@ function ToolCard({ tool, onSelect }: { tool: Tool; onSelect: (t: Tool) => void 
       tabIndex={0}
     >
       <CardContent className="p-0">
-        <ImagePlaceholder
-          type="image"
-          aspectRatio="video"
-          label={tool.name}
-          className="rounded-none border-0"
-        />
+        <div className="flex aspect-video items-center justify-center rounded-none bg-muted/40">
+          <Wrench className="h-14 w-14 text-muted-foreground/30" />
+        </div>
         <div className="p-4">
           <div className="mb-2 flex items-start justify-between">
             <h3 className="font-semibold">{tool.name}</h3>
@@ -409,7 +405,9 @@ function ToolDetailDrawer({ tool, onClose }: { tool: Tool; onClose: () => void }
             </Button>
           </div>
 
-          <ImagePlaceholder type="image" aspectRatio="video" label={tool.name} className="mb-6" />
+          <div className="mb-6 flex aspect-video items-center justify-center rounded-lg bg-muted/40">
+            <Wrench className="h-16 w-16 text-muted-foreground/30" />
+          </div>
 
           <div className="space-y-4">
             <div>

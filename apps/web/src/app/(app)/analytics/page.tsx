@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { PageHeader } from '@/components/ui/page-header';
@@ -21,11 +21,29 @@ import {
   Zap,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { learnerApi, type LearnerStats } from '@/lib/api';
 
 type TimePeriod = '7d' | '30d' | '90d' | 'all';
 
+function formatMinutes(minutes: number): string {
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  if (h === 0) return `${m}m`;
+  return m === 0 ? `${h}h` : `${h}h ${m}m`;
+}
+
 export default function AnalyticsPage() {
   const [period, setPeriod] = useState<TimePeriod>('30d');
+  const [stats, setStats] = useState<LearnerStats | null>(null);
+  const [statsLoading, setStatsLoading] = useState(true);
+
+  useEffect(() => {
+    learnerApi
+      .getStats()
+      .then(setStats)
+      .catch(() => {})
+      .finally(() => setStatsLoading(false));
+  }, []);
 
   const periods: { id: TimePeriod; label: string }[] = [
     { id: '7d', label: '7 Days' },
@@ -61,31 +79,42 @@ export default function AnalyticsPage() {
       />
 
       {/* Top-level Stats */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <StatCard
           icon={Clock}
           label="Study Time"
-          value="47h 30m"
+          value={statsLoading ? '...' : formatMinutes(stats?.totalTimeMinutes ?? 0)}
           color="blue"
-          change="+12% vs last period"
-          trend="up"
         />
         <StatCard
           icon={Target}
-          label="Accuracy Rate"
-          value="84%"
+          label="Blocks Completed"
+          value={statsLoading ? '...' : String(stats?.totalBlocksCompleted ?? 0)}
           color="green"
-          change="+3%"
-          trend="up"
         />
-        <StatCard icon={Flame} label="Best Streak" value="21 days" color="orange" />
         <StatCard
           icon={Brain}
-          label="Retention Score"
-          value="91%"
+          label="Avg. Mastery"
+          value={statsLoading ? '...' : `${Math.round((stats?.averageMastery ?? 0) * 100)}%`}
           color="purple"
-          change="+5%"
-          trend="up"
+        />
+        <StatCard
+          icon={BookOpen}
+          label="Packs Started"
+          value={statsLoading ? '...' : String(stats?.packsStarted ?? 0)}
+          color="orange"
+        />
+        <StatCard
+          icon={Zap}
+          label="Packs Active"
+          value={statsLoading ? '...' : String(stats?.packsActive ?? 0)}
+          color="blue"
+        />
+        <StatCard
+          icon={Calendar}
+          label="Total Sessions"
+          value={statsLoading ? '...' : String(stats?.totalSessions ?? 0)}
+          color="green"
         />
       </div>
 

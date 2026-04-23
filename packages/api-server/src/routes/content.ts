@@ -19,7 +19,7 @@ import {
   asc,
 } from '@topshelf/database';
 import { requireRole } from '../middleware/auth.js';
-import { notFound } from '../middleware/error-handler.js';
+import { notFound, ConflictError } from '../middleware/error-handler.js';
 
 // =============================================================================
 // SCHEMAS
@@ -32,11 +32,25 @@ const ListPacksQuerySchema = z.object({
   offset: z.coerce.number().int().min(0).default(0),
 });
 
+const CreatePackSchema = z.object({
+  slug: z
+    .string()
+    .min(1)
+    .max(100)
+    .regex(/^[a-z0-9-]+$/, 'Slug must be lowercase alphanumeric with hyphens'),
+  version: z.string().min(1).max(20),
+  title: z.string().min(1).max(255),
+  description: z.string().optional(),
+  certificationTarget: z.string().max(100).optional(),
+  status: z.enum(['draft', 'review', 'approved', 'published', 'archived']).default('draft'),
+  metadata: z.record(z.unknown()).optional(),
+});
+
 // =============================================================================
 // ROUTES
 // =============================================================================
 
-export function createContentRoutes() {
+export function createContentRoutes(): Hono {
   const router = new Hono();
 
   // ---------------------------------------------------------------------------
@@ -49,7 +63,9 @@ export function createContentRoutes() {
     const packs = await db.query.contentPacks.findMany({
       where: and(
         status ? eq(contentPacks.status, status) : eq(contentPacks.status, 'published'),
-        certification ? eq(contentPacks.certificationTarget, certification) : undefined
+        certification !== undefined
+          ? eq(contentPacks.certificationTarget, certification)
+          : undefined
       ),
       columns: {
         id: true,
@@ -165,7 +181,7 @@ export function createContentRoutes() {
       where: and(eq(learnerStates.userId, userId), eq(learnerStates.contentPackId, packId)),
     });
 
-    const currentMode = learnerState?.currentMode || 'L1_RECALL';
+    const currentMode = learnerState?.currentMode ?? 'L1_RECALL';
 
     return c.json({
       block: {
@@ -198,7 +214,7 @@ export function createContentRoutes() {
     });
 
     // Get next block based on sequence
-    const nextSequence = state?.blocksCompleted || 0;
+    const nextSequence = state?.blocksCompleted ?? 0;
 
     const nextBlock = await db.query.contentBlocks.findFirst({
       where: eq(contentBlocks.packId, contentPackId),
@@ -226,7 +242,7 @@ export function createContentRoutes() {
       },
       progress: {
         completed: nextSequence,
-        currentMode: state?.currentMode || 'L1_RECALL',
+        currentMode: state?.currentMode ?? 'L1_RECALL',
       },
     });
   });
@@ -282,7 +298,7 @@ export function createContentRoutes() {
 
       let correctness = 0;
       if (correctAnswer !== null) {
-        const norm = (s: string) => s.trim().toLowerCase().replace(/\s+/g, ' ');
+        const norm = (s: string): string => s.trim().toLowerCase().replace(/\s+/g, ' ');
         correctness = norm(answer) === norm(correctAnswer) ? 1 : 0;
       }
 
@@ -336,9 +352,39 @@ export function createContentRoutes() {
   router.post(
     '/packs',
     requireRole('content_author', 'school_admin', 'district_admin', 'system_admin'),
+    zValidator('json', CreatePackSchema),
     async (c) => {
-      // Implementation for content creation
-      return c.json({ message: 'Content pack creation endpoint' }, 501);
+      const userId = c.get('userId');
+      const body = c.req.valid('json');
+      const db = getDatabase();
+
+      // Check for slug+version conflict
+      const existing = await db.query.contentPacks.findFirst({
+        where: and(eq(contentPacks.slug, body.slug), eq(contentPacks.version, body.version)),
+        columns: { id: true },
+      });
+
+      if (existing) {
+        throw new ConflictError(`Content pack '${body.slug}@${body.version}' already exists`);
+      }
+
+      const [created] = await db
+        .insert(contentPacks)
+        .values({
+          slug: body.slug,
+          version: body.version,
+          title: body.title,
+          status: body.status,
+          authorId: userId,
+          ...(body.description !== undefined ? { description: body.description } : {}),
+          ...(body.certificationTarget !== undefined
+            ? { certificationTarget: body.certificationTarget }
+            : {}),
+          ...(body.metadata !== undefined ? { metadata: body.metadata } : {}),
+        })
+        .returning();
+
+      return c.json({ pack: created }, 201);
     }
   );
 
@@ -395,7 +441,7 @@ export function createContentRoutes() {
       return c.json({ enrolled: false });
     }
 
-    if ((existing.blocksCompleted ?? 0) > 0) {
+    if (existing.blocksCompleted > 0) {
       return c.json(
         { error: 'Cannot unenroll: progress exists. Contact support to reset your progress.' },
         409

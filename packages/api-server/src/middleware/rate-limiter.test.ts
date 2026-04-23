@@ -5,14 +5,53 @@
  * and health check bypass.
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { Hono } from 'hono';
 import { rateLimiter } from './rate-limiter.js';
+
+// ---------------------------------------------------------------------------
+// Redis mock — in-memory store that resets between tests via beforeEach
+// ---------------------------------------------------------------------------
+
+const mockStore = new Map<string, { value: number; expiresAt: number }>();
+
+vi.mock('../lib/redis-client.js', () => {
+  const mockRedis = {
+    incr: vi.fn((key: string) => {
+      const now = Date.now();
+      const entry = mockStore.get(key);
+      if (!entry || entry.expiresAt < now) {
+        mockStore.set(key, { value: 1, expiresAt: now + 60_000 });
+        return 1;
+      }
+      entry.value++;
+      return entry.value;
+    }),
+    pexpire: vi.fn((key: string, ms: number) => {
+      const entry = mockStore.get(key);
+      if (entry) {
+        entry.expiresAt = Date.now() + ms;
+      }
+      return 1;
+    }),
+    pttl: vi.fn((key: string) => {
+      const entry = mockStore.get(key);
+      if (!entry) return -2;
+      return Math.max(0, entry.expiresAt - Date.now());
+    }),
+  };
+
+  return {
+    getRedisClient: (): typeof mockRedis => mockRedis,
+    closeRedisClient: vi.fn<() => Promise<void>>(),
+  };
+});
 
 describe('Rate Limiter Middleware', () => {
   let app: Hono;
 
-  beforeEach(() => {
+  beforeEach((): void => {
+    mockStore.clear();
     app = new Hono();
   });
 
@@ -33,10 +72,10 @@ describe('Rate Limiter Middleware', () => {
     app.get('/test', (c) => c.json({ ok: true }));
 
     const res1 = await app.request('/test');
-    const remaining1 = parseInt(res1.headers.get('X-RateLimit-Remaining') || '0');
+    const remaining1 = parseInt(res1.headers.get('X-RateLimit-Remaining') ?? '0');
 
     const res2 = await app.request('/test');
-    const remaining2 = parseInt(res2.headers.get('X-RateLimit-Remaining') || '0');
+    const remaining2 = parseInt(res2.headers.get('X-RateLimit-Remaining') ?? '0');
 
     expect(remaining2).toBeLessThan(remaining1);
   });

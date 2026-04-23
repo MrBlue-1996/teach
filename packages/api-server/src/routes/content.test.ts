@@ -7,6 +7,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Hono } from 'hono';
+import { createMiddleware } from 'hono/factory';
 import { createContentRoutes } from './content.js';
 import { errorHandler } from '../middleware/error-handler.js';
 
@@ -62,37 +63,56 @@ const mockDb = {
       findFirst: vi.fn().mockResolvedValue(null),
     },
   },
+  insert: vi.fn().mockReturnValue({
+    values: vi.fn().mockReturnValue({
+      returning: vi.fn().mockResolvedValue([
+        {
+          id: 'new-pack-1',
+          slug: 'new-pack',
+          version: '1.0.0',
+          title: 'New Pack',
+          description: null,
+          certificationTarget: null,
+          authorId: 'user-test-1',
+          status: 'draft',
+          metadata: {},
+          createdAt: '2026-04-22T00:00:00Z',
+          updatedAt: '2026-04-22T00:00:00Z',
+        },
+      ]),
+    }),
+  }),
 };
 
 vi.mock('@topshelf/database', () => ({
-  getDatabase: () => mockDb,
+  getDatabase: (): typeof mockDb => mockDb,
   contentPacks: {
     id: 'id',
+    slug: 'slug',
+    version: 'version',
     status: 'status',
     certificationTarget: 'certificationTarget',
     publishedAt: 'publishedAt',
   },
   contentBlocks: { packId: 'packId', blockId: 'blockId', sequenceOrder: 'sequenceOrder' },
   learnerStates: { userId: 'userId', contentPackId: 'contentPackId' },
-  eq: (...args: unknown[]) => args,
-  and: (...args: unknown[]) => args,
-  desc: (field: unknown) => field,
-  asc: (field: unknown) => field,
+  eq: (...args: unknown[]): unknown[] => args,
+  and: (...args: unknown[]): unknown[] => args,
+  desc: (field: unknown): unknown => field,
+  asc: (field: unknown): unknown => field,
 }));
 
 vi.mock('@topshelf/config', () => ({
-  getConfig: () => ({
+  getConfig: (): { environment: string } => ({
     environment: 'development',
   }),
 }));
 
 vi.mock('../middleware/auth.js', () => ({
-  requireRole: () => {
-    const { createMiddleware } = require('hono/factory');
-    return createMiddleware(async (_c: any, next: any) => {
+  requireRole: (): ReturnType<typeof createMiddleware> =>
+    createMiddleware(async (_c, next) => {
       await next();
-    });
-  },
+    }),
 }));
 
 // =============================================================================
@@ -225,6 +245,91 @@ describe('Content Routes', () => {
       const res = await app.request('/content/packs/pack-nonexistent');
 
       expect(res.status).toBe(404);
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // POST /content/packs
+  // ---------------------------------------------------------------------------
+
+  describe('POST /content/packs', () => {
+    const validBody = {
+      slug: 'new-pack',
+      version: '1.0.0',
+      title: 'New Pack',
+      description: 'A new content pack',
+      certificationTarget: 'CompTIA A+',
+    };
+
+    beforeEach(() => {
+      // No existing pack by default
+      mockDb.query.contentPacks.findFirst.mockResolvedValue(null);
+      // Reset insert mock chain
+      mockDb.insert.mockReturnValue({
+        values: vi.fn().mockReturnValue({
+          returning: vi.fn().mockResolvedValue([
+            {
+              id: 'new-pack-1',
+              slug: 'new-pack',
+              version: '1.0.0',
+              title: 'New Pack',
+              description: 'A new content pack',
+              certificationTarget: 'CompTIA A+',
+              authorId: 'user-test-1',
+              status: 'draft',
+              metadata: {},
+              createdAt: '2026-04-22T00:00:00Z',
+              updatedAt: '2026-04-22T00:00:00Z',
+            },
+          ]),
+        }),
+      });
+    });
+
+    it('should create a content pack and return 201', async () => {
+      const res = await app.request('/content/packs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(validBody),
+      });
+
+      expect(res.status).toBe(201);
+      const body = await res.json();
+      expect(body.pack).toBeDefined();
+      expect(body.pack.slug).toBe('new-pack');
+      expect(body.pack.version).toBe('1.0.0');
+    });
+
+    it('should return 409 when slug+version already exists', async () => {
+      mockDb.query.contentPacks.findFirst.mockResolvedValue({ id: 'existing-pack' });
+
+      const res = await app.request('/content/packs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(validBody),
+      });
+
+      expect(res.status).toBe(409);
+    });
+
+    it('should return 400 for invalid slug format', async () => {
+      const res = await app.request('/content/packs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...validBody, slug: 'INVALID SLUG!' }),
+      });
+
+      expect(res.status).toBe(400);
+    });
+
+    it('should return 400 when required fields are missing', async () => {
+      const res = await app.request('/content/packs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slug: 'missing-title', version: '1.0.0' }),
+      });
+
+      expect(res.status).toBe(400);
     });
   });
 });
