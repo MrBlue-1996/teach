@@ -44,6 +44,9 @@ pnpm-debug.log*
 # Test coverage
 coverage/
 
+# Benchmark run results (ephemeral — baselines live in benchmarks/baselines/ and are committed)
+bench-results/
+
 # Turbo
 .turbo/
 
