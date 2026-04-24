@@ -25,7 +25,7 @@ declare module 'hono' {
 export function authMiddleware(options?: {
   requireEmailVerified?: boolean;
 }): ReturnType<typeof createMiddleware> {
-  return createMiddleware(async (c, next) => {
+  return createMiddleware(async (c, next): Promise<void> => {
     const authHeader = c.req.header('Authorization');
 
     if (authHeader === undefined) {
@@ -76,10 +76,10 @@ export function authMiddleware(options?: {
  * Role-based authorization middleware
  */
 export function requireRole(...allowedRoles: string[]): ReturnType<typeof createMiddleware> {
-  return createMiddleware(async (c, next) => {
+  return createMiddleware(async (c, next): Promise<void> => {
     const userRole = c.get('userRole');
 
-    if (!userRole) {
+    if ((userRole as string | undefined) === undefined || userRole === '') {
       throw new AuthenticationError('Authentication required');
     }
 
@@ -100,13 +100,13 @@ export function requireOwnership(
   paramName: string = 'id',
   allowRoles: string[] = ['system_admin', 'district_admin']
 ): ReturnType<typeof createMiddleware> {
-  return createMiddleware(async (c, next) => {
+  return createMiddleware(async (c, next): Promise<void> => {
     const userId = c.get('userId');
     const userRole = c.get('userRole');
     const resourceOwnerId = c.req.param(paramName);
 
     // Admins can access any resource
-    if (allowRoles.includes(userRole)) {
+    if (allowRoles.includes((userRole as string | undefined) ?? '')) {
       await next();
       return;
     }
@@ -124,7 +124,7 @@ export function requireOwnership(
  * Optional authentication - sets user info if token present, but doesn't require it
  */
 export function optionalAuth(): ReturnType<typeof createMiddleware> {
-  return createMiddleware(async (c, next) => {
+  return createMiddleware(async (c, next): Promise<void> => {
     const authHeader = c.req.header('Authorization');
 
     if (authHeader !== undefined) {

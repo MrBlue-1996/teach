@@ -21,6 +21,8 @@
     "dev": "tsup --watch",
     "lint": "eslint src --ignore-pattern '**/*.test.ts' --ignore-pattern '**/*.spec.ts'",
     "lint:fix": "eslint src --fix --ignore-pattern '**/*.test.ts' --ignore-pattern '**/*.spec.ts'",
+    "bench": "vitest bench --run",
+    "bench:ci": "vitest bench --run --outputJson bench-results/engine.json",
     "test": "vitest run",
     "test:ci": "vitest run --coverage",
     "typecheck": "tsc --noEmit"

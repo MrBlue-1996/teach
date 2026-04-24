@@ -92,7 +92,7 @@ describe('Session Routes', () => {
     app.onError(errorHandler);
 
     // Simulate authenticated user context
-    app.use('*', async (c, next) => {
+    app.use('*', async (c, next): Promise<void> => {
       c.set('userId' as any, 'user-test-1');
       c.set('userRole' as any, 'learner');
       await next();

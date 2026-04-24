@@ -58,6 +58,19 @@
       "inputs": ["governance/policies/**/*.json", "src/schemas/**"],
       "outputs": [],
       "cache": true
+    },
+    "bench": {
+      "dependsOn": ["build"],
+      "inputs": ["src/**/*.bench.ts", "vitest.config.*"],
+      "outputs": ["bench-results/**"],
+      "cache": false
+    },
+    "bench:ci": {
+      "dependsOn": ["build"],
+      "inputs": ["src/**/*.bench.ts", "vitest.config.*"],
+      "outputs": ["bench-results/**"],
+      "cache": false,
+      "env": ["CI"]
     }
   }
 }
