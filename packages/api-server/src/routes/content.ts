@@ -44,6 +44,10 @@ const CreatePackSchema = z.object({
   certificationTarget: z.string().max(100).optional(),
   status: z.enum(['draft', 'review', 'approved', 'published', 'archived']).default('draft'),
   metadata: z.record(z.unknown()).optional(),
+  /** Optional cryptographic signature produced by ContentPackSigner.sign() */
+  signature: z.string().optional(),
+  /** Key ID used to produce the signature */
+  signingKeyId: z.string().optional(),
 });
 
 // =============================================================================
@@ -357,6 +361,19 @@ export function createContentRoutes(): Hono {
       const userId = c.get('userId');
       const body = c.req.valid('json');
       const db = getDatabase();
+
+      // TODO(blocker: content-pack-signing-key): Validate pack signature when present.
+      // ContentPackSigner.verify() is available from @topshelf/content-authoring but requires
+      // a CONTENT_SIGNING_KEY and signing key ID to be present in AppConfig (not yet wired).
+      // Additionally, the ingest body schema does not yet conform to ContentPackManifest
+      // (missing teachingBlocks, author, tags, etc.) so a direct verify() call is not feasible.
+      // Once config.content.signingKeyId and CONTENT_SIGNING_KEY env var are added, implement:
+      //   if (body.signature !== undefined) {
+      //     const signer = new ContentPackSigner({ keyId, algorithm }, signingKey);
+      //     const result = signer.verify(body as ContentPackManifest);
+      //     if (!result.valid) throw new ConflictError('Invalid content pack signature');
+      //   }
+      // Signature validation is intentionally skipped until signing key config is available.
 
       // Check for slug+version conflict
       const existing = await db.query.contentPacks.findFirst({

@@ -133,7 +133,7 @@ export function createApp(): Hono {
 
   // Protected routes (auth required)
   const protectedApi = new Hono();
-  protectedApi.use('*', authMiddleware());
+  protectedApi.use('*', authMiddleware({ requireEmailVerified: true }));
 
   protectedApi.route('/learner', createLearnerRoutes());
   protectedApi.route('/content', createContentRoutes());

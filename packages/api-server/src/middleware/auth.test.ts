@@ -21,6 +21,18 @@ vi.mock('@topshelf/config', () => ({
   })),
 }));
 
+// Mock the @topshelf/database module
+const mockFindFirstUser = vi.fn();
+vi.mock('@topshelf/database', () => ({
+  getDatabase: (): unknown => ({
+    query: {
+      users: { findFirst: mockFindFirstUser },
+    },
+  }),
+  users: { id: 'id', emailVerified: 'emailVerified' },
+  eq: (...args: unknown[]): unknown[] => args,
+}));
+
 // Import the mocked function
 import { verifyToken } from '@topshelf/auth';
 
@@ -42,6 +54,7 @@ describe('Auth Middleware', () => {
     app = new Hono();
     app.onError(errorHandler);
     vi.clearAllMocks();
+    mockFindFirstUser.mockResolvedValue({ emailVerified: true });
   });
 
   describe('authMiddleware', () => {
@@ -176,6 +189,68 @@ describe('Auth Middleware', () => {
       expect(res.status).toBe(200);
       const body = await res.json();
       expect(body.userId).toBe('user-123');
+    });
+  });
+
+  describe('authMiddleware with requireEmailVerified', () => {
+    beforeEach(() => {
+      vi.mocked(verifyToken).mockResolvedValue(mockTokenPayload);
+    });
+
+    it('should allow verified user through', async () => {
+      mockFindFirstUser.mockResolvedValue({ emailVerified: true });
+
+      app.use('*', authMiddleware({ requireEmailVerified: true }));
+      app.get('/test', (c) => c.json({ userId: c.get('userId') }));
+
+      const res = await app.request('/test', {
+        headers: { Authorization: 'Bearer valid-token' },
+      });
+
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.userId).toBe('user-123');
+    });
+
+    it('should return 403 for unverified user', async () => {
+      mockFindFirstUser.mockResolvedValue({ emailVerified: false });
+
+      app.use('*', authMiddleware({ requireEmailVerified: true }));
+      app.get('/test', (c) => c.json({ ok: true }));
+
+      const res = await app.request('/test', {
+        headers: { Authorization: 'Bearer valid-token' },
+      });
+
+      expect(res.status).toBe(403);
+      const body = await res.json();
+      expect(body.message).toContain('Email verification required');
+    });
+
+    it('should return 403 when user is not found in database', async () => {
+      mockFindFirstUser.mockResolvedValue(null);
+
+      app.use('*', authMiddleware({ requireEmailVerified: true }));
+      app.get('/test', (c) => c.json({ ok: true }));
+
+      const res = await app.request('/test', {
+        headers: { Authorization: 'Bearer valid-token' },
+      });
+
+      expect(res.status).toBe(403);
+      const body = await res.json();
+      expect(body.message).toContain('Email verification required');
+    });
+
+    it('should not query database when requireEmailVerified is not set', async () => {
+      app.use('*', authMiddleware());
+      app.get('/test', (c) => c.json({ ok: true }));
+
+      await app.request('/test', {
+        headers: { Authorization: 'Bearer valid-token' },
+      });
+
+      expect(mockFindFirstUser).not.toHaveBeenCalled();
     });
   });
 
