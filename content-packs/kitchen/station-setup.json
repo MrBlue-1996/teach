@@ -97,7 +97,8 @@
         "zone": "prep",
         "idealItemId": "i-sani"
       }
-    ]
+    ],
+    "imageRef": "/kitchen/C3-stations/brunch-station.webp"
   },
   "expertRecipe": {
     "id": "recipe-brunch-setup-v1",
@@ -122,7 +123,11 @@
         "whyExplanation": "Sanitation reset before touching any food contact surfaces.",
         "timeSeconds": 10,
         "isCCP": true,
-        "tools": ["sink", "gloves"]
+        "tools": ["sink", "gloves"],
+        "toolImages": {
+          "sink": "/kitchen/C2-tools/sink.webp",
+          "gloves": "/kitchen/C2-tools/gloves.webp"
+        }
       },
       {
         "id": "ss2",
@@ -131,7 +136,10 @@
         "whyExplanation": "Sani bucket must be mixed fresh every 2 hours. Starting with old solution means everything you wipe is still dirty.",
         "timeSeconds": 15,
         "isCCP": true,
-        "tools": ["sani-bucket"]
+        "tools": ["sani-bucket"],
+        "toolImages": {
+          "sani-bucket": "/kitchen/C2-tools/sani-bucket.webp"
+        }
       },
       {
         "id": "ss3",
@@ -140,7 +148,10 @@
         "whyExplanation": "Cold items go out first — they start warming the moment they leave the walk-in.",
         "timeSeconds": 40,
         "isCCP": false,
-        "tools": ["sheet_pan"]
+        "tools": ["sheet_pan"],
+        "toolImages": {
+          "sheet_pan": "/kitchen/C2-tools/sheet_pan.webp"
+        }
       },
       {
         "id": "ss4",
@@ -149,7 +160,11 @@
         "whyExplanation": "Tools should be in order of first use. Reaching across a hot flat-top for tongs burns you and slows service.",
         "timeSeconds": 30,
         "isCCP": false,
-        "tools": ["tongs", "spatula"]
+        "tools": ["tongs", "spatula"],
+        "toolImages": {
+          "tongs": "/kitchen/C2-tools/tongs.webp",
+          "spatula": "/kitchen/C2-tools/spatula.webp"
+        }
       },
       {
         "id": "ss5",
@@ -158,7 +173,11 @@
         "whyExplanation": "Every step away from your station during service costs 3-5 seconds per ticket.",
         "timeSeconds": 25,
         "isCCP": false,
-        "tools": ["chef-knife", "cutting_board"]
+        "tools": ["chef-knife", "cutting_board"],
+        "toolImages": {
+          "chef-knife": "/kitchen/C2-tools/chef-knife.webp",
+          "cutting_board": "/kitchen/C2-tools/cutting_board.webp"
+        }
       }
     ],
     "criticalControlPoints": [
@@ -170,6 +189,8 @@
         "tolerance": "zero old solution",
         "consequence": "Cross-contamination risk on every surface wiped."
       }
-    ]
-  }
+    ],
+    "imageRef": "/kitchen/C1-equipment/prep_table.webp"
+  },
+  "imageRef": "/kitchen/C4-recipes/recipe-brunch-setup-v1.webp"
 }

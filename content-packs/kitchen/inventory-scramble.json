@@ -32,7 +32,11 @@
         "whyExplanation": "Bare hands in a walk-in = cross-contamination between ready-to-eat and raw.",
         "timeSeconds": 10,
         "isCCP": true,
-        "tools": ["gloves", "marker"]
+        "tools": ["gloves", "marker"],
+        "toolImages": {
+          "gloves": "/kitchen/C2-tools/gloves.webp",
+          "marker": "/kitchen/C2-tools/marker.webp"
+        }
       },
       {
         "id": "inv2",
@@ -50,7 +54,11 @@
         "whyExplanation": "Undated product becomes mystery meat. Without a date, FIFO is impossible.",
         "timeSeconds": 30,
         "isCCP": false,
-        "tools": ["marker", "labels"]
+        "tools": ["marker", "labels"],
+        "toolImages": {
+          "marker": "/kitchen/C2-tools/marker.webp",
+          "labels": "/kitchen/C2-tools/labels.webp"
+        }
       },
       {
         "id": "inv4",
@@ -80,6 +88,8 @@
         "tolerance": "zero expired on shelf",
         "consequence": "Serving expired product is a health code violation and potential lawsuit."
       }
-    ]
-  }
+    ],
+    "imageRef": "/kitchen/C1-equipment/cold_station.webp"
+  },
+  "imageRef": "/kitchen/C4-recipes/recipe-walkin-org-v1.webp"
 }

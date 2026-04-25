@@ -327,6 +327,8 @@ export interface Ingredient {
   currentTemp?: number;
   /** Requires refrigeration */
   requiresRefrigeration: boolean;
+  /** C2 image: /kitchen/C2-tools/{ingredient-id}.webp */
+  imageRef?: `/kitchen/C2-tools/${string}.webp`;
 }
 
 export interface StationConfig {
@@ -338,6 +340,8 @@ export interface StationConfig {
   maxCapacity: number;
   requiredTools: string[];
   requiredIngredients: string[];
+  /** C3 image: /kitchen/C3-stations/{id}.webp */
+  imageRef?: `/kitchen/C3-stations/${string}.webp`;
 }
 
 export interface StationPosition {
@@ -365,6 +369,32 @@ export enum EquipmentType {
   PREP_TABLE = 'prep_table',
   EXPEDITER = 'expediter',
 }
+
+// =============================================================================
+// IMAGE ASSET CLASSES
+// Image assets are grouped into four numbered classes for quick identification.
+//
+//   C1 · Equipment  — station-level equipment, served from /kitchen/C1-equipment/
+//   C2 · Tools      — handheld tools shown in step cards, /kitchen/C2-tools/
+//   C3 · Stations   — layout diagram photos, /kitchen/C3-stations/
+//   C4 · Recipes    — plated-dish reference photos, /kitchen/C4-recipes/
+//
+// Filename convention:
+//   C1 → {EquipmentType value}.webp          e.g. cold_station.webp
+//   C2 → {tool id from RecipeStep.tools}.webp  e.g. thermometer.webp
+//   C3 → {StationConfig.id}.webp             e.g. brunch-station.webp
+//   C4 → {ExpertRecipe.id}.webp              e.g. recipe-hollandaise-v1.webp
+// =============================================================================
+
+/** Discriminated union of all valid kitchen image paths (relative to /public). */
+export type KitchenImageRef =
+  | `/kitchen/C1-equipment/${string}.webp`
+  | `/kitchen/C2-tools/${string}.webp`
+  | `/kitchen/C3-stations/${string}.webp`
+  | `/kitchen/C4-recipes/${string}.webp`;
+
+/** Lookup map from tool id → its C2 image path. Optional per-step override. */
+export type ToolImageMap = Partial<Record<string, `/kitchen/C2-tools/${string}.webp`>>;
 
 export interface SafetyViolation {
   id: string;
@@ -415,6 +445,8 @@ export interface ExpertRecipe {
   id: string;
   name: string;
   station: EquipmentType;
+  /** C4 image: /kitchen/C4-recipes/{id}.webp */
+  imageRef?: `/kitchen/C4-recipes/${string}.webp`;
   steps: RecipeStep[];
   criticalControlPoints: CriticalControlPoint[];
   idealSequence: string[];
@@ -435,6 +467,8 @@ export interface RecipeStep {
   isCCP: boolean;
   /** Tools needed */
   tools: string[];
+  /** C2 images keyed by tool id — falls back to /kitchen/C2-tools/{toolId}.webp */
+  toolImages?: ToolImageMap;
   /** Temperature target if applicable */
   targetTemp?: number;
   /** Acceptable temp range */

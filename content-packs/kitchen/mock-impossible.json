@@ -108,6 +108,8 @@
         "tolerance": "zero unsafe items served",
         "consequence": "Serving medium-rare pork = potential trichinosis. Cross-contact = anaphylaxis risk for celiac."
       }
-    ]
-  }
+    ],
+    "imageRef": "/kitchen/C1-equipment/prep_table.webp"
+  },
+  "imageRef": "/kitchen/C4-recipes/recipe-order-review-v1.webp"
 }
