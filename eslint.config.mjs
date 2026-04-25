@@ -38,7 +38,12 @@ export default tseslint.config(
         ...globals.serviceworker,
       },
       parserOptions: {
-        projectService: true,
+        projectService: {
+          allowDefaultProject: [
+            'packages/engine/vitest.config.ts',
+            'packages/api-server/vitest.config.ts',
+          ],
+        },
         tsconfigRootDir: __dirname,
       },
     },

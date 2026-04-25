@@ -6,9 +6,9 @@
 
 import { Hono } from 'hono';
 import { getDatabase, learningSessions, eq, and, desc } from '@topshelf/database';
-import { notFound } from '../middleware/error-handler.js';
+import { notFound, AuthorizationError, ValidationError } from '../middleware/error-handler.js';
 
-export function createSessionRoutes() {
+export function createSessionRoutes(): Hono {
   const router = new Hono();
 
   // GET /session - List user's learning sessions
@@ -35,12 +35,25 @@ export function createSessionRoutes() {
       sessions: sessions.map((s) => ({
         id: s.id,
         status: s.status,
-        contentPack: s.learnerState?.contentPack,
+        contentPack: (s.learnerState as typeof s.learnerState | null)?.contentPack,
         startedAt: s.startedAt,
         endedAt: s.endedAt,
         blocksCompleted: s.blocksCompleted,
       })),
     });
+  });
+
+  // GET /session/active - Get user's current active session
+  router.get('/active', async (c) => {
+    const userId = c.get('userId');
+    const db = getDatabase();
+
+    const session = await db.query.learningSessions.findFirst({
+      where: and(eq(learningSessions.userId, userId), eq(learningSessions.status, 'active')),
+      orderBy: [desc(learningSessions.startedAt)],
+    });
+
+    return c.json({ session: session ?? null });
   });
 
   // GET /session/:sessionId - Get session details
@@ -61,6 +74,37 @@ export function createSessionRoutes() {
     }
 
     return c.json({ session });
+  });
+
+  // DELETE /session/:id - Revoke/end a session
+  router.delete('/:id', async (c) => {
+    const userId = c.get('userId');
+    const id = c.req.param('id');
+    const db = getDatabase();
+
+    // Look up by id first to distinguish 404 vs 403
+    const session = await db.query.learningSessions.findFirst({
+      where: eq(learningSessions.id, id),
+    });
+
+    if (!session) {
+      throw notFound('Session', id);
+    }
+
+    if (session.userId !== userId) {
+      throw new AuthorizationError('Session not owned by current user');
+    }
+
+    if (session.status === 'completed') {
+      throw new ValidationError('Session already ended');
+    }
+
+    await db
+      .update(learningSessions)
+      .set({ status: 'completed', endedAt: new Date() })
+      .where(eq(learningSessions.id, id));
+
+    return c.json({ success: true });
   });
 
   return router;

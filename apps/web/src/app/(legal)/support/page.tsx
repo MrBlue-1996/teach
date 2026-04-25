@@ -64,7 +64,7 @@ const faqs = [
   {
     question: 'Can I use TopShelf offline?',
     answer:
-      'Pro subscribers can download content for offline learning through our mobile apps. Progress syncs when you reconnect.',
+      'Offline mode is on our roadmap. Currently, TopShelf requires an internet connection. We will announce offline support when it is available.',
   },
   {
     question: 'How do I cancel my subscription?',

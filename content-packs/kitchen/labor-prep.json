@@ -80,6 +80,8 @@
         "tolerance": "zero overtime without approval",
         "consequence": "Every hour of unplanned overtime costs $27 (time-and-a-half) and erodes margins."
       }
-    ]
-  }
+    ],
+    "imageRef": "/kitchen/EQ1-equipment/prep_table.webp"
+  },
+  "imageRef": "/kitchen/RC4-recipes/recipe-labor-plan-v1.webp"
 }

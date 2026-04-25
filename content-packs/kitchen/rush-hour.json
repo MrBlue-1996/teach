@@ -35,7 +35,11 @@
         "whyExplanation": "Sanitation reset before every new protein contact prevents cross-contamination.",
         "timeSeconds": 10,
         "isCCP": true,
-        "tools": ["sink", "gloves"]
+        "tools": ["sink", "gloves"],
+        "toolImages": {
+          "sink": "/kitchen/TL2-tools/sink.webp",
+          "gloves": "/kitchen/TL2-tools/gloves.webp"
+        }
       },
       {
         "id": "s2",
@@ -44,7 +48,10 @@
         "whyExplanation": "FIFO: always pull the oldest non-spoiled lot, never the back-of-walk-in mystery pack.",
         "timeSeconds": 15,
         "isCCP": false,
-        "tools": ["scale"]
+        "tools": ["scale"],
+        "toolImages": {
+          "scale": "/kitchen/TL2-tools/scale.webp"
+        }
       },
       {
         "id": "s3",
@@ -53,7 +60,10 @@
         "whyExplanation": "Pre-mixing salt with ground beef draws out moisture and makes the patty dense.",
         "timeSeconds": 5,
         "isCCP": false,
-        "tools": ["salt"]
+        "tools": ["salt"],
+        "toolImages": {
+          "salt": "/kitchen/TL2-tools/salt.webp"
+        }
       },
       {
         "id": "s4",
@@ -64,7 +74,13 @@
         "isCCP": true,
         "tools": ["spatula"],
         "targetTemp": 450,
-        "tempRange": { "min": 440, "max": 500 }
+        "tempRange": {
+          "min": 440,
+          "max": 500
+        },
+        "toolImages": {
+          "spatula": "/kitchen/TL2-tools/spatula.webp"
+        }
       },
       {
         "id": "s5",
@@ -75,7 +91,13 @@
         "isCCP": true,
         "tools": ["thermometer"],
         "targetTemp": 160,
-        "tempRange": { "min": 160, "max": 175 }
+        "tempRange": {
+          "min": 160,
+          "max": 175
+        },
+        "toolImages": {
+          "thermometer": "/kitchen/TL2-tools/thermometer.webp"
+        }
       },
       {
         "id": "s6",
@@ -84,7 +106,10 @@
         "whyExplanation": "The rendered fat flavors the bun and seals it against sogging.",
         "timeSeconds": 30,
         "isCCP": false,
-        "tools": ["spatula"]
+        "tools": ["spatula"],
+        "toolImages": {
+          "spatula": "/kitchen/TL2-tools/spatula.webp"
+        }
       },
       {
         "id": "s7",
@@ -113,7 +138,8 @@
         "tolerance": "+/- 0°F below",
         "consequence": "E. coli risk. Single undercooked patty can close a kitchen."
       }
-    ]
+    ],
+    "imageRef": "/kitchen/EQ1-equipment/flat_top.webp"
   },
   "tickets": [
     {
@@ -257,5 +283,6 @@
       "allergens": ["dairy"],
       "requiresRefrigeration": true
     }
-  ]
+  ],
+  "imageRef": "/kitchen/RC4-recipes/recipe-burger-smash-v1.webp"
 }

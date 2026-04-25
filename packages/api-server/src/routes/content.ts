@@ -18,6 +18,7 @@ import {
   desc,
   asc,
 } from '@topshelf/database';
+import { createHmac, timingSafeEqual } from 'crypto';
 import { requireRole } from '../middleware/auth.js';
 import { notFound, ConflictError } from '../middleware/error-handler.js';
 
@@ -44,6 +45,10 @@ const CreatePackSchema = z.object({
   certificationTarget: z.string().max(100).optional(),
   status: z.enum(['draft', 'review', 'approved', 'published', 'archived']).default('draft'),
   metadata: z.record(z.unknown()).optional(),
+  /** Optional cryptographic signature produced by ContentPackSigner.sign() */
+  signature: z.string().optional(),
+  /** Key ID used to produce the signature */
+  signingKeyId: z.string().optional(),
 });
 
 // =============================================================================
@@ -357,6 +362,38 @@ export function createContentRoutes(): Hono {
       const userId = c.get('userId');
       const body = c.req.valid('json');
       const db = getDatabase();
+
+      // Content pack signature validation.
+      // Controlled by CONTENT_SIGNING_MODE env var:
+      //   off (default) — skip validation; pilot / local-dev mode
+      //   hmac          — validate HMAC-SHA256 signature against CONTENT_SIGNING_KEY
+      const signingMode = process.env['CONTENT_SIGNING_MODE'] ?? 'off';
+      if (signingMode === 'hmac') {
+        const signingKey = process.env['CONTENT_SIGNING_KEY'] ?? '';
+        if (signingKey.length === 0) {
+          throw new ConflictError(
+            'CONTENT_SIGNING_KEY env var is required when CONTENT_SIGNING_MODE=hmac'
+          );
+        }
+        if (body.signature === undefined || body.signature.length === 0) {
+          throw new ConflictError('Pack signature is required when content signing is enabled');
+        }
+        // Canonical payload = body without signature fields, keys sorted
+        const payloadFields = Object.fromEntries(
+          Object.entries(body).filter(([k]) => k !== 'signature' && k !== 'signingKeyId')
+        );
+        const canonical = JSON.stringify(
+          Object.fromEntries(Object.entries(payloadFields).sort(([a], [b]) => a.localeCompare(b)))
+        );
+        const expected = createHmac('sha256', signingKey).update(canonical).digest('hex');
+        const expectedBuf = Buffer.from(expected, 'utf8');
+        const actualBuf = Buffer.from(body.signature, 'utf8');
+        const valid =
+          expectedBuf.length === actualBuf.length && timingSafeEqual(expectedBuf, actualBuf);
+        if (!valid) {
+          throw new ConflictError('Content pack signature is invalid');
+        }
+      }
 
       // Check for slug+version conflict
       const existing = await db.query.contentPacks.findFirst({

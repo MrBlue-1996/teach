@@ -45,6 +45,10 @@ const mockSessions = [
   },
 ];
 
+const mockUpdateWhere = vi.fn().mockResolvedValue([]);
+const mockUpdateSet = vi.fn().mockReturnValue({ where: mockUpdateWhere });
+const mockUpdate = vi.fn().mockReturnValue({ set: mockUpdateSet });
+
 const mockDb = {
   query: {
     learningSessions: {
@@ -52,18 +56,25 @@ const mockDb = {
       findFirst: vi.fn(),
     },
   },
+  update: mockUpdate,
 };
 
 vi.mock('@topshelf/database', () => ({
-  getDatabase: () => mockDb,
-  learningSessions: { id: 'id', userId: 'userId', startedAt: 'startedAt' },
-  eq: (...args: unknown[]) => args,
-  and: (...args: unknown[]) => args,
-  desc: (field: unknown) => field,
+  getDatabase: (): unknown => mockDb,
+  learningSessions: {
+    id: 'id',
+    userId: 'userId',
+    status: 'status',
+    startedAt: 'startedAt',
+    endedAt: 'endedAt',
+  },
+  eq: (...args: unknown[]): unknown[] => args,
+  and: (...args: unknown[]): unknown[] => args,
+  desc: (field: unknown): unknown => field,
 }));
 
 vi.mock('@topshelf/config', () => ({
-  getConfig: () => ({
+  getConfig: (): { environment: string } => ({
     environment: 'development',
   }),
 }));
@@ -81,7 +92,7 @@ describe('Session Routes', () => {
     app.onError(errorHandler);
 
     // Simulate authenticated user context
-    app.use('*', async (c, next) => {
+    app.use('*', async (c, next): Promise<void> => {
       c.set('userId' as any, 'user-test-1');
       c.set('userRole' as any, 'learner');
       await next();
@@ -92,6 +103,9 @@ describe('Session Routes', () => {
     // Reset mock implementations
     mockDb.query.learningSessions.findMany.mockResolvedValue(mockSessions);
     mockDb.query.learningSessions.findFirst.mockResolvedValue(null);
+    mockUpdate.mockReturnValue({ set: mockUpdateSet });
+    mockUpdateSet.mockReturnValue({ where: mockUpdateWhere });
+    mockUpdateWhere.mockResolvedValue([]);
   });
 
   // ---------------------------------------------------------------------------
@@ -263,6 +277,128 @@ describe('Session Routes', () => {
       const body = await res.json();
       expect(body.session.status).toBe('active');
       expect(body.session.blocksCompleted).toBe(2);
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // GET /session/active
+  // ---------------------------------------------------------------------------
+
+  describe('GET /session/active', () => {
+    it('should return null session when none are active', async () => {
+      mockDb.query.learningSessions.findFirst.mockResolvedValue(null);
+
+      const res = await app.request('/session/active');
+
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.session).toBeNull();
+    });
+
+    it('should return the active session when one exists', async () => {
+      const activeSession = {
+        id: 'session-2',
+        userId: 'user-test-1',
+        status: 'active',
+        startedAt: new Date('2026-03-21T09:00:00Z'),
+        endedAt: null,
+        blocksCompleted: 2,
+        learnerState: null,
+      };
+      mockDb.query.learningSessions.findFirst.mockResolvedValue(activeSession);
+
+      const res = await app.request('/session/active');
+
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.session).toBeDefined();
+      expect(body.session.id).toBe('session-2');
+      expect(body.session.status).toBe('active');
+    });
+
+    it('should query with active status filter', async () => {
+      mockDb.query.learningSessions.findFirst.mockResolvedValue(null);
+
+      await app.request('/session/active');
+
+      expect(mockDb.query.learningSessions.findFirst).toHaveBeenCalled();
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // DELETE /session/:id
+  // ---------------------------------------------------------------------------
+
+  describe('DELETE /session/:id', () => {
+    it('should return 404 for non-existent session', async () => {
+      mockDb.query.learningSessions.findFirst.mockResolvedValue(null);
+
+      const res = await app.request('/session/non-existent', { method: 'DELETE' });
+
+      expect(res.status).toBe(404);
+    });
+
+    it('should return 403 when session belongs to another user', async () => {
+      mockDb.query.learningSessions.findFirst.mockResolvedValue({
+        id: 'session-other',
+        userId: 'other-user',
+        status: 'active',
+        startedAt: new Date(),
+        endedAt: null,
+      });
+
+      const res = await app.request('/session/session-other', { method: 'DELETE' });
+
+      expect(res.status).toBe(403);
+      const body = await res.json();
+      expect(body.message).toContain('not owned');
+    });
+
+    it('should return 400 when session is already completed', async () => {
+      mockDb.query.learningSessions.findFirst.mockResolvedValue({
+        id: 'session-1',
+        userId: 'user-test-1',
+        status: 'completed',
+        startedAt: new Date(),
+        endedAt: new Date(),
+      });
+
+      const res = await app.request('/session/session-1', { method: 'DELETE' });
+
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.message).toContain('already ended');
+    });
+
+    it('should end an active session successfully', async () => {
+      mockDb.query.learningSessions.findFirst.mockResolvedValue({
+        id: 'session-1',
+        userId: 'user-test-1',
+        status: 'active',
+        startedAt: new Date(),
+        endedAt: null,
+      });
+
+      const res = await app.request('/session/session-1', { method: 'DELETE' });
+
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.success).toBe(true);
+      expect(mockUpdate).toHaveBeenCalled();
+    });
+
+    it('should set status to completed and endedAt on success', async () => {
+      mockDb.query.learningSessions.findFirst.mockResolvedValue({
+        id: 'session-1',
+        userId: 'user-test-1',
+        status: 'active',
+        startedAt: new Date(),
+        endedAt: null,
+      });
+
+      await app.request('/session/session-1', { method: 'DELETE' });
+
+      expect(mockUpdateSet).toHaveBeenCalledWith(expect.objectContaining({ status: 'completed' }));
     });
   });
 

@@ -27,6 +27,7 @@ import { createBadgeRoutes } from './routes/badge.js';
 import { createAdminRoutes } from './routes/admin.js';
 import { createBillingRoutes } from './routes/billing.js';
 import { createMetricsRoutes } from './routes/metrics.js';
+import { createInstructorRoutes } from './routes/instructor.js';
 
 // Import middleware
 import { rateLimiter } from './middleware/rate-limiter.js';
@@ -133,7 +134,7 @@ export function createApp(): Hono {
 
   // Protected routes (auth required)
   const protectedApi = new Hono();
-  protectedApi.use('*', authMiddleware());
+  protectedApi.use('*', authMiddleware({ requireEmailVerified: true }));
 
   protectedApi.route('/learner', createLearnerRoutes());
   protectedApi.route('/content', createContentRoutes());
@@ -141,6 +142,7 @@ export function createApp(): Hono {
   protectedApi.route('/policy', createPolicyRoutes());
   protectedApi.route('/badge', createBadgeRoutes());
   protectedApi.route('/admin', createAdminRoutes());
+  protectedApi.route('/instructor', createInstructorRoutes());
 
   api.route('/', protectedApi);
 

@@ -91,7 +91,45 @@ Files touched by multiple agents. **Always check these before and after changes.
 
 ### api-engineer
 
-**[2026-04-23] Batch 5 — Items 16 & 17**
+**[2026-04-25] Instructor routes**
+
+**Created `packages/api-server/src/routes/instructor.ts`:**
+- `GET /instructor/courses` — lists content packs authored by the requester with `enrolledCount` aggregate (count distinct learnerState.userId). Requires `instructor`, `school_admin`, `district_admin`, or `system_admin` role.
+- `GET /instructor/students?packId=<uuid>` — returns students across the instructor's packs with `lastSessionAt`, `totalSessions`, `masteryScore`, and resolved `displayName`. `packId` is optional UUID filter validated via Zod.
+
+**Schema discrepancies worked around:**
+- Task spec referred to `learnerStates.packId` — actual column is `contentPackId`.
+- Task spec referred to `learnerStates.currentMastery` — actual column is `overallMastery`.
+- `learningSessions` has no direct `packId`; joined via `learnerStateId`.
+
+**Wired into `packages/api-server/src/index.ts`:**
+- Added `import { createInstructorRoutes }` and `protectedApi.route('/instructor', createInstructorRoutes())`.
+
+**Typecheck:** clean ✓
+
+**[2026-04-25] change-password endpoint + audit log infrastructure**
+
+**POST /auth/change-password:**
+- Added to `packages/api-server/src/routes/auth.ts` before `return router`.
+- Schema: `{ currentPassword: z.string().min(1), newPassword: z.string().min(8) }`.
+- Auth-gated via `authMiddleware()`. Verifies current password with `verifyPassword()`, validates strength with `validatePasswordStrength()`, hashes new password, updates `users.passwordHash + updatedAt`, revokes all active sessions for the user in a transaction.
+- Returns `{ message: 'Password changed successfully.' }`.
+
+**Audit log helper:**
+- Created `packages/api-server/src/lib/audit.ts` — exports `insertAuditLog(params: AuditParams)` (fire-and-forget safe).
+- Uses `auditLogs` table from `@topshelf/database` (already exported via `export * from './schema/index.js'`).
+- `AuditParams` optional fields typed as `string | undefined` to satisfy `exactOptionalPropertyTypes`.
+
+**Audit log calls wired into auth.ts (all fire-and-forget via `void`):**
+- `auth.login` — after successful login
+- `auth.register` — after successful register
+- `auth.logout` — inside try block after session revocation
+- `auth.password_reset` — after successful reset-password
+- `auth.password_changed` — after successful change-password
+
+**Typecheck:** clean ✓
+
+
 
 **Item 16 — `GET /metrics` endpoint:**
 - `packages/api-server/src/routes/metrics.ts` *(new)* — `createMetricsRoutes()` mounts `GET /` handler that calls `metrics.export()` from `@topshelf/observability` and returns Prometheus-format text with content-type `text/plain; version=0.0.4; charset=utf-8`.
@@ -195,6 +233,83 @@ _No updates yet._
 - 2026-04-13: Expanded `packages/api-server` learner/policy route coverage around teaching-state lifecycle.
 - Added learner session-start assertions for persisted default teaching context and event-ingestion assertions for learner/session state updates, trigger persistence, and non-completion behavior.
 - Added policy evaluation assertions for demotion persistence, session-aware evaluation records, and no-op protection when stored teaching state already matches computed state.
+
+### infra-engineer batch-6
+
+**[2026-04-24] Batch 6 — Items 21 & 22 (static audit only, no code changes)**
+
+---
+
+#### Item 21: `pnpm dev` full-stack configuration verification
+
+**Result: ✅ Config is correct. Both packages have dev scripts, Turbo runs them in parallel.**
+
+| Check | Status | Detail |
+|---|---|---|
+| `packages/api-server` has `dev` script | ✅ | `"dev": "tsx watch src/index.ts"` — hot-reloads Hono on port 3000 |
+| `apps/web` has `dev` script | ✅ | `"dev": "next dev -p 3001"` — Next.js on port 3001 |
+| Root `pnpm dev` calls Turbo | ✅ | `"dev": "turbo run dev --filter=!@topshelf/tests"` |
+| Turbo `dev` task is persistent and parallel | ✅ | `"persistent": true`, `"dependsOn": ["^build"]` in `turbo.json` |
+| Port conflict between API and web | ✅ None | API=3000, Web=3001 |
+| Web `NEXT_PUBLIC_API_URL` has a fallback | ✅ | `|| 'http://localhost:3000/api/v1'` hardcoded in `client.ts` |
+| Root `.env.example` covers all required vars | ✅ | All vars documented; `DB_*`, `JWT_SECRET`, `SESSION_SECRET` have placeholder values |
+
+**⚠️ One misconfiguration found:** `apps/web/.env.example` has `NEXT_PUBLIC_SUPABASE_URL=` and `NEXT_PUBLIC_SUPABASE_ANON_KEY=` left **blank**. The auth login page will throw `"Missing Supabase environment variables"` at runtime if these are not set. A dev following only the root `.env.example` will miss this because `apps/web/.env.example` is separate and not linked from the root. Added blocker to `blockers.md`.
+
+---
+
+#### Item 22: Pilot Checklist Audit
+
+**Phase 0: Pre-Pilot Preparation — Infrastructure**
+
+| Checklist Item | Status | Evidence |
+|---|---|---|
+| MCP server deployed to staging | ❌ MISSING | `implementations/mcp-server/` is a prototype only; no deployment or Docker config |
+| Database provisioned and configured | ✅ DONE | Drizzle migrations (3 files, 21 tables), `docker-compose.yml` postgres service with health check |
+| KMS/HSM keys generated and secured | ❌ MISSING | `content-signer.ts` explicitly notes "In production, use actual cryptographic signing with KMS/HSM" — current impl is HMAC-SHA256 placeholder |
+| CDN configured for content pack delivery | ❌ MISSING | No CDN config exists; `STORAGE_PROVIDER` supports S3 but no CDN layer |
+| Monitoring and alerting configured | ⚠️ PARTIAL | Prometheus `GET /metrics` endpoint exists; no alerting rules or dashboards defined |
+| Backup and recovery procedures tested | ❌ MISSING | No backup scripts; `docs/incident_runbooks.md` exists but is a template |
+
+**Phase 0: Pre-Pilot Preparation — Content**
+
+| Checklist Item | Status | Evidence |
+|---|---|---|
+| Minimum 3 content packs validated and signed | ⚠️ PARTIAL | 2 regular packs + 8 kitchen packs exist; all signatures are `"sig-v1-ECDSA-P256-SHA256-placeholder"` (not real crypto) |
+| All teaching blocks have 2+ surface variants | ⚠️ PARTIAL | `CONTENT_PACK_CONSTRAINTS.minSurfaceVariants = 2` enforced in schema; packs exist but surface variant compliance unverified |
+| Parity tests passing for all content | ⚠️ PARTIAL | `packages/deterministic-formatter` + `ParityTestRunner` implemented; CI `ci-parity-playwright.yml` exists; placeholder signatures may affect parity |
+| Role mappings configured for target badges | ✅ DONE | `governance/policies/promotion_policy_config.json` has `employerRequirements.requiredBadges` |
+| Content review completed by SME | ❌ MISSING | Human/process task; no evidence in repo |
+
+**Phase 0: Pre-Pilot Preparation — Platform**
+
+| Checklist Item | Status | Evidence |
+|---|---|---|
+| Policy configuration reviewed and approved | ⚠️ PARTIAL | `governance/policies/promotion_policy_config.json` exists with structured thresholds; no formal approval record |
+| Promotion thresholds calibrated for pilot cohort | ⚠️ PARTIAL | Thresholds present (defaults from design: `transferThreshold: 0.75`, `consecutivePasses: 3`); not calibrated on pilot data |
+| Calibration probe tested across device matrix | ❌ MISSING | `CALIBRATION_CONFIG` schema in `@topshelf/shared` exists; no cross-device test evidence |
+| Offline mode tested on baseline devices | ❌ MISSING | `FEATURE_OFFLINE_MODE=true` in `.env.example` but no service worker in `apps/web/`; offline is marketing copy only |
+| Service worker caching verified | ❌ MISSING | No service worker files in `apps/web/`; no PWA manifest |
+
+**Phase 0: Pre-Pilot Preparation — Security**
+
+| Checklist Item | Status | Evidence |
+|---|---|---|
+| Security audit completed | ❌ MISSING | No audit report found |
+| Penetration testing performed | ❌ MISSING | No evidence |
+| PII handling reviewed and approved | ⚠️ PARTIAL | `LOG_REDACT_PII=true`, `data_export_requests` GDPR table exists, Privacy Policy at `governance/legal/PRIVACY_POLICY.md`; no formal approval record |
+| Audit logging verified | ⚠️ PARTIAL | `audit_logs` table defined in schema and migrations; no API route or service actively writes to it |
+| Rate limiting configured | ✅ DONE | Redis-backed rate limiter in `packages/api-server/src/middleware/rate-limiter.ts`; configurable via `RATE_LIMIT_*` env vars |
+
+**Phase 1 & 2 items** — all operational/human tasks; no code to audit. Skipped.
+
+**Summary counts:** ✅ DONE: 5 | ⚠️ PARTIAL: 9 | ❌ MISSING: 10
+
+**Critical items blocking pilot launch (added to `blockers.md`):**
+1. Supabase env vars blank in `apps/web/.env.example` — local dev auth broken
+2. Content pack signing uses placeholder HMAC, not real KMS/ECDSA — pilot content is not cryptographically signed
+3. Offline mode (`FEATURE_OFFLINE_MODE=true`) has zero implementation — no service worker
+4. Audit log table exists but no code writes to it — compliance gap
 
 ### quality-reviewer
 

@@ -7,6 +7,7 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
 import { zValidator } from '@hono/zod-validator';
+import { randomUUID } from 'crypto';
 import {
   getDatabase,
   users,
@@ -14,11 +15,13 @@ import {
   learnerProgressEvents,
   learningSessions,
   contentBlocks,
+  badges,
   eq,
   and,
   gte,
   desc,
   sql,
+  isNull,
 } from '@topshelf/database';
 import {
   PedagogyEngine,
@@ -404,10 +407,79 @@ export function createLearnerRoutes(): Hono {
       })
       .where(eq(learningSessions.id, sessionId));
 
+    // ----- Badge award on pack completion -----
+    let badgeAwarded = false;
+    let issuedBadge: { id: string; verificationHash: string | null } | undefined;
+
+    try {
+      const learnerState = await db.query.learnerStates.findFirst({
+        where: eq(learnerStates.id, session.learnerStateId),
+        columns: {
+          id: true,
+          contentPackId: true,
+          blocksCompleted: true,
+          currentMode: true,
+          overallMastery: true,
+        },
+      });
+
+      if (learnerState !== undefined) {
+        // Count total blocks in this pack
+        const [blockCount] = await db
+          .select({ total: sql<number>`count(*)` })
+          .from(contentBlocks)
+          .where(eq(contentBlocks.packId, learnerState.contentPackId));
+
+        const totalBlocks = blockCount?.total ?? 0;
+        const isComplete = totalBlocks > 0 && learnerState.blocksCompleted >= totalBlocks;
+
+        if (isComplete) {
+          // Guard against duplicate badges
+          const existing = await db.query.badges.findFirst({
+            where: and(
+              eq(badges.userId, userId),
+              eq(badges.contentPackId, learnerState.contentPackId),
+              eq(badges.badgeType, 'completion'),
+              isNull(badges.revokedAt)
+            ),
+            columns: { id: true },
+          });
+
+          if (existing === undefined) {
+            const verificationHash = randomUUID();
+            const [newBadge] = await db
+              .insert(badges)
+              .values({
+                userId,
+                contentPackId: learnerState.contentPackId,
+                badgeType: 'completion',
+                level: learnerState.currentMode,
+                status: 'issued',
+                masteryScore: learnerState.overallMastery,
+                totalTimeSpent: (session.blocksCompleted ?? 0) * 60, // fallback estimate
+                benchmarksPassed: 0,
+                verificationHash,
+                issuedAt: new Date(),
+              })
+              .returning({ id: badges.id, verificationHash: badges.verificationHash });
+
+            if (newBadge !== undefined) {
+              badgeAwarded = true;
+              issuedBadge = newBadge;
+            }
+          }
+        }
+      }
+    } catch {
+      // Badge failure must never break session end
+    }
+
     return c.json({
       message: 'Session ended successfully',
       sessionId,
       blocksCompleted: session.blocksCompleted,
+      badgeAwarded,
+      ...(issuedBadge !== undefined ? { badge: issuedBadge } : {}),
     });
   });
 

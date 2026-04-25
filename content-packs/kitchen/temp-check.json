@@ -33,7 +33,11 @@
         "whyExplanation": "An uncalibrated thermometer can read 10°F off — that's the difference between safe and spoiled.",
         "timeSeconds": 15,
         "isCCP": true,
-        "tools": ["thermometer", "ice_bath"]
+        "tools": ["thermometer", "ice_bath"],
+        "toolImages": {
+          "thermometer": "/kitchen/TL2-tools/thermometer.webp",
+          "ice_bath": "/kitchen/TL2-tools/ice_bath.webp"
+        }
       },
       {
         "id": "t2",
@@ -44,7 +48,13 @@
         "isCCP": true,
         "tools": ["thermometer"],
         "targetTemp": 38,
-        "tempRange": { "min": 33, "max": 40 }
+        "tempRange": {
+          "min": 33,
+          "max": 40
+        },
+        "toolImages": {
+          "thermometer": "/kitchen/TL2-tools/thermometer.webp"
+        }
       },
       {
         "id": "t3",
@@ -55,7 +65,13 @@
         "isCCP": true,
         "tools": ["thermometer"],
         "targetTemp": -5,
-        "tempRange": { "min": -10, "max": 0 }
+        "tempRange": {
+          "min": -10,
+          "max": 0
+        },
+        "toolImages": {
+          "thermometer": "/kitchen/TL2-tools/thermometer.webp"
+        }
       },
       {
         "id": "t4",
@@ -66,7 +82,13 @@
         "isCCP": true,
         "tools": ["thermometer"],
         "targetTemp": 150,
-        "tempRange": { "min": 140, "max": 165 }
+        "tempRange": {
+          "min": 140,
+          "max": 165
+        },
+        "toolImages": {
+          "thermometer": "/kitchen/TL2-tools/thermometer.webp"
+        }
       },
       {
         "id": "t5",
@@ -77,7 +99,13 @@
         "isCCP": true,
         "tools": ["thermometer"],
         "targetTemp": 38,
-        "tempRange": { "min": 33, "max": 40 }
+        "tempRange": {
+          "min": 33,
+          "max": 40
+        },
+        "toolImages": {
+          "thermometer": "/kitchen/TL2-tools/thermometer.webp"
+        }
       }
     ],
     "criticalControlPoints": [
@@ -97,6 +125,8 @@
         "tolerance": "zero below",
         "consequence": "Food in danger zone must be discarded after 2 hours."
       }
-    ]
-  }
+    ],
+    "imageRef": "/kitchen/EQ1-equipment/cold_station.webp"
+  },
+  "imageRef": "/kitchen/RC4-recipes/recipe-temp-standard-v1.webp"
 }

@@ -52,6 +52,8 @@ tags:
     description: Subscription and payment management
   - name: Admin
     description: Administrative operations
+  - name: Instructor
+    description: Instructor analytics — course overview and student progress
 
 paths:
   # ===========================================================================
@@ -188,6 +190,50 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+  /session:
+    get:
+      tags: [Learner]
+      summary: List learning sessions for the current user
+      operationId: listLearningSessions
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of sessions with pack info
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sessions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                        status:
+                          type: string
+                          enum: [active, completed, abandoned]
+                        startedAt:
+                          type: string
+                          format: date-time
+                        endedAt:
+                          type: string
+                          format: date-time
+                          nullable: true
+                        blocksCompleted:
+                          type: integer
+                        contentPack:
+                          type: object
+                          nullable: true
+                          properties:
+                            title:
+                              type: string
+                            slug:
+                              type: string
+
   /learner/session/start:
     post:
       tags: [Learner]
@@ -273,6 +319,27 @@ paths:
       responses:
         '200':
           description: Session ended
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [message, badgeAwarded]
+                properties:
+                  message:
+                    type: string
+                    example: Session ended
+                  badgeAwarded:
+                    type: boolean
+                    description: Whether a completion badge was issued during this session end
+                  badge:
+                    type: object
+                    description: Present only when badgeAwarded is true
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      verificationHash:
+                        type: string
 
   # ===========================================================================
   # CONTENT
@@ -319,6 +386,44 @@ paths:
                       $ref: '#/components/schemas/ContentPackSummary'
                   pagination:
                     $ref: '#/components/schemas/Pagination'
+
+  /content/packs/{packId}/enroll:
+    post:
+      tags: [Content]
+      summary: Enroll the current learner in a content pack
+      operationId: enrollInContentPack
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: packId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Already enrolled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  enrolled:
+                    type: boolean
+                    example: true
+        '201':
+          description: Newly enrolled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  enrolled:
+                    type: boolean
+                    example: true
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   /content/packs/{packId}:
     get:
@@ -900,3 +1005,154 @@ components:
         invoicePdf:
           type: string
           format: uri
+
+  # ===========================================================================
+  # AUTHENTICATION (additional)
+  # ===========================================================================
+  /auth/change-password:
+    post:
+      tags: [Authentication]
+      summary: Change password for authenticated user
+      description: |
+        Changes the current user's password. Requires the existing password for verification.
+        All active sessions for the user are revoked after a successful change.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [currentPassword, newPassword]
+              properties:
+                currentPassword:
+                  type: string
+                  minLength: 1
+                  description: The user's current password
+                newPassword:
+                  type: string
+                  minLength: 8
+                  description: The new password (minimum 8 characters)
+      responses:
+        '200':
+          description: Password changed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Password changed successfully.
+        '400':
+          description: Current password is incorrect or new password is too weak
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # ===========================================================================
+  # INSTRUCTOR
+  # ===========================================================================
+  /instructor/courses:
+    get:
+      tags: [Instructor]
+      summary: List instructor's courses with learner analytics
+      description: |
+        Returns all content packs authored by the instructor, with aggregate learner stats
+        (enrolment count). Requires instructor, school_admin, district_admin, or system_admin role.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of courses
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  courses:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                        slug:
+                          type: string
+                        title:
+                          type: string
+                        version:
+                          type: string
+                        status:
+                          type: string
+                          enum: [draft, review, approved, published, archived]
+                        createdAt:
+                          type: string
+                          format: date-time
+                        enrolledCount:
+                          type: integer
+                          description: Number of distinct learners enrolled
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /instructor/students:
+    get:
+      tags: [Instructor]
+      summary: List student progress for instructor's packs
+      description: |
+        Returns per-learner progress records for all students in the instructor's packs.
+        Optionally filter by a specific pack via `packId`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: packId
+          in: query
+          schema:
+            type: string
+            format: uuid
+          description: Filter results to a specific content pack (optional)
+      responses:
+        '200':
+          description: List of student progress records
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  students:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        userId:
+                          type: string
+                          format: uuid
+                        email:
+                          type: string
+                          format: email
+                        displayName:
+                          type: string
+                        packId:
+                          type: string
+                          format: uuid
+                        packSlug:
+                          type: string
+                        packTitle:
+                          type: string
+                        lastSessionAt:
+                          type: string
+                          format: date-time
+                          nullable: true
+                        totalSessions:
+                          type: integer
+                        masteryScore:
+                          type: number
+                          format: float
+                          nullable: true
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'

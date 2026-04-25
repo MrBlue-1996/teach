@@ -206,9 +206,9 @@ async function seedKitchenPack(db: Database, pack: KitchenChallengePack): Promis
       prerequisites: [],
       timeBudgetSeconds: pack.timeLimitSeconds,
       content: {
+        ...pack,
         type: 'kitchen_challenge',
         challengeType: pack.type,
-        ...pack,
       },
       hints: [],
       variants: [],

@@ -34,7 +34,10 @@
         "whyExplanation": "Eggs are the emulsifier. Too few and the sauce breaks; too many and it tastes eggy.",
         "timeSeconds": 15,
         "isCCP": false,
-        "tools": ["scale"]
+        "tools": ["scale"],
+        "toolImages": {
+          "scale": "/kitchen/TL2-tools/scale.webp"
+        }
       },
       {
         "id": "g3",
@@ -43,7 +46,10 @@
         "whyExplanation": "Butter is the bulk. Under-scaling means short portions; over-scaling wastes expensive product.",
         "timeSeconds": 15,
         "isCCP": false,
-        "tools": ["scale"]
+        "tools": ["scale"],
+        "toolImages": {
+          "scale": "/kitchen/TL2-tools/scale.webp"
+        }
       },
       {
         "id": "g4",
@@ -52,7 +58,10 @@
         "whyExplanation": "Acid balances richness. Over-acidifying a batch this size ruins 28 plates.",
         "timeSeconds": 15,
         "isCCP": false,
-        "tools": ["measuring_cup"]
+        "tools": ["measuring_cup"],
+        "toolImages": {
+          "measuring_cup": "/kitchen/TL2-tools/measuring_cup.webp"
+        }
       },
       {
         "id": "g5",
@@ -63,7 +72,14 @@
         "isCCP": true,
         "tools": ["double_boiler", "thermometer"],
         "targetTemp": 145,
-        "tempRange": { "min": 140, "max": 160 }
+        "tempRange": {
+          "min": 140,
+          "max": 160
+        },
+        "toolImages": {
+          "double_boiler": "/kitchen/TL2-tools/double_boiler.webp",
+          "thermometer": "/kitchen/TL2-tools/thermometer.webp"
+        }
       }
     ],
     "criticalControlPoints": [
@@ -75,6 +91,8 @@
         "tolerance": "zero below 140F",
         "consequence": "Hollandaise in the danger zone grows bacteria rapidly. Discard after 2 hours."
       }
-    ]
-  }
+    ],
+    "imageRef": "/kitchen/EQ1-equipment/saute.webp"
+  },
+  "imageRef": "/kitchen/RC4-recipes/recipe-hollandaise-v1.webp"
 }

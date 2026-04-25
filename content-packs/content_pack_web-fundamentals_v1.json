@@ -1,0 +1,319 @@
+{
+  "id": "web-fundamentals-v1",
+  "slug": "web-fundamentals",
+  "name": "Web Development Fundamentals",
+  "title": "Web Development Fundamentals",
+  "version": "1.0.0",
+  "description": "Core web development concepts for beginners — HTML, CSS, and vanilla JavaScript",
+  "domain": "web-fundamentals",
+  "certificationTarget": null,
+  "difficulty": "beginner",
+  "chromebookCompatible": true,
+  "targetDeviceProfile": "CHROMEBOOK_STANDARD",
+  "status": "published",
+  "tags": ["web", "html", "css", "javascript", "beginner", "chromebook"],
+  "roleMappings": [],
+  "minDeviceProfile": {
+    "ramMb": 512,
+    "networkKbps": 200,
+    "requiresWebGL": false,
+    "requiresWebGPU": false,
+    "requiresWasm": false
+  },
+  "teachingBlocks": [
+    {
+      "id": "tb-web-html-001",
+      "blockId": "web-html-001",
+      "title": "HTML Document Structure",
+      "concept": "HTML Document Structure",
+      "type": "concept",
+      "targetMode": "L2_CONTEXTUAL",
+      "mode": "L2",
+      "content": "Every HTML document follows a standard structure with a DOCTYPE declaration, an html root element, a head section for metadata, and a body section for visible content. This skeleton tells browsers how to parse and render your page.",
+      "canonicalSolution": "<!DOCTYPE html>\n<html lang=\"en\">\n  <head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>My Page</title>\n  </head>\n  <body>\n    <h1>Hello, World!</h1>\n  </body>\n</html>",
+      "explanation": "The DOCTYPE declaration tells the browser to use modern HTML5 rendering. The <html> element is the root container for the entire page. The <head> holds invisible metadata — character encoding, viewport settings, and the page title shown in browser tabs. The <body> contains everything the user sees. Getting this structure right prevents rendering quirks across browsers.",
+      "hint": "Think of an HTML file like a letter: the head is the envelope metadata, and the body is the actual message.",
+      "surfaceVariants": [
+        {
+          "id": "variant-minimal",
+          "description": "Minimal valid HTML5 document",
+          "data": {
+            "context": "bare skeleton without optional attributes"
+          }
+        },
+        {
+          "id": "variant-full-meta",
+          "description": "Document with Open Graph and SEO meta tags",
+          "data": {
+            "context": "production page with full metadata"
+          }
+        }
+      ],
+      "surfaces": [
+        {
+          "surfaceType": "snippet",
+          "content": "<!DOCTYPE html>\n<html lang=\"en\">\n  <head>\n    <meta charset=\"UTF-8\">\n    <title>My Page</title>\n  </head>\n  <body>\n    <h1>Hello!</h1>\n  </body>\n</html>"
+        },
+        {
+          "surfaceType": "explanation",
+          "content": "DOCTYPE tells the browser to use HTML5 standards mode. The head holds invisible page metadata; the body holds visible content. Always include charset=UTF-8 and a viewport meta tag."
+        },
+        {
+          "surfaceType": "example",
+          "content": "A missing DOCTYPE causes browsers to enter quirks mode, which can break layout and CSS in subtle, hard-to-debug ways."
+        }
+      ],
+      "tags": ["html", "structure", "document", "beginner"],
+      "timeBudgetSeconds": 240,
+      "difficulty": "beginner",
+      "prerequisites": [],
+      "successCriteria": {
+        "minCorrectnessScore": 0.7,
+        "maxTimeSeconds": 480,
+        "maxRetries": 3,
+        "requiresExplanation": false
+      },
+      "hints": [
+        "Every HTML page needs a DOCTYPE, html, head, and body element",
+        "The head section is invisible to users — it holds metadata like charset and title",
+        "Your visible content (text, images, buttons) lives inside the body element"
+      ],
+      "commonErrors": [
+        {
+          "pattern": "missing DOCTYPE",
+          "description": "Page starts with <html> without the DOCTYPE declaration",
+          "remediation": "Always open with <!DOCTYPE html> on line 1 — it triggers HTML5 standards mode and prevents browser quirks"
+        },
+        {
+          "pattern": "content in head",
+          "description": "Placed visible content inside the head element",
+          "remediation": "The head is for metadata only. Move text, images, and other visible elements into the body"
+        }
+      ]
+    },
+    {
+      "id": "tb-web-css-001",
+      "blockId": "web-css-001",
+      "title": "CSS Styling Basics",
+      "concept": "CSS Selectors and the Box Model",
+      "type": "concept",
+      "targetMode": "L2_CONTEXTUAL",
+      "mode": "L2",
+      "content": "CSS controls the visual presentation of HTML elements using selectors and property-value pairs. Every element is rendered as a rectangular box with content, padding, border, and margin — known as the box model. Understanding the box model is essential for accurate layout.",
+      "canonicalSolution": "/* Selector targets an element */\nh1 {\n  color: #1a1a2e;\n  font-size: 2rem;\n  margin-bottom: 1rem;\n}\n\n/* Class selector */\n.card {\n  padding: 1.5rem;\n  border: 1px solid #e2e8f0;\n  border-radius: 0.5rem;\n  margin: 1rem 0;\n}\n\n/* Box model demonstration */\n.box {\n  width: 200px;       /* content width */\n  padding: 16px;      /* space inside border */\n  border: 2px solid #333; /* visible border */\n  margin: 24px;       /* space outside border */\n}",
+      "explanation": "CSS rules consist of a selector (which elements to style) and a declaration block (the property-value pairs). The box model defines how space is calculated: content → padding → border → margin, from inside out. By default, width/height apply only to content; setting box-sizing: border-box makes width include padding and border, which most developers prefer.",
+      "hint": "Visualize each element as a box: the content is your text/image, padding is cushioning inside the box, border is the box's edge, and margin is the space between boxes.",
+      "surfaceVariants": [
+        {
+          "id": "variant-flexbox",
+          "description": "Layout using flexbox instead of margins",
+          "data": {
+            "context": "modern flex layout"
+          }
+        },
+        {
+          "id": "variant-responsive",
+          "description": "Responsive styles with media queries",
+          "data": {
+            "context": "mobile-first design"
+          }
+        }
+      ],
+      "surfaces": [
+        {
+          "surfaceType": "snippet",
+          "content": "* { box-sizing: border-box; }\n\n.card {\n  padding: 1.5rem;\n  border: 1px solid #e2e8f0;\n  border-radius: 0.5rem;\n}"
+        },
+        {
+          "surfaceType": "explanation",
+          "content": "Selectors target HTML elements; declarations define how they look. The box model (content, padding, border, margin) controls spacing. Use box-sizing: border-box to make sizing more predictable."
+        },
+        {
+          "surfaceType": "example",
+          "content": "Without box-sizing: border-box, adding padding to a 200px element makes it wider than 200px — a common source of layout bugs."
+        }
+      ],
+      "tags": ["css", "selectors", "box-model", "styling", "beginner"],
+      "timeBudgetSeconds": 300,
+      "difficulty": "beginner",
+      "prerequisites": ["tb-web-html-001"],
+      "successCriteria": {
+        "minCorrectnessScore": 0.7,
+        "maxTimeSeconds": 600,
+        "maxRetries": 3,
+        "requiresExplanation": false
+      },
+      "hints": [
+        "A CSS rule has two parts: a selector and a declaration block in curly braces",
+        "The box model goes from inside out: content, padding, border, margin",
+        "Add box-sizing: border-box to the * selector — it makes layout math much easier"
+      ],
+      "commonErrors": [
+        {
+          "pattern": "unexpected element size",
+          "description": "Element is wider or taller than expected after adding padding",
+          "remediation": "Add 'box-sizing: border-box' so padding and border are included in the declared width/height"
+        },
+        {
+          "pattern": "margin collapse confusion",
+          "description": "Vertical margins between adjacent elements merge instead of adding",
+          "remediation": "CSS collapses adjacent vertical margins to the larger of the two values. Use padding or flexbox/grid gaps to avoid this."
+        }
+      ]
+    },
+    {
+      "id": "tb-web-js-001",
+      "blockId": "web-js-001",
+      "title": "JavaScript Basics",
+      "concept": "JavaScript Variables, Functions, and Control Flow",
+      "type": "concept",
+      "targetMode": "L2_CONTEXTUAL",
+      "mode": "L2",
+      "content": "JavaScript adds behavior to web pages through variables, functions, and control flow. Modern JavaScript uses const and let for variable declarations. Functions are reusable blocks of code that can accept inputs and return outputs.",
+      "canonicalSolution": "// Variables\nconst greeting = 'Hello';  // immutable binding\nlet count = 0;             // mutable binding\n\n// Function declaration\nfunction add(a, b) {\n  return a + b;\n}\n\n// Arrow function (same result)\nconst multiply = (a, b) => a * b;\n\n// Control flow\nif (count > 0) {\n  console.log('Positive');\n} else if (count < 0) {\n  console.log('Negative');\n} else {\n  console.log('Zero');\n}\n\n// Loop\nfor (let i = 0; i < 5; i++) {\n  console.log(i);\n}",
+      "explanation": "const and let replaced var in modern JavaScript. Use const by default — it prevents accidental reassignment. Use let only when the value needs to change. Functions are first-class values in JavaScript, meaning they can be stored in variables and passed as arguments. Arrow functions provide shorter syntax and don't have their own 'this' binding, making them ideal for callbacks.",
+      "hint": "Start with const for every variable declaration. If you get an error saying you can't reassign it, then switch to let.",
+      "surfaceVariants": [
+        {
+          "id": "variant-array-methods",
+          "description": "Using array methods (map, filter, reduce) instead of loops",
+          "data": {
+            "context": "functional style with array methods"
+          }
+        },
+        {
+          "id": "variant-destructuring",
+          "description": "Destructuring assignment for cleaner variable extraction",
+          "data": {
+            "context": "modern destructuring patterns"
+          }
+        }
+      ],
+      "surfaces": [
+        {
+          "surfaceType": "snippet",
+          "content": "const double = (n) => n * 2;\nconst numbers = [1, 2, 3, 4, 5];\nconst doubled = numbers.map(double);\nconsole.log(doubled); // [2, 4, 6, 8, 10]"
+        },
+        {
+          "surfaceType": "explanation",
+          "content": "Use const by default, let when a variable needs to change, and never var. Arrow functions (=>) are concise and avoid 'this' binding issues. Control flow (if/else, for loops) works the same as most languages."
+        },
+        {
+          "surfaceType": "example",
+          "content": "Array methods like .map(), .filter(), and .reduce() are more readable than manual loops and are the idiomatic JavaScript way to transform data."
+        }
+      ],
+      "tags": ["javascript", "variables", "functions", "control-flow", "beginner"],
+      "timeBudgetSeconds": 360,
+      "difficulty": "beginner",
+      "prerequisites": [],
+      "successCriteria": {
+        "minCorrectnessScore": 0.7,
+        "maxTimeSeconds": 720,
+        "maxRetries": 3,
+        "requiresExplanation": false
+      },
+      "hints": [
+        "Use const by default; only reach for let when you need to reassign the variable",
+        "A function declaration (function foo(){}) is hoisted; a function expression (const foo = ()=>{}) is not",
+        "Arrow functions and regular functions behave the same for simple cases — the difference matters when using 'this'"
+      ],
+      "commonErrors": [
+        {
+          "pattern": "var instead of const/let",
+          "description": "Used var for variable declarations",
+          "remediation": "var has function scope and is hoisted, which causes subtle bugs. Use const (preferred) or let for block-scoped variables."
+        },
+        {
+          "pattern": "missing return",
+          "description": "Function has no return statement but caller expects a value",
+          "remediation": "Functions without a return statement return undefined. Always explicitly return values when the caller needs them."
+        }
+      ]
+    },
+    {
+      "id": "tb-web-dom-001",
+      "blockId": "web-dom-001",
+      "title": "DOM Manipulation",
+      "concept": "Selecting and Modifying DOM Elements",
+      "type": "challenge",
+      "targetMode": "L2_CONTEXTUAL",
+      "mode": "L2",
+      "content": "The Document Object Model (DOM) is a tree-like representation of an HTML page that JavaScript can read and modify. You select elements using querySelector, then read or change their properties to update what the user sees — without reloading the page.",
+      "canonicalSolution": "// Select a single element (returns first match)\nconst heading = document.querySelector('h1');\n\n// Select multiple elements\nconst buttons = document.querySelectorAll('.btn');\n\n// Read content\nconsole.log(heading.textContent);\n\n// Change content\nheading.textContent = 'Updated Heading';\n\n// Change styles\nheading.style.color = '#2563eb';\n\n// Add/remove CSS classes (preferred over inline styles)\nheading.classList.add('highlight');\nheading.classList.remove('muted');\nheading.classList.toggle('active');\n\n// Create and append a new element\nconst para = document.createElement('p');\npara.textContent = 'Dynamically added paragraph.';\ndocument.body.appendChild(para);",
+      "explanation": "querySelector uses the same CSS selector syntax you already know. It returns null if no match is found, so check before using the result. textContent is safer than innerHTML for setting text because it does not parse HTML — this prevents cross-site scripting (XSS) if the content comes from user input. classList methods are preferred over direct style manipulation because they keep presentation in CSS where it belongs.",
+      "hint": "querySelector uses CSS selector syntax — use '#id' for IDs, '.class' for classes, and 'tag' for element types, just like in a CSS file.",
+      "surfaceVariants": [
+        {
+          "id": "variant-dynamic-list",
+          "description": "Build a dynamic list from an array of data",
+          "data": {
+            "context": "rendering a data array into a <ul>"
+          }
+        },
+        {
+          "id": "variant-form-read",
+          "description": "Read values from form inputs",
+          "data": {
+            "context": "reading and validating form field values"
+          }
+        }
+      ],
+      "surfaces": [
+        {
+          "surfaceType": "snippet",
+          "content": "const btn = document.querySelector('#submit-btn');\nconst output = document.querySelector('#output');\n\nbtn.addEventListener('click', () => {\n  output.textContent = 'Button clicked!';\n  output.classList.add('visible');\n});"
+        },
+        {
+          "surfaceType": "explanation",
+          "content": "querySelector returns the first matching element (or null). Use textContent to set text safely — avoid innerHTML with user-supplied data. classList.toggle() is a clean pattern for showing/hiding elements."
+        },
+        {
+          "surfaceType": "example",
+          "content": "Using element.innerHTML = userInput is a security vulnerability (XSS). Always use element.textContent when inserting user-provided text."
+        }
+      ],
+      "tags": ["javascript", "dom", "manipulation", "selectors", "beginner"],
+      "timeBudgetSeconds": 420,
+      "difficulty": "beginner",
+      "prerequisites": ["tb-web-html-001", "tb-web-js-001"],
+      "successCriteria": {
+        "minCorrectnessScore": 0.75,
+        "maxTimeSeconds": 840,
+        "maxRetries": 3,
+        "requiresExplanation": true
+      },
+      "hints": [
+        "document.querySelector('.class') selects the first element with that class — same syntax as CSS",
+        "Always check if the result is null before calling methods on it",
+        "Prefer classList.add/remove over element.style.property to keep styles in your CSS file"
+      ],
+      "commonErrors": [
+        {
+          "pattern": "innerHTML with user input",
+          "description": "Used innerHTML to insert text that came from the user",
+          "remediation": "innerHTML parses HTML and can execute scripts embedded in the string (XSS). Use textContent for plain text — it is always safe."
+        },
+        {
+          "pattern": "querySelector returns null",
+          "description": "Script ran before the DOM was ready, so the element wasn't found",
+          "remediation": "Place your script tag at the end of the body, or use DOMContentLoaded: document.addEventListener('DOMContentLoaded', () => { ... })"
+        }
+      ]
+    }
+  ],
+  "author": {
+    "name": "TopShelf Content Team",
+    "email": "content@topshelfteaching.com"
+  },
+  "metadata": {
+    "estimatedHours": 20,
+    "prerequisites": [],
+    "offlineCapable": false
+  },
+  "createdAt": "2026-04-25T00:00:00Z",
+  "updatedAt": "2026-04-25T00:00:00Z",
+  "signature": "sig-v1-ECDSA-P256-SHA256-placeholder",
+  "signingKeyId": "key-prod-001",
+  "schemaVersion": "1.0.0"
+}

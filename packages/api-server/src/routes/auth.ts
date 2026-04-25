@@ -31,6 +31,7 @@ import { createHash } from 'crypto';
 import { EmailService, EMAIL_TEMPLATES } from '@topshelf/email';
 import { badRequest, unauthorized, conflict, serverError } from '../middleware/error-handler.js';
 import { authMiddleware } from '../middleware/auth.js';
+import { insertAuditLog } from '../lib/audit.js';
 
 // ---------------------------------------------------------------------------
 // Email service — lazily initialised (console provider in dev, real in prod)
@@ -48,7 +49,7 @@ function getEmailService(): EmailService {
         email: process.env['EMAIL_FROM'] ?? 'noreply@topshelfteaching.com',
         name: 'TopShelf Teaching',
       },
-      ...(provider === 'sendgrid' && process.env['SENDGRID_API_KEY']
+      ...(provider === 'sendgrid' && process.env['SENDGRID_API_KEY'] !== undefined
         ? { sendgrid: { apiKey: process.env['SENDGRID_API_KEY'] } }
         : {}),
     });
@@ -101,7 +102,7 @@ const OAuthSchema = z.object({
 // ROUTES
 // =============================================================================
 
-export function createAuthRoutes() {
+export function createAuthRoutes(): Hono {
   const router = new Hono();
 
   // ---------------------------------------------------------------------------
@@ -139,7 +140,10 @@ export function createAuthRoutes() {
         firstName: firstName ?? null,
         lastName: lastName ?? null,
         displayName:
-          firstName && lastName
+          firstName !== undefined &&
+          firstName.length > 0 &&
+          lastName !== undefined &&
+          lastName.length > 0
             ? `${firstName} ${lastName}`
             : (firstName ?? email.split('@')[0] ?? email),
         role: 'learner',
@@ -163,8 +167,7 @@ export function createAuthRoutes() {
       token: sessionId,
       userAgent: c.req.header('User-Agent') ?? null,
       ipAddress:
-        (c.req.header('X-Forwarded-For')?.split(',')[0]?.trim() || c.req.header('X-Real-IP')) ??
-        null,
+        c.req.header('X-Forwarded-For')?.split(',')[0]?.trim() ?? c.req.header('X-Real-IP') ?? null,
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
     });
 
@@ -192,6 +195,14 @@ export function createAuthRoutes() {
           { firstName: firstName ?? undefined, verifyUrl }
         );
       });
+
+    void insertAuditLog({
+      userId: newUser.id,
+      action: 'auth.register',
+      resource: 'user',
+      resourceId: newUser.id,
+      ipAddress: c.req.header('x-forwarded-for') ?? undefined,
+    });
 
     return c.json(
       {
@@ -223,7 +234,10 @@ export function createAuthRoutes() {
       ),
     });
 
-    if (!user || !user.passwordHash) {
+    if (user === undefined) {
+      throw unauthorized('Invalid email or password');
+    }
+    if (user.passwordHash === null) {
       throw unauthorized('Invalid email or password');
     }
 
@@ -244,8 +258,7 @@ export function createAuthRoutes() {
       token: sessionId,
       userAgent: c.req.header('User-Agent') ?? null,
       ipAddress:
-        (c.req.header('X-Forwarded-For')?.split(',')[0]?.trim() || c.req.header('X-Real-IP')) ??
-        null,
+        c.req.header('X-Forwarded-For')?.split(',')[0]?.trim() ?? c.req.header('X-Real-IP') ?? null,
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     });
 
@@ -254,8 +267,16 @@ export function createAuthRoutes() {
       userId: user.id,
       email: user.email,
       role: user.role,
-      ...(user.organizationId != null ? { organizationId: user.organizationId } : {}),
+      ...(user.organizationId !== null ? { organizationId: user.organizationId } : {}),
       sessionId,
+    });
+
+    void insertAuditLog({
+      userId: user.id,
+      action: 'auth.login',
+      resource: 'user',
+      resourceId: user.id,
+      ipAddress: c.req.header('x-forwarded-for') ?? undefined,
     });
 
     return c.json({
@@ -321,7 +342,10 @@ export function createAuthRoutes() {
       } else {
         // Create new user (no password — OAuth-only)
         const displayName =
-          firstName && lastName
+          firstName !== undefined &&
+          firstName.length > 0 &&
+          lastName !== undefined &&
+          lastName.length > 0
             ? `${firstName} ${lastName}`
             : (firstName ?? email.split('@')[0] ?? email);
 
@@ -364,8 +388,7 @@ export function createAuthRoutes() {
       token: sessionId,
       userAgent: c.req.header('User-Agent') ?? null,
       ipAddress:
-        (c.req.header('X-Forwarded-For')?.split(',')[0]?.trim() || c.req.header('X-Real-IP')) ??
-        null,
+        c.req.header('X-Forwarded-For')?.split(',')[0]?.trim() ?? c.req.header('X-Real-IP') ?? null,
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     });
 
@@ -416,7 +439,7 @@ export function createAuthRoutes() {
       },
     });
 
-    if (!session || !session.user) {
+    if (session === undefined) {
       throw unauthorized('Session not found or revoked');
     }
 
@@ -438,8 +461,7 @@ export function createAuthRoutes() {
       token: newSessionId,
       userAgent: c.req.header('User-Agent') ?? null,
       ipAddress:
-        (c.req.header('X-Forwarded-For')?.split(',')[0]?.trim() || c.req.header('X-Real-IP')) ??
-        null,
+        c.req.header('X-Forwarded-For')?.split(',')[0]?.trim() ?? c.req.header('X-Real-IP') ?? null,
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     });
 
@@ -448,7 +470,7 @@ export function createAuthRoutes() {
       userId: session.user.id,
       email: session.user.email,
       role: session.user.role,
-      ...(session.user.organizationId != null
+      ...(session.user.organizationId !== null
         ? { organizationId: session.user.organizationId }
         : {}),
       sessionId: newSessionId,
@@ -466,13 +488,13 @@ export function createAuthRoutes() {
   router.post('/logout', async (c) => {
     const authHeader = c.req.header('Authorization');
 
-    if (!authHeader) {
+    if (authHeader === undefined) {
       return c.json({ message: 'Logged out' });
     }
 
     const [scheme, token] = authHeader.split(' ');
 
-    if (scheme?.toLowerCase() === 'bearer' && token) {
+    if (scheme?.toLowerCase() === 'bearer' && token !== undefined) {
       try {
         const { verifyToken } = await import('@topshelf/auth');
         const payload = await verifyToken(token);
@@ -489,6 +511,14 @@ export function createAuthRoutes() {
               isNull(authSessions.revokedAt)
             )
           );
+
+        void insertAuditLog({
+          userId: payload.sub,
+          action: 'auth.logout',
+          resource: 'user',
+          resourceId: payload.sub,
+          ipAddress: c.req.header('x-forwarded-for') ?? undefined,
+        });
       } catch {
         // Token may be expired/invalid — still return success to avoid
         // leaking information about token validity
@@ -534,7 +564,7 @@ export function createAuthRoutes() {
       const emailSvc = getEmailService();
       void emailSvc.sendTemplate(
         EMAIL_TEMPLATES.PASSWORD_RESET,
-        { email: user.email, ...(user.firstName ? { name: user.firstName } : {}) },
+        { email: user.email, ...(user.firstName !== null ? { name: user.firstName } : {}) },
         { firstName: user.firstName ?? undefined, resetUrl }
       );
     }
@@ -588,6 +618,14 @@ export function createAuthRoutes() {
         .update(authSessions)
         .set({ revokedAt: new Date() })
         .where(and(eq(authSessions.userId, resetRecord.userId), isNull(authSessions.revokedAt)));
+    });
+
+    void insertAuditLog({
+      userId: resetRecord.userId,
+      action: 'auth.password_reset',
+      resource: 'user',
+      resourceId: resetRecord.userId,
+      ipAddress: c.req.header('x-forwarded-for') ?? undefined,
     });
 
     return c.json({ message: 'Password reset successfully. You can now sign in.' });
@@ -703,6 +741,74 @@ export function createAuthRoutes() {
 
     return c.json({ user: updated });
   });
+
+  // ---------------------------------------------------------------------------
+  // POST /auth/change-password - Change password for authenticated user
+  // ---------------------------------------------------------------------------
+  const ChangePasswordSchema = z.object({
+    currentPassword: z.string().min(1),
+    newPassword: z.string().min(8),
+  });
+
+  router.post(
+    '/change-password',
+    authMiddleware(),
+    zValidator('json', ChangePasswordSchema),
+    async (c) => {
+      const userId = c.get('userId');
+      const { currentPassword, newPassword } = c.req.valid('json');
+      const db = getDatabase();
+
+      const user = await db.query.users.findFirst({
+        where: and(eq(users.id, userId), isNull(users.deletedAt), eq(users.isActive, true)),
+        columns: { id: true, passwordHash: true },
+      });
+
+      if (user === undefined) {
+        throw unauthorized('User not found');
+      }
+      if (user.passwordHash === null) {
+        throw unauthorized('User not found');
+      }
+
+      const currentValid = await verifyPassword(currentPassword, user.passwordHash);
+      if (!currentValid) {
+        throw badRequest('Current password is incorrect.');
+      }
+
+      const passwordCheck = validatePasswordStrength(newPassword);
+      if (!passwordCheck.valid) {
+        throw badRequest('Password does not meet requirements', {
+          errors: passwordCheck.errors,
+        });
+      }
+
+      const hashed = await hashPassword(newPassword);
+
+      await db.transaction(async (tx) => {
+        await tx
+          .update(users)
+          .set({ passwordHash: hashed, updatedAt: new Date() })
+          .where(eq(users.id, userId));
+
+        // Revoke all active sessions so old tokens are invalidated
+        await tx
+          .update(authSessions)
+          .set({ revokedAt: new Date() })
+          .where(and(eq(authSessions.userId, userId), isNull(authSessions.revokedAt)));
+      });
+
+      void insertAuditLog({
+        userId,
+        action: 'auth.password_changed',
+        resource: 'user',
+        resourceId: userId,
+        ipAddress: c.req.header('x-forwarded-for') ?? undefined,
+      });
+
+      return c.json({ message: 'Password changed successfully.' });
+    }
+  );
 
   return router;
 }

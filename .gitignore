@@ -44,6 +44,15 @@ pnpm-debug.log*
 # Test coverage
 coverage/
 
+# Test result outputs (junit XML, HTML reports, json summaries)
+test-results/
+junit.xml
+*.junit.xml
+junit-*.xml
+
+# Benchmark run results (ephemeral — baselines live in benchmarks/baselines/ and are committed)
+bench-results/
+
 # Turbo
 .turbo/
 

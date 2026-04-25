@@ -58,7 +58,7 @@ flowchart TD
 
 ## Package Catalog
 
-- `api-server`: platform API routes and middleware.
+- `api-server`: platform API routes and middleware. Routes: `auth`, `content`, `learner`, `session`, `instructor`, `admin`, `billing`, `badge`, `policy`, `metrics`. Shared utility: `src/lib/audit.ts` (`insertAuditLog`).
 - `auth`: authentication logic and auth-facing helpers.
 - `billing`: billing domain logic.
 - `cli`: workspace command-line tooling.
@@ -97,6 +97,8 @@ flowchart TD
 - [../content/README.md](../content/README.md) for authored content.
 - [../content/web-fundamentals](../content/web-fundamentals) for the example content domain.
 - [../content-packs/README.md](../content-packs/README.md) for pack manifests and templates.
+- Available packs: `content_pack_linux_v1.json`, `content_pack_networkplus_v1.json`, `content_pack_web-fundamentals_v1.json`.
+- Kitchen training packs (`content-packs/kitchen/`): 8 challenge files using `EQ1/TL2/ST3/RC4` image class prefixes.
 
 ## Documentation And Governance
 
