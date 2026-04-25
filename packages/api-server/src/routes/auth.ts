@@ -7,6 +7,7 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
 import { zValidator } from '@hono/zod-validator';
+import { getConfig } from '@topshelf/config';
 import {
   hashPassword,
   verifyPassword,
@@ -111,6 +112,8 @@ export function createAuthRoutes(): Hono {
   router.post('/register', zValidator('json', RegisterSchema), async (c) => {
     const { email, password, firstName, lastName } = c.req.valid('json');
     const db = getDatabase();
+    const config = getConfig();
+    const requireEmailVerification = config.environment === 'production';
 
     // Validate password strength
     const passwordCheck = validatePasswordStrength(password);
@@ -147,7 +150,7 @@ export function createAuthRoutes(): Hono {
             ? `${firstName} ${lastName}`
             : (firstName ?? email.split('@')[0] ?? email),
         role: 'learner',
-        emailVerified: false,
+        emailVerified: !requireEmailVerification,
       })
       .returning({
         id: users.id,
@@ -178,23 +181,25 @@ export function createAuthRoutes(): Hono {
       sessionId,
     });
 
-    // Send verification email (fire-and-forget — email failure must not break signup)
-    const rawVerifyToken = generateSecureToken(32);
-    const verifyTokenHash = createHash('sha256').update(rawVerifyToken).digest('hex');
-    const verifyExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
-    void db
-      .insert(emailVerificationTokens)
-      .values({ userId: newUser.id, tokenHash: verifyTokenHash, expiresAt: verifyExpiresAt })
-      .then(() => {
-        const appUrl = process.env['APP_URL'] ?? 'https://app.topshelfteaching.com';
-        const verifyUrl = `${appUrl}/auth/verify-email?token=${rawVerifyToken}`;
-        const emailSvc = getEmailService();
-        void emailSvc.sendTemplate(
-          EMAIL_TEMPLATES.VERIFY_EMAIL,
-          { email: newUser.email },
-          { firstName: firstName ?? undefined, verifyUrl }
-        );
-      });
+    if (requireEmailVerification) {
+      // Send verification email (fire-and-forget — email failure must not break signup)
+      const rawVerifyToken = generateSecureToken(32);
+      const verifyTokenHash = createHash('sha256').update(rawVerifyToken).digest('hex');
+      const verifyExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+      void db
+        .insert(emailVerificationTokens)
+        .values({ userId: newUser.id, tokenHash: verifyTokenHash, expiresAt: verifyExpiresAt })
+        .then(() => {
+          const appUrl = process.env['APP_URL'] ?? 'https://app.topshelfteaching.com';
+          const verifyUrl = `${appUrl}/auth/verify-email?token=${rawVerifyToken}`;
+          const emailSvc = getEmailService();
+          void emailSvc.sendTemplate(
+            EMAIL_TEMPLATES.VERIFY_EMAIL,
+            { email: newUser.email },
+            { firstName: firstName ?? undefined, verifyUrl }
+          );
+        });
+    }
 
     void insertAuditLog({
       userId: newUser.id,

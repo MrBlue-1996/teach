@@ -11,6 +11,7 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { readFileSync, readdirSync } from 'fs';
 import { config } from 'dotenv';
+import { loadConfig } from '@topshelf/config';
 import { connectDatabase, type Database } from '../src/index.js';
 import { contentPacks, contentBlocks } from '../src/schema/index.js';
 
@@ -224,6 +225,7 @@ async function seedKitchenPack(db: Database, pack: KitchenChallengePack): Promis
 // =============================================================================
 
 async function main(): Promise<void> {
+  loadConfig();
   const { db, close } = await connectDatabase();
 
   try {

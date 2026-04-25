@@ -161,7 +161,7 @@ export function createLearnerRoutes(): Hono {
     const packsActive = states.filter(
       (s) => s.lastActivityAt !== null && s.lastActivityAt >= thirtyDaysAgo
     ).length;
-    const totalSessions = sessionCounts[0]?.totalSessions ?? 0;
+    const totalSessions = Number(sessionCounts[0]?.totalSessions ?? 0);
 
     return c.json({
       totalTimeMinutes,

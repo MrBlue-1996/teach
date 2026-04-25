@@ -172,12 +172,11 @@ export function createApp(): Hono {
 // =============================================================================
 
 async function startServer(): Promise<void> {
-  const log = getLogger();
-  log.info('TopShelf Teaching Platform - API Server starting');
-
-  // Load configuration
-  log.info('Loading configuration...');
   const config = loadConfig();
+  const log = getLogger();
+
+  log.info('TopShelf Teaching Platform - API Server starting');
+  log.info('Loading configuration...');
   log.info({ environment: config.environment, version: config.version }, 'Configuration loaded');
 
   // Connect to database
@@ -228,7 +227,12 @@ async function startServer(): Promise<void> {
 
 // Run if executed directly
 startServer().catch((err: unknown) => {
-  const log = getLogger();
-  log.error({ err }, 'Server startup failed');
+  try {
+    loadConfig();
+    const log = getLogger();
+    log.error({ err }, 'Server startup failed');
+  } catch {
+    console.error('Server startup failed', err);
+  }
   process.exit(1);
 });

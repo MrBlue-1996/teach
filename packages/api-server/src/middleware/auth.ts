@@ -6,7 +6,7 @@
 
 import { createMiddleware } from 'hono/factory';
 import { verifyToken, type TokenPayload } from '@topshelf/auth';
-import { getDatabase, users, eq } from '@topshelf/database';
+import { getDatabase, users, authSessions, eq, and, isNull } from '@topshelf/database';
 import { AppError, AuthenticationError, AuthorizationError } from './error-handler.js';
 
 // Extend Hono context with user info
@@ -40,6 +40,19 @@ export function authMiddleware(options?: {
 
     try {
       const payload = await verifyToken(token);
+      const db = getDatabase();
+      const session = await db.query.authSessions.findFirst({
+        where: and(
+          eq(authSessions.userId, payload.sub),
+          eq(authSessions.token, payload.sessionId),
+          isNull(authSessions.revokedAt)
+        ),
+        columns: { expiresAt: true },
+      });
+
+      if (session === undefined || session.expiresAt < new Date()) {
+        throw new AuthenticationError('Invalid or expired session');
+      }
 
       // Set user info in context
       c.set('userId', payload.sub);
@@ -47,7 +60,6 @@ export function authMiddleware(options?: {
       c.set('tokenPayload', payload);
 
       if (options?.requireEmailVerified === true) {
-        const db = getDatabase();
         const user = await db.query.users.findFirst({
           where: eq(users.id, payload.sub),
           columns: { emailVerified: true },
@@ -133,9 +145,21 @@ export function optionalAuth(): ReturnType<typeof createMiddleware> {
       if (scheme?.toLowerCase() === 'bearer' && token !== undefined && token !== '') {
         try {
           const payload = await verifyToken(token);
-          c.set('userId', payload.sub);
-          c.set('userRole', payload.role);
-          c.set('tokenPayload', payload);
+          const db = getDatabase();
+          const session = await db.query.authSessions.findFirst({
+            where: and(
+              eq(authSessions.userId, payload.sub),
+              eq(authSessions.token, payload.sessionId),
+              isNull(authSessions.revokedAt)
+            ),
+            columns: { expiresAt: true },
+          });
+
+          if (session !== undefined && session.expiresAt >= new Date()) {
+            c.set('userId', payload.sub);
+            c.set('userRole', payload.role);
+            c.set('tokenPayload', payload);
+          }
         } catch {
           // Ignore invalid tokens in optional auth
         }

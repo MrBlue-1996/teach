@@ -23,14 +23,19 @@ vi.mock('@topshelf/config', () => ({
 
 // Mock the @topshelf/database module
 const mockFindFirstUser = vi.fn();
+const mockFindFirstSession = vi.fn();
 vi.mock('@topshelf/database', () => ({
   getDatabase: (): unknown => ({
     query: {
       users: { findFirst: mockFindFirstUser },
+      authSessions: { findFirst: mockFindFirstSession },
     },
   }),
   users: { id: 'id', emailVerified: 'emailVerified' },
+  authSessions: { userId: 'userId', token: 'token', revokedAt: 'revokedAt' },
   eq: (...args: unknown[]): unknown[] => args,
+  and: (...args: unknown[]): unknown[] => args,
+  isNull: (field: unknown): unknown => field,
 }));
 
 // Import the mocked function
@@ -55,6 +60,9 @@ describe('Auth Middleware', () => {
     app.onError(errorHandler);
     vi.clearAllMocks();
     mockFindFirstUser.mockResolvedValue({ emailVerified: true });
+    mockFindFirstSession.mockResolvedValue({
+      expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+    });
   });
 
   describe('authMiddleware', () => {
@@ -161,6 +169,22 @@ describe('Auth Middleware', () => {
       expect(body.message).toContain('Invalid token');
     });
 
+    it('should reject revoked or missing sessions', async () => {
+      vi.mocked(verifyToken).mockResolvedValue(mockTokenPayload);
+      mockFindFirstSession.mockResolvedValue(undefined);
+
+      app.use('*', authMiddleware());
+      app.get('/test', (c) => c.json({ ok: true }));
+
+      const res = await app.request('/test', {
+        headers: { Authorization: 'Bearer revoked-session-token' },
+      });
+
+      expect(res.status).toBe(401);
+      const body = await res.json();
+      expect(body.message).toContain('Invalid or expired session');
+    });
+
     it('should handle non-Error exceptions gracefully', async () => {
       vi.mocked(verifyToken).mockRejectedValue('Something went wrong');
 
@@ -228,7 +252,7 @@ describe('Auth Middleware', () => {
     });
 
     it('should return 403 when user is not found in database', async () => {
-      mockFindFirstUser.mockResolvedValue(null);
+      mockFindFirstUser.mockResolvedValue(undefined);
 
       app.use('*', authMiddleware({ requireEmailVerified: true }));
       app.get('/test', (c) => c.json({ ok: true }));

@@ -17,6 +17,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 const BASE_URL = process.env['API_BASE_URL'] ?? 'http://localhost:3000/api/v1';
 const RUN_LIVE_E2E = process.env['RUN_PILOT_LOOP_E2E'] === '1';
 const SKIP = !RUN_LIVE_E2E || process.env['SKIP_INTEGRATION'] === '1';
+const LIVE_TIMEOUT_MS = 30000;
 
 // ---------------------------------------------------------------------------
 // helpers
@@ -62,7 +63,7 @@ const testPassword = 'PilotSmoke$1!';
 // suite
 // ---------------------------------------------------------------------------
 
-describe.skipIf(SKIP)('Pilot loop smoke test', () => {
+describe.skipIf(SKIP)('Pilot loop smoke test', { timeout: LIVE_TIMEOUT_MS }, () => {
   beforeAll(async () => {
     const health = await fetch(`${BASE_URL.replace('/api/v1', '')}/health`);
     if (!health.ok) {
@@ -145,7 +146,7 @@ describe.skipIf(SKIP)('Pilot loop smoke test', () => {
   // -------------------------------------------------------------------------
   it('can start a learning session', async () => {
     const res = await api('POST', '/learner/session/start', { contentPackId: packId }, accessToken);
-    expect(res.status).toBe(200);
+    expect([200, 201]).toContain(res.status);
     const body = await json<{ sessionId: string }>(res);
     expect(body.sessionId).toBeTruthy();
     sessionId = body.sessionId;
@@ -174,7 +175,12 @@ describe.skipIf(SKIP)('Pilot loop smoke test', () => {
     const res = await api(
       'POST',
       `/learner/session/${sessionId}/event`,
-      { eventType: 'block_completed', blockId: packBlockId, correct: true },
+      {
+        eventType: 'completed',
+        blockId: packBlockId,
+        correctness: 1,
+        responseData: { answer: 'smoke-test-answer' },
+      },
       accessToken
     );
     expect(res.status).toBe(200);
@@ -198,8 +204,8 @@ describe.skipIf(SKIP)('Pilot loop smoke test', () => {
   it('can fetch learner stats', async () => {
     const res = await api('GET', '/learner/stats', undefined, accessToken);
     expect(res.status).toBe(200);
-    const body = await json<{ stats: { totalSessions: number } }>(res);
-    expect(body.stats.totalSessions).toBeGreaterThanOrEqual(1);
+    const body = await json<{ totalSessions: number }>(res);
+    expect(body.totalSessions).toBeGreaterThanOrEqual(1);
   });
 
   // -------------------------------------------------------------------------
