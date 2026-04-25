@@ -91,7 +91,45 @@ Files touched by multiple agents. **Always check these before and after changes.
 
 ### api-engineer
 
-**[2026-04-23] Batch 5 — Items 16 & 17**
+**[2026-04-25] Instructor routes**
+
+**Created `packages/api-server/src/routes/instructor.ts`:**
+- `GET /instructor/courses` — lists content packs authored by the requester with `enrolledCount` aggregate (count distinct learnerState.userId). Requires `instructor`, `school_admin`, `district_admin`, or `system_admin` role.
+- `GET /instructor/students?packId=<uuid>` — returns students across the instructor's packs with `lastSessionAt`, `totalSessions`, `masteryScore`, and resolved `displayName`. `packId` is optional UUID filter validated via Zod.
+
+**Schema discrepancies worked around:**
+- Task spec referred to `learnerStates.packId` — actual column is `contentPackId`.
+- Task spec referred to `learnerStates.currentMastery` — actual column is `overallMastery`.
+- `learningSessions` has no direct `packId`; joined via `learnerStateId`.
+
+**Wired into `packages/api-server/src/index.ts`:**
+- Added `import { createInstructorRoutes }` and `protectedApi.route('/instructor', createInstructorRoutes())`.
+
+**Typecheck:** clean ✓
+
+**[2026-04-25] change-password endpoint + audit log infrastructure**
+
+**POST /auth/change-password:**
+- Added to `packages/api-server/src/routes/auth.ts` before `return router`.
+- Schema: `{ currentPassword: z.string().min(1), newPassword: z.string().min(8) }`.
+- Auth-gated via `authMiddleware()`. Verifies current password with `verifyPassword()`, validates strength with `validatePasswordStrength()`, hashes new password, updates `users.passwordHash + updatedAt`, revokes all active sessions for the user in a transaction.
+- Returns `{ message: 'Password changed successfully.' }`.
+
+**Audit log helper:**
+- Created `packages/api-server/src/lib/audit.ts` — exports `insertAuditLog(params: AuditParams)` (fire-and-forget safe).
+- Uses `auditLogs` table from `@topshelf/database` (already exported via `export * from './schema/index.js'`).
+- `AuditParams` optional fields typed as `string | undefined` to satisfy `exactOptionalPropertyTypes`.
+
+**Audit log calls wired into auth.ts (all fire-and-forget via `void`):**
+- `auth.login` — after successful login
+- `auth.register` — after successful register
+- `auth.logout` — inside try block after session revocation
+- `auth.password_reset` — after successful reset-password
+- `auth.password_changed` — after successful change-password
+
+**Typecheck:** clean ✓
+
+
 
 **Item 16 — `GET /metrics` endpoint:**
 - `packages/api-server/src/routes/metrics.ts` *(new)* — `createMetricsRoutes()` mounts `GET /` handler that calls `metrics.export()` from `@topshelf/observability` and returns Prometheus-format text with content-type `text/plain; version=0.0.4; charset=utf-8`.
