@@ -9,7 +9,7 @@
  *
  * Full loop tested:
  *   register → login → browse packs → enroll → start session
- *   → submit block answer → end session → check badge
+ *   → submit block answer → end session → check badge → sign out
  */
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
@@ -70,7 +70,7 @@ describe.skipIf(SKIP)('Pilot loop smoke test', () => {
   });
 
   afterAll(async () => {
-    // Best-effort cleanup — end session if still active
+    // Best-effort cleanup — end session if still active (sign-out test clears accessToken)
     if (sessionId.length > 0 && accessToken.length > 0) {
       await api('POST', `/learner/session/${sessionId}/end`, undefined, accessToken);
     }
@@ -224,5 +224,21 @@ describe.skipIf(SKIP)('Pilot loop smoke test', () => {
     expect(res.status).toBe(200);
     const body = await json<{ badges: unknown[] }>(res);
     expect(Array.isArray(body.badges)).toBe(true);
+  });
+
+  // -------------------------------------------------------------------------
+  // 13. Sign out — token must no longer be valid afterward
+  // -------------------------------------------------------------------------
+  it('can sign out', async () => {
+    const res = await api('POST', '/auth/logout', undefined, accessToken);
+    expect(res.status).toBe(200);
+    const body = await json<{ message: string }>(res);
+    expect(body.message).toMatch(/logged out/i);
+  });
+
+  it('token is rejected after sign out', async () => {
+    const res = await api('GET', '/learner/stats', undefined, accessToken);
+    expect(res.status).toBe(401);
+    accessToken = ''; // mark as cleared
   });
 });
