@@ -51,68 +51,93 @@ const mockDb = {
   transaction: vi.fn().mockImplementation((cb: (tx: unknown) => Promise<unknown>) => cb(mockDb)),
 };
 
-vi.mock('@topshelf/database', () => ({
-  getDatabase: () => mockDb,
-  users: {
-    id: 'id',
-    email: 'email',
-    deletedAt: 'deletedAt',
-    isActive: 'isActive',
-    firstName: 'firstName',
-    lastName: 'lastName',
-    timezone: 'timezone',
-    displayName: 'displayName',
-    updatedAt: 'updatedAt',
-  },
-  authSessions: { userId: 'userId', token: 'token', revokedAt: 'revokedAt' },
-  passwordResetTokens: { userId: 'userId', tokenHash: 'tokenHash', usedAt: 'usedAt', id: 'id' },
-  emailVerificationTokens: {
-    userId: 'userId',
-    tokenHash: 'tokenHash',
-    usedAt: 'usedAt',
-    id: 'id',
-    expiresAt: 'expiresAt',
-  },
-  eq: (...args: unknown[]) => args,
-  and: (...args: unknown[]) => args,
-  isNull: (field: unknown) => field,
-}));
+vi.mock(
+  '@topshelf/database',
+  (): Record<string, unknown> => ({
+    getDatabase: (): typeof mockDb => mockDb,
+    users: {
+      id: 'id',
+      email: 'email',
+      deletedAt: 'deletedAt',
+      isActive: 'isActive',
+      firstName: 'firstName',
+      lastName: 'lastName',
+      timezone: 'timezone',
+      displayName: 'displayName',
+      updatedAt: 'updatedAt',
+    },
+    authSessions: { userId: 'userId', token: 'token', revokedAt: 'revokedAt' },
+    passwordResetTokens: { userId: 'userId', tokenHash: 'tokenHash', usedAt: 'usedAt', id: 'id' },
+    emailVerificationTokens: {
+      userId: 'userId',
+      tokenHash: 'tokenHash',
+      usedAt: 'usedAt',
+      id: 'id',
+      expiresAt: 'expiresAt',
+    },
+    auditLogs: {
+      action: 'action',
+      resource: 'resource',
+      userId: 'userId',
+      resourceId: 'resourceId',
+      ipAddress: 'ipAddress',
+      userAgent: 'userAgent',
+      metadata: 'metadata',
+    },
+    eq: (...args: unknown[]): unknown[] => args,
+    and: (...args: unknown[]): unknown[] => args,
+    isNull: (field: unknown): unknown => field,
+  })
+);
 
-vi.mock('@topshelf/email', () => ({
-  EmailService: vi.fn().mockImplementation(() => ({
-    sendTemplate: vi.fn().mockResolvedValue({ success: true }),
-    send: vi.fn().mockResolvedValue({ success: true }),
-  })),
-  EMAIL_TEMPLATES: {
-    PASSWORD_RESET: 'password-reset',
-    VERIFY_EMAIL: 'verify-email',
-    WELCOME: 'welcome',
-  },
-}));
+vi.mock(
+  '@topshelf/email',
+  (): Record<string, unknown> => ({
+    EmailService: vi
+      .fn()
+      .mockImplementation(
+        (): { sendTemplate: ReturnType<typeof vi.fn>; send: ReturnType<typeof vi.fn> } => ({
+          sendTemplate: vi.fn().mockResolvedValue({ success: true }),
+          send: vi.fn().mockResolvedValue({ success: true }),
+        })
+      ),
+    EMAIL_TEMPLATES: {
+      PASSWORD_RESET: 'password-reset',
+      VERIFY_EMAIL: 'verify-email',
+      WELCOME: 'welcome',
+    },
+  })
+);
 
-vi.mock('@topshelf/auth', () => ({
-  hashPassword: vi.fn().mockResolvedValue('$2b$04$hashedpassword'),
-  verifyPassword: vi.fn().mockResolvedValue(true),
-  validatePasswordStrength: vi.fn().mockReturnValue({ valid: true, errors: [] }),
-  generateTokens: vi.fn().mockResolvedValue({
-    accessToken: 'mock-access-token',
-    refreshToken: 'mock-refresh-token',
-    expiresIn: 86400,
-    tokenType: 'Bearer',
-  }),
-  generateSessionId: vi.fn().mockReturnValue('mock-session-id'),
-  verifyRefreshToken: vi.fn().mockResolvedValue({
-    userId: 'user-1',
-    sessionId: 'session-1',
-  }),
-  generateSecureToken: vi.fn().mockReturnValue('mock-secure-token'),
-}));
+vi.mock(
+  '@topshelf/auth',
+  (): Record<string, unknown> => ({
+    hashPassword: vi.fn().mockResolvedValue('$2b$04$hashedpassword'),
+    verifyPassword: vi.fn().mockResolvedValue(true),
+    validatePasswordStrength: vi.fn().mockReturnValue({ valid: true, errors: [] }),
+    generateTokens: vi.fn().mockResolvedValue({
+      accessToken: 'mock-access-token',
+      refreshToken: 'mock-refresh-token',
+      expiresIn: 86400,
+      tokenType: 'Bearer',
+    }),
+    generateSessionId: vi.fn().mockReturnValue('mock-session-id'),
+    verifyRefreshToken: vi.fn().mockResolvedValue({
+      userId: 'user-1',
+      sessionId: 'session-1',
+    }),
+    generateSecureToken: vi.fn().mockReturnValue('mock-secure-token'),
+  })
+);
 
-vi.mock('@topshelf/config', () => ({
-  getConfig: () => ({
-    environment: 'development',
-  }),
-}));
+vi.mock(
+  '@topshelf/config',
+  (): Record<string, unknown> => ({
+    getConfig: (): { environment: string } => ({
+      environment: 'development',
+    }),
+  })
+);
 
 // =============================================================================
 // TEST SETUP
@@ -128,7 +153,7 @@ describe('Auth Routes', () => {
     app.route('/auth', createAuthRoutes());
 
     // Reset default mock returns
-    mockDb.query.users.findFirst.mockResolvedValue(null);
+    mockDb.query.users.findFirst.mockResolvedValue(undefined);
     const returningMock = vi
       .fn()
       .mockResolvedValue([{ id: 'user-new-1', email: 'newuser@example.com', role: 'learner' }]);
@@ -150,7 +175,7 @@ describe('Auth Routes', () => {
         valid: true,
         errors: [],
       });
-      mockDb.query.users.findFirst.mockResolvedValue(null); // User doesn't exist
+      mockDb.query.users.findFirst.mockResolvedValue(undefined); // User doesn't exist
 
       const res = await app.request('/auth/register', {
         method: 'POST',
@@ -204,7 +229,7 @@ describe('Auth Routes', () => {
         valid: false,
         errors: ['Password must contain uppercase'],
       });
-      mockDb.query.users.findFirst.mockResolvedValue(null);
+      mockDb.query.users.findFirst.mockResolvedValue(undefined);
 
       const res = await app.request('/auth/register', {
         method: 'POST',
@@ -314,7 +339,7 @@ describe('Auth Routes', () => {
     });
 
     it('should reject login when user not found', async () => {
-      mockDb.query.users.findFirst.mockResolvedValue(null);
+      mockDb.query.users.findFirst.mockResolvedValue(undefined);
 
       const res = await app.request('/auth/login', {
         method: 'POST',
@@ -451,7 +476,7 @@ describe('Auth Routes', () => {
         userId: 'user-1',
         sessionId: 'session-1',
       });
-      mockDb.query.authSessions.findFirst.mockResolvedValue(null);
+      mockDb.query.authSessions.findFirst.mockResolvedValue(undefined);
 
       const res = await app.request('/auth/refresh', {
         method: 'POST',
@@ -496,7 +521,7 @@ describe('Auth Routes', () => {
 
   describe('POST /auth/forgot-password', () => {
     it('should return success message regardless of user existence', async () => {
-      mockDb.query.users.findFirst.mockResolvedValue(null);
+      mockDb.query.users.findFirst.mockResolvedValue(undefined);
 
       const res = await app.request('/auth/forgot-password', {
         method: 'POST',
