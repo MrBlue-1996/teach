@@ -65,7 +65,7 @@
         "consequence": "OSHA fine up to $15,625 per violation. Fire marshal can close the kitchen immediately."
       }
     ],
-    "imageRef": "/kitchen/C1-equipment/prep_table.webp"
+    "imageRef": "/kitchen/EQ1-equipment/prep_table.webp"
   },
-  "imageRef": "/kitchen/C4-recipes/recipe-osha-standard-v1.webp"
+  "imageRef": "/kitchen/RC4-recipes/recipe-osha-standard-v1.webp"
 }

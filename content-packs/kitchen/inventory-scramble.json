@@ -34,8 +34,8 @@
         "isCCP": true,
         "tools": ["gloves", "marker"],
         "toolImages": {
-          "gloves": "/kitchen/C2-tools/gloves.webp",
-          "marker": "/kitchen/C2-tools/marker.webp"
+          "gloves": "/kitchen/TL2-tools/gloves.webp",
+          "marker": "/kitchen/TL2-tools/marker.webp"
         }
       },
       {
@@ -56,8 +56,8 @@
         "isCCP": false,
         "tools": ["marker", "labels"],
         "toolImages": {
-          "marker": "/kitchen/C2-tools/marker.webp",
-          "labels": "/kitchen/C2-tools/labels.webp"
+          "marker": "/kitchen/TL2-tools/marker.webp",
+          "labels": "/kitchen/TL2-tools/labels.webp"
         }
       },
       {
@@ -89,7 +89,7 @@
         "consequence": "Serving expired product is a health code violation and potential lawsuit."
       }
     ],
-    "imageRef": "/kitchen/C1-equipment/cold_station.webp"
+    "imageRef": "/kitchen/EQ1-equipment/cold_station.webp"
   },
-  "imageRef": "/kitchen/C4-recipes/recipe-walkin-org-v1.webp"
+  "imageRef": "/kitchen/RC4-recipes/recipe-walkin-org-v1.webp"
 }

@@ -35,8 +35,8 @@
         "isCCP": true,
         "tools": ["thermometer", "ice_bath"],
         "toolImages": {
-          "thermometer": "/kitchen/C2-tools/thermometer.webp",
-          "ice_bath": "/kitchen/C2-tools/ice_bath.webp"
+          "thermometer": "/kitchen/TL2-tools/thermometer.webp",
+          "ice_bath": "/kitchen/TL2-tools/ice_bath.webp"
         }
       },
       {
@@ -53,7 +53,7 @@
           "max": 40
         },
         "toolImages": {
-          "thermometer": "/kitchen/C2-tools/thermometer.webp"
+          "thermometer": "/kitchen/TL2-tools/thermometer.webp"
         }
       },
       {
@@ -70,7 +70,7 @@
           "max": 0
         },
         "toolImages": {
-          "thermometer": "/kitchen/C2-tools/thermometer.webp"
+          "thermometer": "/kitchen/TL2-tools/thermometer.webp"
         }
       },
       {
@@ -87,7 +87,7 @@
           "max": 165
         },
         "toolImages": {
-          "thermometer": "/kitchen/C2-tools/thermometer.webp"
+          "thermometer": "/kitchen/TL2-tools/thermometer.webp"
         }
       },
       {
@@ -104,7 +104,7 @@
           "max": 40
         },
         "toolImages": {
-          "thermometer": "/kitchen/C2-tools/thermometer.webp"
+          "thermometer": "/kitchen/TL2-tools/thermometer.webp"
         }
       }
     ],
@@ -126,7 +126,7 @@
         "consequence": "Food in danger zone must be discarded after 2 hours."
       }
     ],
-    "imageRef": "/kitchen/C1-equipment/cold_station.webp"
+    "imageRef": "/kitchen/EQ1-equipment/cold_station.webp"
   },
-  "imageRef": "/kitchen/C4-recipes/recipe-temp-standard-v1.webp"
+  "imageRef": "/kitchen/RC4-recipes/recipe-temp-standard-v1.webp"
 }

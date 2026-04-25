@@ -37,8 +37,8 @@
         "isCCP": true,
         "tools": ["sink", "gloves"],
         "toolImages": {
-          "sink": "/kitchen/C2-tools/sink.webp",
-          "gloves": "/kitchen/C2-tools/gloves.webp"
+          "sink": "/kitchen/TL2-tools/sink.webp",
+          "gloves": "/kitchen/TL2-tools/gloves.webp"
         }
       },
       {
@@ -50,7 +50,7 @@
         "isCCP": false,
         "tools": ["scale"],
         "toolImages": {
-          "scale": "/kitchen/C2-tools/scale.webp"
+          "scale": "/kitchen/TL2-tools/scale.webp"
         }
       },
       {
@@ -62,7 +62,7 @@
         "isCCP": false,
         "tools": ["salt"],
         "toolImages": {
-          "salt": "/kitchen/C2-tools/salt.webp"
+          "salt": "/kitchen/TL2-tools/salt.webp"
         }
       },
       {
@@ -79,7 +79,7 @@
           "max": 500
         },
         "toolImages": {
-          "spatula": "/kitchen/C2-tools/spatula.webp"
+          "spatula": "/kitchen/TL2-tools/spatula.webp"
         }
       },
       {
@@ -96,7 +96,7 @@
           "max": 175
         },
         "toolImages": {
-          "thermometer": "/kitchen/C2-tools/thermometer.webp"
+          "thermometer": "/kitchen/TL2-tools/thermometer.webp"
         }
       },
       {
@@ -108,7 +108,7 @@
         "isCCP": false,
         "tools": ["spatula"],
         "toolImages": {
-          "spatula": "/kitchen/C2-tools/spatula.webp"
+          "spatula": "/kitchen/TL2-tools/spatula.webp"
         }
       },
       {
@@ -139,7 +139,7 @@
         "consequence": "E. coli risk. Single undercooked patty can close a kitchen."
       }
     ],
-    "imageRef": "/kitchen/C1-equipment/flat_top.webp"
+    "imageRef": "/kitchen/EQ1-equipment/flat_top.webp"
   },
   "tickets": [
     {
@@ -284,5 +284,5 @@
       "requiresRefrigeration": true
     }
   ],
-  "imageRef": "/kitchen/C4-recipes/recipe-burger-smash-v1.webp"
+  "imageRef": "/kitchen/RC4-recipes/recipe-burger-smash-v1.webp"
 }

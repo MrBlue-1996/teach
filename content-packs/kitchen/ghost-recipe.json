@@ -36,7 +36,7 @@
         "isCCP": false,
         "tools": ["scale"],
         "toolImages": {
-          "scale": "/kitchen/C2-tools/scale.webp"
+          "scale": "/kitchen/TL2-tools/scale.webp"
         }
       },
       {
@@ -48,7 +48,7 @@
         "isCCP": false,
         "tools": ["scale"],
         "toolImages": {
-          "scale": "/kitchen/C2-tools/scale.webp"
+          "scale": "/kitchen/TL2-tools/scale.webp"
         }
       },
       {
@@ -60,7 +60,7 @@
         "isCCP": false,
         "tools": ["measuring_cup"],
         "toolImages": {
-          "measuring_cup": "/kitchen/C2-tools/measuring_cup.webp"
+          "measuring_cup": "/kitchen/TL2-tools/measuring_cup.webp"
         }
       },
       {
@@ -77,8 +77,8 @@
           "max": 160
         },
         "toolImages": {
-          "double_boiler": "/kitchen/C2-tools/double_boiler.webp",
-          "thermometer": "/kitchen/C2-tools/thermometer.webp"
+          "double_boiler": "/kitchen/TL2-tools/double_boiler.webp",
+          "thermometer": "/kitchen/TL2-tools/thermometer.webp"
         }
       }
     ],
@@ -92,7 +92,7 @@
         "consequence": "Hollandaise in the danger zone grows bacteria rapidly. Discard after 2 hours."
       }
     ],
-    "imageRef": "/kitchen/C1-equipment/saute.webp"
+    "imageRef": "/kitchen/EQ1-equipment/saute.webp"
   },
-  "imageRef": "/kitchen/C4-recipes/recipe-hollandaise-v1.webp"
+  "imageRef": "/kitchen/RC4-recipes/recipe-hollandaise-v1.webp"
 }
