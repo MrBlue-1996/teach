@@ -88,7 +88,9 @@ if (UPDATE_BASELINE) {
   let updated = 0;
   for (const { name, results, baseline } of RESULT_FILES) {
     if (!existsSync(results)) {
-      console.warn(`[bench-compare] SKIP ${name}: results file not found (run pnpm bench:ci first)`);
+      console.warn(
+        `[bench-compare] SKIP ${name}: results file not found (run pnpm bench:ci first)`
+      );
       continue;
     }
     // Ensure benchmarks/baselines/ directory exists
@@ -104,7 +106,7 @@ if (UPDATE_BASELINE) {
   }
   console.log(
     `\n[bench-compare] Baseline updated for ${updated} package(s).\n` +
-    `  Commit the files in benchmarks/baselines/ to make this the new reference.`
+      `  Commit the files in benchmarks/baselines/ to make this the new reference.`
   );
   process.exit(0);
 }
@@ -164,14 +166,14 @@ for (const { name, results, baseline } of RESULT_FILES) {
   for (const { key, delta, cur, ref } of regressions) {
     console.log(
       `  ❌ REGRESSION  ${key}\n` +
-      `       baseline: ${fmt(ref.mean)} | current: ${fmt(cur.mean)} | Δ +${pct(delta)}`
+        `       baseline: ${fmt(ref.mean)} | current: ${fmt(cur.mean)} | Δ +${pct(delta)}`
     );
   }
 
   for (const { key, delta, cur, ref } of improvements) {
     console.log(
       `  ✅ FASTER      ${key}\n` +
-      `       baseline: ${fmt(ref.mean)} | current: ${fmt(cur.mean)} | Δ ${pct(delta)}`
+        `       baseline: ${fmt(ref.mean)} | current: ${fmt(cur.mean)} | Δ ${pct(delta)}`
     );
   }
 
@@ -193,8 +195,8 @@ if (totalChecked === 0) {
 if (hasRegression) {
   console.log(
     `[bench-compare] ❌ FAILED — ${totalRegressions} regression(s) exceed ${pct(THRESHOLD)} threshold.\n` +
-    `  Run 'pnpm bench' locally to investigate, or 'pnpm bench:compare --update-baseline'\n` +
-    `  to accept the new numbers as baseline.`
+      `  Run 'pnpm bench' locally to investigate, or 'pnpm bench:compare --update-baseline'\n` +
+      `  to accept the new numbers as baseline.`
   );
   process.exit(1);
 } else {

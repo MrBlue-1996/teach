@@ -23,13 +23,7 @@
  */
 
 import { spawn } from 'node:child_process';
-import {
-  createWriteStream,
-  existsSync,
-  mkdirSync,
-  rmSync,
-  writeFileSync,
-} from 'node:fs';
+import { createWriteStream, existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -92,7 +86,10 @@ if (execIndex !== -1) {
     stdio: ['inherit', 'pipe', 'pipe'],
   });
 
-  for (const [src, dest] of [[child.stdout, process.stdout], [child.stderr, process.stderr]]) {
+  for (const [src, dest] of [
+    [child.stdout, process.stdout],
+    [child.stderr, process.stderr],
+  ]) {
     src.on('data', (chunk) => {
       dest.write(chunk);
       logStream.write(chunk);

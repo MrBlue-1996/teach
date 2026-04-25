@@ -4,8 +4,8 @@
  * Copyright (c) 2026 TopShelf Service LLC. All Rights Reserved.
  *
  * Pilot loop smoke test — validates the end-to-end learner journey against a
- * live API server. Requires the API_BASE_URL env var or falls back to
- * http://localhost:3000/api/v1. Skip this suite with SKIP_INTEGRATION=1.
+ * live API server. Run this suite with RUN_PILOT_LOOP_E2E=1 and optionally
+ * API_BASE_URL; otherwise it is skipped by default for local repo checks.
  *
  * Full loop tested:
  *   register → login → browse packs → enroll → start session
@@ -15,7 +15,8 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 
 const BASE_URL = process.env['API_BASE_URL'] ?? 'http://localhost:3000/api/v1';
-const SKIP = process.env['SKIP_INTEGRATION'] === '1';
+const RUN_LIVE_E2E = process.env['RUN_PILOT_LOOP_E2E'] === '1';
+const SKIP = !RUN_LIVE_E2E || process.env['SKIP_INTEGRATION'] === '1';
 
 // ---------------------------------------------------------------------------
 // helpers
