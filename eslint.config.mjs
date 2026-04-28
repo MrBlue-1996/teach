@@ -42,6 +42,8 @@ export default tseslint.config(
           allowDefaultProject: [
             'packages/engine/vitest.config.ts',
             'packages/api-server/vitest.config.ts',
+            'packages/tests/vitest.config.ts',
+            'packages/tests/playwright.config.ts',
           ],
         },
         tsconfigRootDir: __dirname,

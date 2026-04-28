@@ -8,7 +8,7 @@ export default defineConfig({
       '@topshelf/policy-engine': resolve(__dirname, '../_future/policy-engine/src/index.ts'),
       '@topshelf/deterministic-formatter': resolve(
         __dirname,
-        '../_future/deterministic-formatter/src/index.ts'
+        '../deterministic-formatter/src/index.ts'
       ),
       '@topshelf/content-authoring': resolve(__dirname, '../content-authoring/src/index.ts'),
       '@topshelf/nlp': resolve(__dirname, '../_future/nlp/src/index.ts'),
@@ -18,6 +18,7 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     include: ['src/**/*.{test,spec}.ts'],
+    exclude: ['src/e2e/**'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html', 'lcov'],

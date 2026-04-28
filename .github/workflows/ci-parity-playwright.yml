@@ -53,8 +53,15 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
+      - name: Build packages
+        run: pnpm run build:packages
+
       - name: Install Playwright browsers
         run: pnpm exec playwright install --with-deps chromium
+        working-directory: packages/tests
 
       - name: Run end-to-end tests
         run: pnpm run test:e2e
+        env:
+          CI: 'true'
+          NEXT_PUBLIC_API_URL: 'http://localhost:3000/api/v1'
