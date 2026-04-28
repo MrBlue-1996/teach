@@ -12,7 +12,7 @@ test.describe('Login page', () => {
   });
 
   test('renders the login form', async ({ page }) => {
-    await expect(page.getByRole('heading', { name: /sign in|log in|welcome back/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /welcome back/i })).toBeVisible();
   });
 
   test('has email and password fields', async ({ page }) => {
@@ -21,11 +21,11 @@ test.describe('Login page', () => {
   });
 
   test('has a submit button', async ({ page }) => {
-    await expect(page.getByRole('button', { name: /sign in|log in|continue/i })).toBeVisible();
+    await expect(page.locator('button[type="submit"]')).toBeVisible();
   });
 
   test('shows validation error when submitting empty form', async ({ page }) => {
-    await page.getByRole('button', { name: /sign in|log in|continue/i }).click();
+    await page.locator('button[type="submit"]').click();
     // Should stay on login page (no redirect)
     await expect(page).toHaveURL(/\/auth\/login/);
   });
@@ -33,7 +33,7 @@ test.describe('Login page', () => {
   test('shows error for invalid email format', async ({ page }) => {
     await page.getByRole('textbox', { name: /email/i }).fill('not-an-email');
     await page.locator('input[type="password"]').fill('somepassword');
-    await page.getByRole('button', { name: /sign in|log in|continue/i }).click();
+    await page.locator('button[type="submit"]').click();
     await expect(page).toHaveURL(/\/auth\/login/);
   });
 
@@ -49,9 +49,7 @@ test.describe('Signup page', () => {
   });
 
   test('renders the signup form', async ({ page }) => {
-    await expect(
-      page.getByRole('heading', { name: /create account|sign up|get started/i })
-    ).toBeVisible();
+    await expect(page.getByRole('heading', { name: /create your account/i })).toBeVisible();
   });
 
   test('has name, email, and password fields', async ({ page }) => {
@@ -63,7 +61,7 @@ test.describe('Signup page', () => {
   test('shows validation error when name is empty', async ({ page }) => {
     await page.getByRole('textbox', { name: /email/i }).fill('test@example.com');
     await page.locator('input[type="password"]').fill('Password123!');
-    await page.getByRole('button', { name: /sign up|create account|get started/i }).click();
+    await page.locator('button[type="submit"]').click();
     // Name required error should appear
     await expect(page.getByText(/name is required/i)).toBeVisible();
   });
@@ -72,12 +70,12 @@ test.describe('Signup page', () => {
     await page.getByRole('textbox', { name: /name/i }).fill('Test User');
     await page.getByRole('textbox', { name: /email/i }).fill('test@example.com');
     await page.locator('input[type="password"]').fill('short');
-    await page.getByRole('button', { name: /sign up|create account|get started/i }).click();
+    await page.locator('button[type="submit"]').click();
     await expect(page.getByText(/min 8 characters/i)).toBeVisible();
   });
 
   test('has link back to login page', async ({ page }) => {
-    const loginLink = page.getByRole('link', { name: /sign in|log in|already have/i });
+    const loginLink = page.getByRole('link', { name: /sign in/i });
     await expect(loginLink).toBeVisible();
   });
 });
@@ -92,7 +90,7 @@ test.describe('Auth page navigation', () => {
 
   test('signup page links to login', async ({ page }) => {
     await page.goto('/auth/signup');
-    const loginLink = page.getByRole('link', { name: /sign in|log in|already have/i });
+    const loginLink = page.getByRole('link', { name: /sign in/i });
     await loginLink.click();
     await expect(page).toHaveURL(/\/auth\/login/);
   });
