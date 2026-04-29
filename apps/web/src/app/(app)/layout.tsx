@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -36,11 +36,6 @@ import {
   Loader2,
 } from 'lucide-react';
 
-interface NavSection {
-  title: string;
-  items: NavItem[];
-}
-
 interface NavItem {
   name: string;
   href: string;
@@ -48,32 +43,59 @@ interface NavItem {
   badge?: string;
 }
 
-const staticNavSections: NavSection[] = [
-  {
-    title: 'Overview',
-    items: [
-      { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-      { name: 'Analytics', href: '/analytics', icon: BarChart3 },
-    ],
-  },
-  {
-    title: 'Learning',
-    items: [
-      { name: 'Courses', href: '/content', icon: GraduationCap },
-      { name: 'Achievements', href: '/achievements', icon: Award },
-      { name: 'My Library', href: '/library', icon: FolderOpen },
-    ],
-  },
-  {
-    title: 'Manage',
-    items: [
-      { name: 'Instructor Panel', href: '/instructor', icon: Users },
-      { name: 'Settings', href: '/settings', icon: Settings },
-    ],
-  },
-];
+interface NavSection {
+  title: string;
+  items: NavItem[];
+}
 
-export default function AppLayout({ children }: { children: React.ReactNode }) {
+function buildNavSections(userRole: string | undefined, resourceSection: NavSection): NavSection[] {
+  const manageItems: NavItem[] = [];
+
+  if (
+    userRole === 'manager' ||
+    userRole === 'school_admin' ||
+    userRole === 'district_admin' ||
+    userRole === 'system_admin'
+  ) {
+    manageItems.push({ name: 'Manager Dashboard', href: '/manager', icon: Users });
+  }
+
+  if (
+    userRole === 'instructor' ||
+    userRole === 'school_admin' ||
+    userRole === 'district_admin' ||
+    userRole === 'system_admin'
+  ) {
+    manageItems.push({ name: 'Instructor Panel', href: '/instructor', icon: GraduationCap });
+  }
+
+  manageItems.push({ name: 'Settings', href: '/settings', icon: Settings });
+
+  return [
+    {
+      title: 'Overview',
+      items: [
+        { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+        { name: 'Analytics', href: '/analytics', icon: BarChart3 },
+      ],
+    },
+    {
+      title: 'Learning',
+      items: [
+        { name: 'Courses', href: '/content', icon: GraduationCap },
+        { name: 'Achievements', href: '/achievements', icon: Award },
+        { name: 'My Library', href: '/library', icon: FolderOpen },
+      ],
+    },
+    resourceSection,
+    {
+      title: 'Manage',
+      items: manageItems,
+    },
+  ];
+}
+
+function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -111,11 +133,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     ],
   };
 
-  const navSections = [
-    ...staticNavSections.slice(0, 2),
-    resourceSection,
-    ...staticNavSections.slice(2),
-  ];
+  const navSections = buildNavSections(authUser?.role, resourceSection);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -353,5 +371,22 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </main>
       </div>
     </div>
+  );
+}
+
+export default function AppLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-background">
+          <div className="flex items-center gap-3 text-sm text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Loading workspace...
+          </div>
+        </div>
+      }
+    >
+      <AppLayoutContent>{children}</AppLayoutContent>
+    </Suspense>
   );
 }

@@ -71,6 +71,8 @@ describe('Enum Schemas', () => {
     it('should contain all expected user roles', () => {
       const expectedRoles = [
         'learner',
+        'staff',
+        'manager',
         'instructor',
         'content_author',
         'school_admin',
@@ -207,6 +209,7 @@ describe('Table Schemas', () => {
       expect(columns).toContain('displayName');
       expect(columns).toContain('role');
       expect(columns).toContain('organizationId');
+      expect(columns).toContain('managerId');
       expect(columns).toContain('emailVerified');
       expect(columns).toContain('isActive');
       expect(columns).toContain('lastLoginAt');

@@ -27,6 +27,8 @@ import { relations } from 'drizzle-orm';
 
 export const userRoleEnum = pgEnum('user_role', [
   'learner',
+  'staff',
+  'manager',
   'instructor',
   'content_author',
   'school_admin',
@@ -99,6 +101,7 @@ export const users = pgTable(
     displayName: varchar('display_name', { length: 200 }),
     role: userRoleEnum('role').notNull().default('learner'),
     organizationId: uuid('organization_id').references(() => organizations.id),
+    managerId: uuid('manager_id').references((): AnyPgColumn => users.id),
     emailVerified: boolean('email_verified').default(false),
     isActive: boolean('is_active').default(true),
     lastLoginAt: timestamp('last_login_at'),
@@ -110,6 +113,7 @@ export const users = pgTable(
   (table) => ({
     emailIdx: uniqueIndex('user_email_idx').on(table.email),
     orgIdx: index('user_org_idx').on(table.organizationId),
+    managerIdx: index('user_manager_idx').on(table.managerId),
     roleIdx: index('user_role_idx').on(table.role),
   })
 );
@@ -512,6 +516,12 @@ export const usersRelations = relations(users, ({ one, many }) => ({
     fields: [users.organizationId],
     references: [organizations.id],
   }),
+  manager: one(users, {
+    fields: [users.managerId],
+    references: [users.id],
+    relationName: 'userManagement',
+  }),
+  directReports: many(users, { relationName: 'userManagement' }),
   sessions: many(authSessions),
   oauthAccounts: many(oauthAccounts),
   learnerStates: many(learnerStates),

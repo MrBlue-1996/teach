@@ -28,6 +28,7 @@ import { createAdminRoutes } from './routes/admin.js';
 import { createBillingRoutes } from './routes/billing.js';
 import { createMetricsRoutes } from './routes/metrics.js';
 import { createInstructorRoutes } from './routes/instructor.js';
+import { createManagerRoutes } from './routes/manager.js';
 
 // Import middleware
 import { rateLimiter } from './middleware/rate-limiter.js';
@@ -145,6 +146,7 @@ export function createApp(): Hono {
   protectedApi.route('/badge', createBadgeRoutes());
   protectedApi.route('/admin', createAdminRoutes());
   protectedApi.route('/instructor', createInstructorRoutes());
+  protectedApi.route('/manager', createManagerRoutes());
 
   api.route('/', protectedApi);
 

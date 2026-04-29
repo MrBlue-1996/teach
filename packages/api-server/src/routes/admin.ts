@@ -20,7 +20,7 @@ import {
 import { requireRole } from '../middleware/auth.js';
 import { notFound, forbidden } from '../middleware/error-handler.js';
 
-export function createAdminRoutes() {
+export function createAdminRoutes(): Hono {
   const router = new Hono();
 
   // All admin routes require admin role
@@ -47,10 +47,10 @@ export function createAdminRoutes() {
 
     return c.json({
       stats: {
-        totalUsers: userCount?.count || 0,
-        totalOrganizations: orgCount?.count || 0,
-        publishedContentPacks: packCount?.count || 0,
-        activeLearners: activeLearnersCount?.count || 0,
+        totalUsers: userCount?.count ?? 0,
+        totalOrganizations: orgCount?.count ?? 0,
+        publishedContentPacks: packCount?.count ?? 0,
+        activeLearners: activeLearnersCount?.count ?? 0,
       },
       generatedAt: new Date().toISOString(),
     });
@@ -125,6 +125,8 @@ export function createAdminRoutes() {
         role: z
           .enum([
             'learner',
+            'staff',
+            'manager',
             'instructor',
             'content_author',
             'school_admin',
@@ -141,7 +143,7 @@ export function createAdminRoutes() {
       const db = getDatabase();
 
       // Only system admins can change roles
-      if (updates.role && currentUserRole !== 'system_admin') {
+      if (updates.role !== undefined && currentUserRole !== 'system_admin') {
         throw forbidden('Only system admins can change user roles');
       }
 
