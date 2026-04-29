@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -19,123 +20,9 @@ import {
   Plus,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { getResourcePack, type ToolResource as Tool, type ToolStatus } from '@/lib/pack-resources';
 
-type ToolStatus = 'available' | 'in-use' | 'maintenance' | 'retired';
 type ViewMode = 'grid' | 'list';
-
-interface Tool {
-  id: string;
-  name: string;
-  category: string;
-  description: string;
-  status: ToolStatus;
-  condition: number; // 0-100
-  location: string;
-  lastServiced: string;
-  assignedTo?: string;
-  imageUrl?: string;
-  specifications?: string[];
-  safetyNotes?: string;
-}
-
-const mockTools: Tool[] = [
-  {
-    id: '1',
-    name: 'Digital Multimeter',
-    category: 'Electrical',
-    description:
-      'Fluke 87V Industrial Multimeter for AC/DC voltage, current, and resistance measurements.',
-    status: 'available',
-    condition: 95,
-    location: 'Lab A - Cabinet 3',
-    lastServiced: '2026-03-15',
-    specifications: ['AC/DC Voltage: 1000V', 'AC/DC Current: 10A', 'Resistance: 50MΩ'],
-    safetyNotes: 'Always check probe insulation before use. Do not exceed rated voltage.',
-  },
-  {
-    id: '2',
-    name: 'Oscilloscope',
-    category: 'Electrical',
-    description: 'Keysight DSOX1204G 4-channel oscilloscope with built-in waveform generator.',
-    status: 'in-use',
-    condition: 88,
-    location: 'Lab A - Bench 2',
-    lastServiced: '2026-02-20',
-    assignedTo: 'Network+ Lab Section B',
-    specifications: ['Bandwidth: 200MHz', '4 Channels', 'Sample Rate: 2 GSa/s'],
-  },
-  {
-    id: '3',
-    name: 'Cable Tester',
-    category: 'Networking',
-    description: 'Fluke Networks CableIQ Qualification Tester for Cat5e/Cat6/Cat6a cabling.',
-    status: 'available',
-    condition: 92,
-    location: 'Lab B - Drawer 1',
-    lastServiced: '2026-01-10',
-    specifications: ['Cat5e/Cat6/Cat6a', 'PoE Testing', 'Length Measurement'],
-  },
-  {
-    id: '4',
-    name: 'Crimping Tool Set',
-    category: 'Networking',
-    description: 'Professional RJ45/RJ11 crimping tool set with wire stripper and tester.',
-    status: 'available',
-    condition: 78,
-    location: 'Lab B - Drawer 2',
-    lastServiced: '2026-03-01',
-    specifications: ['RJ45 & RJ11', 'Built-in wire stripper', 'Ratchet mechanism'],
-  },
-  {
-    id: '5',
-    name: 'Soldering Station',
-    category: 'Electronics',
-    description: 'Hakko FX-888D temperature-controlled soldering station with digital display.',
-    status: 'maintenance',
-    condition: 45,
-    location: 'Lab C - Station 5',
-    lastServiced: '2025-12-15',
-    safetyNotes: 'Allow 5 minutes for heating element replacement. Use fume extractor.',
-    specifications: ['Temperature Range: 120-480°C', 'Power: 70W', 'Digital Display'],
-  },
-  {
-    id: '6',
-    name: 'USB Protocol Analyzer',
-    category: 'Diagnostics',
-    description: 'Beagle USB 12 Protocol Analyzer for USB 2.0 traffic capture and analysis.',
-    status: 'available',
-    condition: 100,
-    location: 'Lab A - Cabinet 1',
-    lastServiced: '2026-03-28',
-    specifications: ['USB 2.0 Full/Low Speed', 'Real-time capture', 'Cross-platform software'],
-  },
-  {
-    id: '7',
-    name: 'Fiber Optic Splicing Kit',
-    category: 'Networking',
-    description:
-      'Complete fiber optic fusion splicing kit with cleaver, stripper, and splice sleeves.',
-    status: 'retired',
-    condition: 20,
-    location: 'Storage Room B',
-    lastServiced: '2025-06-01',
-    safetyNotes: 'Retired - pending replacement order.',
-  },
-  {
-    id: '8',
-    name: 'Thermal Imaging Camera',
-    category: 'Diagnostics',
-    description:
-      'FLIR ONE Pro thermal camera for identifying overheating components and connections.',
-    status: 'available',
-    condition: 97,
-    location: 'Lab A - Cabinet 2',
-    lastServiced: '2026-03-20',
-    specifications: ['Resolution: 160x120', 'Range: -20°C to 400°C', 'Smartphone mount'],
-  },
-];
-
-const categories = ['All', ...Array.from(new Set(mockTools.map((t) => t.category)))];
 
 const statusConfig: Record<
   ToolStatus,
@@ -163,14 +50,26 @@ const statusConfig: Record<
   },
 };
 
+const toolStatuses: ToolStatus[] = ['available', 'in-use', 'maintenance', 'retired'];
+
 export default function ToolsPage() {
+  const searchParams = useSearchParams();
+  const resourcePack = getResourcePack(searchParams.get('pack'));
+  const tools = resourcePack.tools;
+  const categories = ['All', ...Array.from(new Set(tools.map((t) => t.category)))];
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('All');
   const [statusFilter, setStatusFilter] = useState<ToolStatus | 'all'>('all');
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [selectedTool, setSelectedTool] = useState<Tool | null>(null);
 
-  const filteredTools = mockTools.filter((tool) => {
+  useEffect(() => {
+    setCategory('All');
+    setStatusFilter('all');
+    setSelectedTool(null);
+  }, [resourcePack.id]);
+
+  const filteredTools = tools.filter((tool) => {
     const matchesSearch =
       tool.name.toLowerCase().includes(search.toLowerCase()) ||
       tool.description.toLowerCase().includes(search.toLowerCase());
@@ -180,22 +79,22 @@ export default function ToolsPage() {
   });
 
   const stats = {
-    total: mockTools.length,
-    available: mockTools.filter((t) => t.status === 'available').length,
-    inUse: mockTools.filter((t) => t.status === 'in-use').length,
-    maintenance: mockTools.filter((t) => t.status === 'maintenance').length,
+    total: tools.length,
+    available: tools.filter((t) => t.status === 'available').length,
+    inUse: tools.filter((t) => t.status === 'in-use').length,
+    maintenance: tools.filter((t) => t.status === 'maintenance').length,
   };
 
   return (
     <div className="space-y-6 page-transition">
       <PageHeader
-        title="Tools & Equipment"
-        description="Browse, reserve, and manage lab tools and equipment"
+        title={resourcePack.pages.tools.title}
+        description={resourcePack.pages.tools.description}
         icon={Wrench}
         actions={
           <Button>
             <Plus className="mr-2 h-4 w-4" />
-            Add Tool
+            {resourcePack.pages.tools.action}
           </Button>
         }
       />
@@ -249,7 +148,9 @@ export default function ToolsPage() {
           >
             All Status
           </button>
-          {(Object.keys(statusConfig) as ToolStatus[]).map((status) => {
+          {toolStatuses.map((status) => {
+            // Enum-indexed config lookup is constrained by the local status list above.
+            // eslint-disable-next-line security/detect-object-injection
             const config = statusConfig[status];
             return (
               <button
@@ -272,7 +173,7 @@ export default function ToolsPage() {
         {filteredTools.length === 0 ? (
           <EmptyState
             icon={Wrench}
-            title="No tools found"
+            title={resourcePack.pages.tools.emptyTitle}
             description="Try adjusting your search or filters"
           />
         ) : viewMode === 'grid' ? (

@@ -31,7 +31,8 @@ function deleteCookie(name: string, path: string) {
 
 export default function OAuthCompletePage() {
   const router = useRouter();
-  const authStore = useAuthStore();
+  const setAuthTokens = useAuthStore((store) => store.setTokens);
+  const setAuthUser = useAuthStore((store) => store.setUser);
   const processed = useRef(false);
 
   useEffect(() => {
@@ -59,14 +60,14 @@ export default function OAuthCompletePage() {
       localStorage.setItem(USER_DATA_KEY, JSON.stringify(data.user));
 
       // Sync Zustand store
-      authStore.setTokens(data.accessToken, data.refreshToken);
-      authStore.setUser(data.user);
+      setAuthTokens(data.accessToken, data.refreshToken);
+      setAuthUser(data.user);
 
       router.replace('/dashboard');
     } catch {
       router.replace('/auth/login?error=Failed+to+complete+sign-in');
     }
-  }, [router, authStore]);
+  }, [router, setAuthTokens, setAuthUser]);
 
   return (
     <div className="flex min-h-[50vh] items-center justify-center">

@@ -17,7 +17,9 @@ const USER_DATA_KEY = 'user_data';
 
 export function useAuth() {
   const router = useRouter();
-  const authStore = useAuthStore();
+  const setAuthUser = useAuthStore((store) => store.setUser);
+  const setAuthTokens = useAuthStore((store) => store.setTokens);
+  const clearAuthStore = useAuthStore((store) => store.clearAuth);
   const [state, setState] = useState<AuthState>({
     user: null,
     isLoading: true,
@@ -27,18 +29,18 @@ export function useAuth() {
   const syncAuthenticatedUser = useCallback(
     (response: BackendMeResponse) => {
       localStorage.setItem(USER_DATA_KEY, JSON.stringify(response.user));
-      authStore.setUser(response.user);
+      setAuthUser(response.user);
       setState({ user: response.user, isLoading: false, isAuthenticated: true });
     },
-    [authStore]
+    [setAuthUser]
   );
 
   const clearTokens = useCallback(() => {
     localStorage.removeItem(AUTH_TOKEN_KEY);
     localStorage.removeItem(REFRESH_TOKEN_KEY);
     localStorage.removeItem(USER_DATA_KEY);
-    authStore.clearAuth();
-  }, [authStore]);
+    clearAuthStore();
+  }, [clearAuthStore]);
 
   const tryRefresh = useCallback(async () => {
     const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
@@ -47,7 +49,7 @@ export function useAuth() {
         const response = await authApi.refreshToken(refreshToken);
         localStorage.setItem(AUTH_TOKEN_KEY, response.accessToken);
         localStorage.setItem(REFRESH_TOKEN_KEY, response.refreshToken);
-        authStore.setTokens(response.accessToken, response.refreshToken);
+        setAuthTokens(response.accessToken, response.refreshToken);
 
         const meResponse = await authApi.me();
         syncAuthenticatedUser(meResponse);
@@ -59,7 +61,7 @@ export function useAuth() {
 
     clearTokens();
     setState({ user: null, isLoading: false, isAuthenticated: false });
-  }, [authStore, clearTokens, syncAuthenticatedUser]);
+  }, [clearTokens, setAuthTokens, syncAuthenticatedUser]);
 
   useEffect(() => {
     let cancelled = false;
@@ -101,10 +103,10 @@ export function useAuth() {
       localStorage.setItem(AUTH_TOKEN_KEY, response.accessToken);
       localStorage.setItem(REFRESH_TOKEN_KEY, response.refreshToken);
       localStorage.setItem(USER_DATA_KEY, JSON.stringify(response.user));
-      authStore.setTokens(response.accessToken, response.refreshToken);
-      authStore.setUser(response.user);
+      setAuthTokens(response.accessToken, response.refreshToken);
+      setAuthUser(response.user);
     },
-    [authStore]
+    [setAuthTokens, setAuthUser]
   );
 
   const login = useCallback(

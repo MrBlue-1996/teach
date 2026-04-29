@@ -11,6 +11,7 @@ import type { BackendAuthResponse } from '@/lib/api';
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/v1';
 
 function getOptionalString(record: Record<string, unknown>, key: string): string | undefined {
+  // eslint-disable-next-line security/detect-object-injection
   const value = record[key];
   return typeof value === 'string' && value.length > 0 ? value : undefined;
 }
@@ -61,6 +62,7 @@ function isBackendAuthResponse(value: unknown): value is BackendAuthResponse {
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
+  console.info('[auth/callback] GET called, code present:', !!code);
   const next = searchParams.get('next');
   const redirectPath = next?.startsWith('/') ? next : '/auth/oauth-complete';
   const errorDescription =
@@ -93,7 +95,9 @@ export async function GET(request: NextRequest) {
   );
 
   // Exchange PKCE code for Supabase session
+  console.info('[auth/callback] calling exchangeCodeForSession...');
   const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+  console.info('[auth/callback] exchangeCodeForSession done:', error?.message ?? 'ok');
 
   if (error || !data.user) {
     const loginUrl = new URL('/auth/login', origin);
@@ -114,26 +118,38 @@ export async function GET(request: NextRequest) {
   const { firstName, lastName } = extractNameParts(supaUser.user_metadata);
 
   // Bridge: call our custom backend to get JWT tokens
+  console.info('[auth/callback] calling api-server /auth/oauth...');
   try {
-    const backendRes = await fetch(`${API_BASE_URL}/auth/oauth`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        provider: 'google',
-        providerAccountId: supaUser.id,
-        email,
-        ...(firstName ? { firstName } : {}),
-        ...(lastName ? { lastName } : {}),
-      }),
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15_000);
+
+    let backendRes: Response;
+    try {
+      backendRes = await fetch(`${API_BASE_URL}/auth/oauth`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          provider: 'google',
+          providerAccountId: supaUser.id,
+          email,
+          ...(firstName ? { firstName } : {}),
+          ...(lastName ? { lastName } : {}),
+        }),
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timeoutId);
+    }
 
     if (!backendRes.ok) {
       const body = await backendRes.text();
-      throw new Error(body || `Backend returned ${backendRes.status}`);
+      console.error('[auth/callback] backend error:', backendRes.status, body);
+      throw new Error(`Sign-in failed (${backendRes.status}): ${body || 'no details'}`);
     }
 
     const tokensJson: unknown = await backendRes.json();
     if (!isBackendAuthResponse(tokensJson)) {
+      console.error('[auth/callback] unexpected backend payload:', JSON.stringify(tokensJson));
       throw new Error('Backend returned an unexpected auth payload');
     }
 
@@ -142,7 +158,7 @@ export async function GET(request: NextRequest) {
     // Set tokens in short-lived cookies for the client page to read
     const successResponse = NextResponse.redirect(new URL(redirectPath, origin));
     const cookieOpts = {
-      path: '/auth/oauth-complete',
+      path: '/',
       maxAge: 60, // 60 seconds — client reads and deletes immediately
       httpOnly: false, // Client JS needs to read these
       secure: process.env.NODE_ENV === 'production',
@@ -153,11 +169,10 @@ export async function GET(request: NextRequest) {
 
     return successResponse;
   } catch (err) {
+    const message = err instanceof Error ? err.message : 'Failed to complete sign-in';
+    console.error('[auth/callback] caught error:', message);
     const loginUrl = new URL('/auth/login', origin);
-    loginUrl.searchParams.set(
-      'error',
-      err instanceof Error ? err.message : 'Failed to complete sign-in'
-    );
+    loginUrl.searchParams.set('error', message);
     return NextResponse.redirect(loginUrl);
   }
 }

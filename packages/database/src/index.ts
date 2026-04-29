@@ -53,9 +53,12 @@ export async function connectDatabase(
 
   const client = postgres(connectionString, {
     max: dbConfig.poolMax,
-    idle_timeout: 20,
+    idle_timeout: 0, // 0 = disabled — keep connections alive; new connections hang on Supabase direct host
     connect_timeout: dbConfig.connectionTimeoutMs / 1000,
     prepare: false,
+    connection: {
+      statement_timeout: 30000, // 30s — prevents indefinite query hangs
+    },
   });
 
   const db = drizzle(client, { schema });
@@ -65,13 +68,14 @@ export async function connectDatabase(
     await client`SELECT 1`;
   } catch (error) {
     await client.end();
-    throw new Error(`Failed to connect to database: ${error}`);
+    const message = error instanceof Error ? error.message : 'Unknown database error';
+    throw new Error(`Failed to connect to database: ${message}`);
   }
 
   connection = {
     db,
     client,
-    close: async () => {
+    close: async (): Promise<void> => {
       await client.end();
       connection = null;
     },

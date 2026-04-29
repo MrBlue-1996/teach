@@ -2,10 +2,17 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/use-auth';
+import {
+  getResourcePack,
+  getResourcePackId,
+  resourcePackOptions,
+  withResourcePack,
+  type ResourcePackId,
+} from '@/lib/pack-resources';
 import {
   Zap,
   LayoutDashboard,
@@ -41,7 +48,7 @@ interface NavItem {
   badge?: string;
 }
 
-const navSections: NavSection[] = [
+const staticNavSections: NavSection[] = [
   {
     title: 'Overview',
     items: [
@@ -58,14 +65,6 @@ const navSections: NavSection[] = [
     ],
   },
   {
-    title: 'Resources',
-    items: [
-      { name: 'Tools & Equipment', href: '/tools', icon: Wrench },
-      { name: 'Machines', href: '/machines', icon: Cog },
-      { name: 'Ingredients', href: '/ingredients', icon: FlaskConical },
-    ],
-  },
-  {
     title: 'Manage',
     items: [
       { name: 'Instructor Panel', href: '/instructor', icon: Users },
@@ -76,11 +75,47 @@ const navSections: NavSection[] = [
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const router = useRouter();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const { user: authUser, logout, isAuthenticated, isLoading } = useAuth();
+  const selectedPackId = getResourcePackId(searchParams.get('pack'));
+  const selectedPack = getResourcePack(searchParams.get('pack'));
+
+  const setSelectedPack = (packId: ResourcePackId) => {
+    const nextParams = new URLSearchParams(searchParams.toString());
+    nextParams.set('pack', packId);
+    router.replace(`${pathname}?${nextParams.toString()}`);
+  };
+
+  const resourceSection: NavSection = {
+    title: selectedPack.sidebarTitle,
+    items: [
+      {
+        name: selectedPack.nav.tools,
+        href: withResourcePack('/tools', selectedPackId),
+        icon: Wrench,
+      },
+      {
+        name: selectedPack.nav.machines,
+        href: withResourcePack('/machines', selectedPackId),
+        icon: Cog,
+      },
+      {
+        name: selectedPack.nav.ingredients,
+        href: withResourcePack('/ingredients', selectedPackId),
+        icon: FlaskConical,
+      },
+    ],
+  };
+
+  const navSections = [
+    ...staticNavSections.slice(0, 2),
+    resourceSection,
+    ...staticNavSections.slice(2),
+  ];
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -223,6 +258,36 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <div className="flex h-full flex-col">
             {/* Nav Sections */}
             <nav className="flex-1 overflow-y-auto p-3">
+              {!sidebarCollapsed && (
+                <div className="mb-4 rounded-md border bg-muted/30 p-2">
+                  <p className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    Active Pack
+                  </p>
+                  <div className="grid gap-1">
+                    {resourcePackOptions.map((pack) => {
+                      const PackIcon = pack.icon;
+                      const isSelected = pack.id === selectedPackId;
+                      return (
+                        <button
+                          key={pack.id}
+                          type="button"
+                          onClick={() => setSelectedPack(pack.id)}
+                          className={cn(
+                            'flex items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm transition-colors',
+                            isSelected
+                              ? 'bg-background text-foreground shadow-sm'
+                              : 'text-muted-foreground hover:bg-background/70 hover:text-foreground'
+                          )}
+                        >
+                          <PackIcon className="h-4 w-4" />
+                          <span>{pack.title}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               {navSections.map((section) => (
                 <div key={section.title} className="mb-4">
                   {!sidebarCollapsed && (

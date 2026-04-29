@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -20,179 +21,11 @@ import {
   Timer,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-type StockLevel = 'full' | 'adequate' | 'low' | 'critical' | 'out';
-
-interface Ingredient {
-  id: string;
-  name: string;
-  category: string;
-  description: string;
-  unit: string;
-  currentStock: number;
-  minStock: number;
-  maxStock: number;
-  stockLevel: StockLevel;
-  costPerUnit: number;
-  supplier: string;
-  lastOrdered: string;
-  expiryDate?: string;
-  location: string;
-  usedInCourses: string[];
-  hazardous: boolean;
-  msdsAvailable: boolean;
-}
-
-const mockIngredients: Ingredient[] = [
-  {
-    id: '1',
-    name: 'Solder Wire (60/40)',
-    category: 'Consumables',
-    description: 'Standard tin-lead solder wire, 0.8mm diameter, flux core.',
-    unit: 'meters',
-    currentStock: 450,
-    minStock: 100,
-    maxStock: 1000,
-    stockLevel: 'adequate',
-    costPerUnit: 0.12,
-    supplier: 'Kester Electronics',
-    lastOrdered: '2026-03-01',
-    location: 'Storage A - Shelf 2',
-    usedInCourses: ['Electronics Fundamentals', 'PCB Assembly'],
-    hazardous: true,
-    msdsAvailable: true,
-  },
-  {
-    id: '2',
-    name: 'Cat6 Ethernet Cable',
-    category: 'Cabling',
-    description: 'Bulk Cat6 UTP cable, 23AWG solid copper, blue jacket.',
-    unit: 'feet',
-    currentStock: 2500,
-    minStock: 500,
-    maxStock: 5000,
-    stockLevel: 'full',
-    costPerUnit: 0.35,
-    supplier: 'Monoprice',
-    lastOrdered: '2026-02-15',
-    location: 'Storage B - Reel Rack',
-    usedInCourses: ['Network+ Certification', 'Structured Cabling'],
-    hazardous: false,
-    msdsAvailable: false,
-  },
-  {
-    id: '3',
-    name: 'RJ45 Connectors',
-    category: 'Connectors',
-    description: 'Pass-through RJ45 connectors for Cat5e/Cat6, gold-plated contacts.',
-    unit: 'pieces',
-    currentStock: 75,
-    minStock: 100,
-    maxStock: 500,
-    stockLevel: 'low',
-    costPerUnit: 0.45,
-    supplier: 'Monoprice',
-    lastOrdered: '2026-01-20',
-    location: 'Storage B - Drawer 3',
-    usedInCourses: ['Network+ Certification'],
-    hazardous: false,
-    msdsAvailable: false,
-  },
-  {
-    id: '4',
-    name: 'Isopropyl Alcohol (99%)',
-    category: 'Chemicals',
-    description: 'High-purity IPA for cleaning electronic components and PCBs.',
-    unit: 'liters',
-    currentStock: 2,
-    minStock: 5,
-    maxStock: 20,
-    stockLevel: 'critical',
-    costPerUnit: 8.5,
-    supplier: 'MG Chemicals',
-    lastOrdered: '2025-12-10',
-    location: 'Chemical Cabinet A',
-    usedInCourses: ['Electronics Fundamentals', 'PCB Assembly', 'Repair Technician'],
-    hazardous: true,
-    msdsAvailable: true,
-  },
-  {
-    id: '5',
-    name: 'PLA Filament (1.75mm)',
-    category: 'Printing',
-    description: 'PLA 3D printing filament, 1.75mm, 1kg spool, multiple colors.',
-    unit: 'kg',
-    currentStock: 12,
-    minStock: 5,
-    maxStock: 30,
-    stockLevel: 'adequate',
-    costPerUnit: 22.0,
-    supplier: 'Prusament',
-    lastOrdered: '2026-03-15',
-    expiryDate: '2027-03-15',
-    location: 'Prototyping Lab - Dry Storage',
-    usedInCourses: ['3D Printing Basics', 'Rapid Prototyping'],
-    hazardous: false,
-    msdsAvailable: false,
-  },
-  {
-    id: '6',
-    name: 'Thermal Paste',
-    category: 'Consumables',
-    description: 'Arctic MX-6 thermal compound for CPU/GPU heat sink application.',
-    unit: 'grams',
-    currentStock: 0,
-    minStock: 50,
-    maxStock: 200,
-    stockLevel: 'out',
-    costPerUnit: 0.3,
-    supplier: 'Arctic',
-    lastOrdered: '2025-11-01',
-    location: 'Storage A - Shelf 4',
-    usedInCourses: ['PC Hardware', 'Computer Repair'],
-    hazardous: false,
-    msdsAvailable: false,
-  },
-  {
-    id: '7',
-    name: 'Fiber Optic Patch Cables',
-    category: 'Cabling',
-    description: 'LC-LC duplex single-mode fiber optic patch cables, various lengths.',
-    unit: 'pieces',
-    currentStock: 30,
-    minStock: 10,
-    maxStock: 50,
-    stockLevel: 'adequate',
-    costPerUnit: 12.0,
-    supplier: 'FS.com',
-    lastOrdered: '2026-03-20',
-    location: 'Storage B - Drawer 5',
-    usedInCourses: ['Network+ Certification', 'Fiber Optics'],
-    hazardous: false,
-    msdsAvailable: false,
-  },
-  {
-    id: '8',
-    name: 'Lead-Free Solder Paste',
-    category: 'Consumables',
-    description: 'SAC305 solder paste for SMD reflow soldering, Type 4.',
-    unit: 'grams',
-    currentStock: 180,
-    minStock: 200,
-    maxStock: 500,
-    stockLevel: 'low',
-    costPerUnit: 0.25,
-    supplier: 'Chip Quik',
-    lastOrdered: '2026-02-28',
-    expiryDate: '2026-08-28',
-    location: 'Refrigerator A',
-    usedInCourses: ['SMD Soldering', 'PCB Assembly'],
-    hazardous: true,
-    msdsAvailable: true,
-  },
-];
-
-const categories = ['All', ...Array.from(new Set(mockIngredients.map((i) => i.category)))];
+import {
+  getResourcePack,
+  type IngredientResource as Ingredient,
+  type StockLevel,
+} from '@/lib/pack-resources';
 
 const stockConfig: Record<StockLevel, { label: string; className: string; bgClass: string }> = {
   full: {
@@ -223,11 +56,19 @@ const stockConfig: Record<StockLevel, { label: string; className: string; bgClas
 };
 
 export default function IngredientsPage() {
+  const searchParams = useSearchParams();
+  const resourcePack = getResourcePack(searchParams.get('pack'));
+  const ingredients = resourcePack.ingredients;
+  const categories = ['All', ...Array.from(new Set(ingredients.map((i) => i.category)))];
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('All');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
-  const filteredIngredients = mockIngredients.filter((item) => {
+  useEffect(() => {
+    setCategory('All');
+  }, [resourcePack.id]);
+
+  const filteredIngredients = ingredients.filter((item) => {
     const matchesSearch =
       item.name.toLowerCase().includes(search.toLowerCase()) ||
       item.description.toLowerCase().includes(search.toLowerCase());
@@ -236,22 +77,22 @@ export default function IngredientsPage() {
   });
 
   const stats = {
-    total: mockIngredients.length,
-    lowStock: mockIngredients.filter((i) => i.stockLevel === 'low' || i.stockLevel === 'critical')
+    total: ingredients.length,
+    lowStock: ingredients.filter((i) => i.stockLevel === 'low' || i.stockLevel === 'critical')
       .length,
-    outOfStock: mockIngredients.filter((i) => i.stockLevel === 'out').length,
-    totalValue: mockIngredients.reduce((sum, i) => sum + i.currentStock * i.costPerUnit, 0),
+    outOfStock: ingredients.filter((i) => i.stockLevel === 'out').length,
+    totalValue: ingredients.reduce((sum, i) => sum + i.currentStock * i.costPerUnit, 0),
   };
 
-  const alertItems = mockIngredients.filter(
+  const alertItems = ingredients.filter(
     (i) => i.stockLevel === 'low' || i.stockLevel === 'critical' || i.stockLevel === 'out'
   );
 
   return (
     <div className="space-y-6 page-transition">
       <PageHeader
-        title="Ingredients & Materials"
-        description="Track inventory, manage supplies, and monitor stock levels"
+        title={resourcePack.pages.ingredients.title}
+        description={resourcePack.pages.ingredients.description}
         icon={FlaskConical}
         actions={
           <div className="flex gap-2">
@@ -261,7 +102,7 @@ export default function IngredientsPage() {
             </Button>
             <Button>
               <Plus className="mr-2 h-4 w-4" />
-              Add Item
+              {resourcePack.pages.ingredients.action}
             </Button>
           </div>
         }
@@ -351,7 +192,7 @@ export default function IngredientsPage() {
         {filteredIngredients.length === 0 ? (
           <EmptyState
             icon={FlaskConical}
-            title="No items found"
+            title={resourcePack.pages.ingredients.emptyTitle}
             description="Try adjusting your search or filters"
           />
         ) : viewMode === 'grid' ? (

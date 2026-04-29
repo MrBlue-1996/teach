@@ -80,7 +80,9 @@ export function createApp(): Hono {
   }
 
   // Rate limiting
-  app.use('*', rateLimiter(config.api.rateLimitMax, config.api.rateLimitWindowMs));
+  if (config.environment !== 'development') {
+    app.use('*', rateLimiter(config.api.rateLimitMax, config.api.rateLimitWindowMs));
+  }
 
   // Global error handler
   app.onError(errorHandler);

@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -21,118 +22,11 @@ import {
   Eye,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-type MachineStatus = 'running' | 'idle' | 'maintenance' | 'offline';
-
-interface Machine {
-  id: string;
-  name: string;
-  type: string;
-  model: string;
-  status: MachineStatus;
-  location: string;
-  health: number;
-  uptime: string;
-  lastMaintenance: string;
-  nextMaintenance: string;
-  metrics: {
-    temperature?: number;
-    power?: number;
-    speed?: number;
-    load?: number;
-  };
-  description: string;
-  operator?: string;
-}
-
-const mockMachines: Machine[] = [
-  {
-    id: '1',
-    name: 'CNC Mill Alpha',
-    type: 'CNC Machine',
-    model: 'Haas VF-2SS',
-    status: 'running',
-    location: 'Shop Floor - Bay 1',
-    health: 94,
-    uptime: '1,247 hrs',
-    lastMaintenance: '2026-03-01',
-    nextMaintenance: '2026-04-15',
-    metrics: { temperature: 42, power: 78, speed: 12000, load: 65 },
-    description: 'High-speed vertical machining center for precision parts production.',
-    operator: 'Team A - Shift 1',
-  },
-  {
-    id: '2',
-    name: 'Laser Cutter Pro',
-    type: 'Laser Cutter',
-    model: 'Trotec Speedy 400',
-    status: 'idle',
-    location: 'Shop Floor - Bay 3',
-    health: 88,
-    uptime: '856 hrs',
-    lastMaintenance: '2026-02-15',
-    nextMaintenance: '2026-04-20',
-    metrics: { temperature: 28, power: 5, load: 0 },
-    description: '100W CO2 laser cutter for cutting and engraving various materials.',
-  },
-  {
-    id: '3',
-    name: '3D Printer Farm - Rack A',
-    type: '3D Printer',
-    model: 'Prusa MK4 (x8)',
-    status: 'running',
-    location: 'Prototyping Lab',
-    health: 91,
-    uptime: '2,103 hrs',
-    lastMaintenance: '2026-03-10',
-    nextMaintenance: '2026-05-01',
-    metrics: { temperature: 65, power: 45, load: 87 },
-    description: 'Bank of 8 Prusa MK4 printers for rapid prototyping and production runs.',
-    operator: 'Auto-Queue System',
-  },
-  {
-    id: '4',
-    name: 'Hydraulic Press',
-    type: 'Press',
-    model: 'Dake 75H',
-    status: 'maintenance',
-    location: 'Shop Floor - Bay 5',
-    health: 52,
-    uptime: '3,891 hrs',
-    lastMaintenance: '2026-03-28',
-    nextMaintenance: '2026-04-05',
-    metrics: { temperature: 22, power: 0, load: 0 },
-    description: '75-ton hydraulic press. Currently undergoing seal replacement.',
-  },
-  {
-    id: '5',
-    name: 'Welding Station B',
-    type: 'Welder',
-    model: 'Miller Dynasty 400',
-    status: 'offline',
-    location: 'Welding Shop - Station B',
-    health: 15,
-    uptime: '4,567 hrs',
-    lastMaintenance: '2025-11-20',
-    nextMaintenance: 'Overdue',
-    metrics: {},
-    description: 'AC/DC TIG welder. Offline pending major service overhaul.',
-  },
-  {
-    id: '6',
-    name: 'Surface Grinder',
-    type: 'Grinder',
-    model: 'Okamoto ACC-1224DX',
-    status: 'idle',
-    location: 'Shop Floor - Bay 2',
-    health: 96,
-    uptime: '672 hrs',
-    lastMaintenance: '2026-03-20',
-    nextMaintenance: '2026-06-01',
-    metrics: { temperature: 25, power: 3 },
-    description: 'Precision surface grinder for flat surface finishing operations.',
-  },
-];
+import {
+  getResourcePack,
+  type MachineResource as Machine,
+  type MachineStatus,
+} from '@/lib/pack-resources';
 
 const statusConfig: Record<
   MachineStatus,
@@ -164,13 +58,23 @@ const statusConfig: Record<
   },
 };
 
+const machineStatuses: MachineStatus[] = ['running', 'idle', 'maintenance', 'offline'];
+
 export default function MachinesPage() {
+  const searchParams = useSearchParams();
+  const resourcePack = getResourcePack(searchParams.get('pack'));
+  const machines = resourcePack.machines;
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<MachineStatus | 'all'>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [selectedMachine, setSelectedMachine] = useState<Machine | null>(null);
 
-  const filteredMachines = mockMachines.filter((m) => {
+  useEffect(() => {
+    setStatusFilter('all');
+    setSelectedMachine(null);
+  }, [resourcePack.id]);
+
+  const filteredMachines = machines.filter((m) => {
     const matchesSearch =
       m.name.toLowerCase().includes(search.toLowerCase()) ||
       m.type.toLowerCase().includes(search.toLowerCase()) ||
@@ -180,23 +84,23 @@ export default function MachinesPage() {
   });
 
   const stats = {
-    total: mockMachines.length,
-    running: mockMachines.filter((m) => m.status === 'running').length,
-    idle: mockMachines.filter((m) => m.status === 'idle').length,
-    needsAttention: mockMachines.filter((m) => m.status === 'maintenance' || m.status === 'offline')
+    total: machines.length,
+    running: machines.filter((m) => m.status === 'running').length,
+    idle: machines.filter((m) => m.status === 'idle').length,
+    needsAttention: machines.filter((m) => m.status === 'maintenance' || m.status === 'offline')
       .length,
   };
 
   return (
     <div className="space-y-6 page-transition">
       <PageHeader
-        title="Machines"
-        description="Monitor and manage workshop machines and production equipment"
+        title={resourcePack.pages.machines.title}
+        description={resourcePack.pages.machines.description}
         icon={Cog}
         actions={
           <Button>
             <Plus className="mr-2 h-4 w-4" />
-            Register Machine
+            {resourcePack.pages.machines.action}
           </Button>
         }
       />
@@ -240,26 +144,31 @@ export default function MachinesPage() {
             >
               All
             </button>
-            {(Object.keys(statusConfig) as MachineStatus[]).map((s) => (
-              <button
-                key={s}
-                onClick={() => setStatusFilter(s)}
-                className={cn(
-                  'flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition-colors',
-                  statusFilter === s ? statusConfig[s].className : 'bg-muted text-muted-foreground'
-                )}
-              >
-                <span className={cn('h-1.5 w-1.5 rounded-full', statusConfig[s].dotClass)} />
-                {statusConfig[s].label}
-              </button>
-            ))}
+            {machineStatuses.map((s) => {
+              // Enum-indexed config lookup is constrained by the local status list above.
+              // eslint-disable-next-line security/detect-object-injection
+              const config = statusConfig[s];
+              return (
+                <button
+                  key={s}
+                  onClick={() => setStatusFilter(s)}
+                  className={cn(
+                    'flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition-colors',
+                    statusFilter === s ? config.className : 'bg-muted text-muted-foreground'
+                  )}
+                >
+                  <span className={cn('h-1.5 w-1.5 rounded-full', config.dotClass)} />
+                  {config.label}
+                </button>
+              );
+            })}
           </div>
         }
       >
         {filteredMachines.length === 0 ? (
           <EmptyState
             icon={Cog}
-            title="No machines found"
+            title={resourcePack.pages.machines.emptyTitle}
             description="Try adjusting your filters"
           />
         ) : viewMode === 'grid' ? (

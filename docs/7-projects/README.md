@@ -30,10 +30,19 @@ projects/
 
 Brief description of what you'll build
 
-## Learning Objectives
+## Skills Practiced
 
-- Skill 1
-- Skill 2
+- DOM events and state updates
+- Form validation and user feedback
+- Local storage or API-backed persistence
+- Responsive, accessible UI behavior
+
+## Skills Needed
+
+- Basic HTML structure and semantic elements
+- CSS selectors, layout, and responsive styling
+- JavaScript functions, arrays, objects, and conditionals
+- Browser DevTools basics for debugging
 
 ## Requirements
 
