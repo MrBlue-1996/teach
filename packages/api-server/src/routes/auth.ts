@@ -99,6 +99,20 @@ const OAuthSchema = z.object({
   lastName: z.string().max(100).optional(),
 });
 
+const OnboardingSchema = z.object({
+  displayName: z.string().min(1).max(150),
+  contentPackId: z.enum(['linux', 'uncle-julios']),
+  trainingRole: z.enum(['learner', 'staff', 'manager', 'instructor']),
+});
+
+function toMetadataRecord(value: unknown): Record<string, unknown> {
+  if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+    return value as Record<string, unknown>;
+  }
+
+  return {};
+}
+
 // =============================================================================
 // ROUTES
 // =============================================================================
@@ -695,7 +709,9 @@ export function createAuthRoutes(): Hono {
         lastName: true,
         displayName: true,
         role: true,
+        organizationId: true,
         emailVerified: true,
+        metadata: true,
         lastLoginAt: true,
         createdAt: true,
       },
@@ -749,8 +765,65 @@ export function createAuthRoutes(): Hono {
         lastName: users.lastName,
         displayName: users.displayName,
         role: users.role,
+        organizationId: users.organizationId,
         emailVerified: users.emailVerified,
+        metadata: users.metadata,
       });
+
+    return c.json({ user: updated });
+  });
+
+  // ---------------------------------------------------------------------------
+  // PATCH /auth/onboarding - Save first-run onboarding choices
+  // ---------------------------------------------------------------------------
+  router.patch('/onboarding', authMiddleware(), zValidator('json', OnboardingSchema), async (c) => {
+    const userId = c.get('userId');
+    const payload = c.req.valid('json');
+    const db = getDatabase();
+
+    const existing = await db.query.users.findFirst({
+      where: and(eq(users.id, userId), isNull(users.deletedAt), eq(users.isActive, true)),
+      columns: { id: true, metadata: true },
+    });
+
+    if (!existing) {
+      throw unauthorized('User not found');
+    }
+
+    const existingMetadata = toMetadataRecord(existing.metadata);
+    const metadata = {
+      ...existingMetadata,
+      onboarding: {
+        displayName: payload.displayName,
+        contentPackId: payload.contentPackId,
+        trainingRole: payload.trainingRole,
+        completedAt: new Date().toISOString(),
+      },
+    };
+
+    const [updated] = await db
+      .update(users)
+      .set({
+        displayName: payload.displayName,
+        metadata,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId))
+      .returning({
+        id: users.id,
+        email: users.email,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        displayName: users.displayName,
+        role: users.role,
+        organizationId: users.organizationId,
+        emailVerified: users.emailVerified,
+        metadata: users.metadata,
+      });
+
+    if (!updated) {
+      throw serverError('Failed to save onboarding');
+    }
 
     return c.json({ user: updated });
   });

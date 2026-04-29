@@ -5,6 +5,21 @@
 
 import { api } from './client';
 
+export type OnboardingContentPackId = 'linux' | 'uncle-julios';
+export type OnboardingTrainingRole = 'learner' | 'staff' | 'manager' | 'instructor';
+
+export interface UserOnboardingMetadata {
+  displayName: string;
+  contentPackId: OnboardingContentPackId;
+  trainingRole: OnboardingTrainingRole;
+  completedAt: string;
+}
+
+export interface UserMetadata {
+  onboarding?: UserOnboardingMetadata;
+  [key: string]: unknown;
+}
+
 export interface User {
   id: string;
   email: string;
@@ -14,6 +29,7 @@ export interface User {
   organizationId?: string;
   displayName?: string;
   emailVerified?: boolean;
+  metadata?: UserMetadata;
   createdAt?: string;
 }
 
@@ -86,6 +102,12 @@ export const authApi = {
   verifyEmail: (token: string) => api.post<{ message: string }>('/auth/verify-email', { token }),
 
   me: () => api.get<BackendMeResponse>('/auth/me'),
+
+  completeOnboarding: (data: {
+    displayName: string;
+    contentPackId: OnboardingContentPackId;
+    trainingRole: OnboardingTrainingRole;
+  }) => api.patch<BackendMeResponse>('/auth/onboarding', data),
 
   updateProfile: (data: {
     firstName?: string;

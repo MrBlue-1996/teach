@@ -13,6 +13,7 @@ import {
   withResourcePack,
   type ResourcePackId,
 } from '@/lib/pack-resources';
+import { getUserDefaultPackId, hasCompletedOnboarding } from '@/lib/onboarding';
 import {
   Zap,
   LayoutDashboard,
@@ -103,8 +104,11 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const { user: authUser, logout, isAuthenticated, isLoading } = useAuth();
-  const selectedPackId = getResourcePackId(searchParams.get('pack'));
-  const selectedPack = getResourcePack(searchParams.get('pack'));
+  const onboardingComplete = hasCompletedOnboarding(authUser);
+  const defaultPackId = getUserDefaultPackId(authUser);
+  const packParam = searchParams.get('pack');
+  const selectedPackId = getResourcePackId(packParam ?? defaultPackId);
+  const selectedPack = getResourcePack(packParam ?? defaultPackId);
 
   const setSelectedPack = (packId: ResourcePackId) => {
     const nextParams = new URLSearchParams(searchParams.toString());
@@ -138,8 +142,18 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       router.replace('/auth/login');
+      return;
     }
-  }, [isAuthenticated, isLoading, router]);
+
+    if (!isLoading && isAuthenticated && !onboardingComplete && pathname !== '/onboarding') {
+      router.replace('/onboarding');
+      return;
+    }
+
+    if (!isLoading && isAuthenticated && onboardingComplete && pathname === '/onboarding') {
+      router.replace(withResourcePack('/dashboard', defaultPackId));
+    }
+  }, [defaultPackId, isAuthenticated, isLoading, onboardingComplete, pathname, router]);
 
   if (isLoading || !isAuthenticated) {
     return (
@@ -147,6 +161,20 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
         <div className="flex items-center gap-3 text-sm text-muted-foreground">
           <Loader2 className="h-4 w-4 animate-spin" />
           Restoring your learning session...
+        </div>
+      </div>
+    );
+  }
+
+  if (
+    (!onboardingComplete && pathname !== '/onboarding') ||
+    (onboardingComplete && pathname === '/onboarding')
+  ) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="flex items-center gap-3 text-sm text-muted-foreground">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          Preparing your workspace...
         </div>
       </div>
     );
@@ -315,8 +343,8 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                   )}
                   <div className="space-y-0.5">
                     {section.items.map((item) => {
-                      const isActive =
-                        pathname === item.href || pathname.startsWith(item.href + '/');
+                      const itemPath = item.href.split('?')[0] ?? item.href;
+                      const isActive = pathname === itemPath || pathname.startsWith(itemPath + '/');
                       return (
                         <Link
                           key={item.name}

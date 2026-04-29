@@ -28,11 +28,7 @@ vi.mock('@/lib/api', () => ({
 }));
 
 vi.mock('@/stores/auth-store', () => ({
-  useAuthStore: vi.fn(() => ({
-    setUser: vi.fn(),
-    setTokens: vi.fn(),
-    clearAuth: vi.fn(),
-  })),
+  useAuthStore: vi.fn(),
 }));
 
 const mockAuthApi = authApi as unknown as {
@@ -85,7 +81,9 @@ describe('useAuth', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
-    mockUseAuthStore.mockReturnValue(mockAuthStore);
+    mockUseAuthStore.mockImplementation((selector?: (store: typeof mockAuthStore) => unknown) =>
+      selector === undefined ? mockAuthStore : selector(mockAuthStore)
+    );
   });
 
   afterEach(() => {
@@ -244,8 +242,6 @@ describe('useAuth', () => {
       expect(mockAuthApi.signup).toHaveBeenCalledWith({
         email: 'test@example.com',
         password: 'password123',
-        firstName: undefined,
-        lastName: undefined,
       });
     });
 

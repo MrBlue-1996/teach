@@ -64,9 +64,18 @@ vi.mock(
       lastName: 'lastName',
       timezone: 'timezone',
       displayName: 'displayName',
+      role: 'role',
+      organizationId: 'organizationId',
+      emailVerified: 'emailVerified',
+      metadata: 'metadata',
       updatedAt: 'updatedAt',
     },
-    authSessions: { userId: 'userId', token: 'token', revokedAt: 'revokedAt' },
+    authSessions: {
+      userId: 'userId',
+      token: 'token',
+      revokedAt: 'revokedAt',
+      expiresAt: 'expiresAt',
+    },
     passwordResetTokens: { userId: 'userId', tokenHash: 'tokenHash', usedAt: 'usedAt', id: 'id' },
     emailVerificationTokens: {
       userId: 'userId',
@@ -122,6 +131,11 @@ vi.mock(
       tokenType: 'Bearer',
     }),
     generateSessionId: vi.fn().mockReturnValue('mock-session-id'),
+    verifyToken: vi.fn().mockResolvedValue({
+      sub: 'user-1',
+      role: 'learner',
+      sessionId: 'session-1',
+    }),
     verifyRefreshToken: vi.fn().mockResolvedValue({
       userId: 'user-1',
       sessionId: 'session-1',
@@ -512,6 +526,100 @@ describe('Auth Routes', () => {
       });
 
       expect(res.status).toBe(401);
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // PATCH /auth/onboarding
+  // ---------------------------------------------------------------------------
+
+  describe('PATCH /auth/onboarding', () => {
+    it('should save onboarding metadata for the signed-in user', async () => {
+      mockDb.query.authSessions.findFirst.mockResolvedValue({
+        expiresAt: new Date(Date.now() + 60_000),
+      });
+      mockDb.query.users.findFirst.mockResolvedValue({
+        id: 'user-1',
+        metadata: { theme: 'system' },
+      });
+
+      const returning = vi.fn().mockResolvedValue([
+        {
+          id: 'user-1',
+          email: 'user@example.com',
+          firstName: 'Pat',
+          lastName: 'Example',
+          displayName: 'Pat Example',
+          role: 'learner',
+          organizationId: null,
+          emailVerified: true,
+          metadata: {
+            theme: 'system',
+            onboarding: {
+              displayName: 'Pat Example',
+              contentPackId: 'uncle-julios',
+              trainingRole: 'staff',
+              completedAt: '2026-04-29T00:00:00.000Z',
+            },
+          },
+        },
+      ]);
+      const where = vi.fn().mockReturnValue({ returning });
+      const set = vi.fn().mockReturnValue({ where });
+      mockDb.update.mockReturnValueOnce({ set });
+
+      const res = await app.request('/auth/onboarding', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer mock-access-token',
+        },
+        body: JSON.stringify({
+          displayName: 'Pat Example',
+          contentPackId: 'uncle-julios',
+          trainingRole: 'staff',
+        }),
+      });
+
+      expect(res.status).toBe(200);
+      expect(set).toHaveBeenCalledWith(
+        expect.objectContaining({
+          displayName: 'Pat Example',
+          metadata: expect.objectContaining({
+            theme: 'system',
+            onboarding: expect.objectContaining({
+              displayName: 'Pat Example',
+              contentPackId: 'uncle-julios',
+              trainingRole: 'staff',
+            }),
+          }),
+        })
+      );
+
+      const body = await res.json();
+      expect(body.user.role).toBe('learner');
+      expect(body.user.metadata.onboarding.contentPackId).toBe('uncle-julios');
+    });
+
+    it('should reject invalid onboarding roles', async () => {
+      mockDb.query.authSessions.findFirst.mockResolvedValue({
+        expiresAt: new Date(Date.now() + 60_000),
+      });
+
+      const res = await app.request('/auth/onboarding', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer mock-access-token',
+        },
+        body: JSON.stringify({
+          displayName: 'Pat Example',
+          contentPackId: 'linux',
+          trainingRole: 'system_admin',
+        }),
+      });
+
+      expect(res.status).toBe(400);
     });
   });
 

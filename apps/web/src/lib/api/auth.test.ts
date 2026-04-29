@@ -199,4 +199,36 @@ describe('authApi', () => {
       expect(result).toEqual(meResponse);
     });
   });
+
+  describe('completeOnboarding', () => {
+    it('should call PATCH /auth/onboarding with onboarding choices', async () => {
+      const meResponse: BackendMeResponse = {
+        user: {
+          ...mockUser,
+          metadata: {
+            onboarding: {
+              displayName: 'Test User',
+              contentPackId: 'linux',
+              trainingRole: 'staff',
+              completedAt: '2026-04-29T00:00:00.000Z',
+            },
+          },
+        },
+      };
+      mockApi.patch.mockResolvedValueOnce(meResponse);
+
+      const result = await authApi.completeOnboarding({
+        displayName: 'Test User',
+        contentPackId: 'linux',
+        trainingRole: 'staff',
+      });
+
+      expect(mockApi.patch).toHaveBeenCalledWith('/auth/onboarding', {
+        displayName: 'Test User',
+        contentPackId: 'linux',
+        trainingRole: 'staff',
+      });
+      expect(result).toEqual(meResponse);
+    });
+  });
 });
