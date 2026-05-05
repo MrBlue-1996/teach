@@ -192,6 +192,47 @@ describe('Network+ Content Pack (content_pack_networkplus_v1.json)', () => {
 });
 
 // =============================================================================
+// UNCLE JULIO'S CONTENT PACK
+// =============================================================================
+
+describe("Uncle Julio's Content Pack (content_pack_uncle_julios_v1.json)", () => {
+  let pack: LooseContentPack | null;
+
+  try {
+    pack = asLooseContentPack(loadContentPack('content_pack_uncle_julios_v1.json'));
+  } catch {
+    pack = null;
+  }
+
+  it('should be loadable as valid JSON', () => {
+    expect(pack).not.toBeNull();
+    expect(typeof pack).toBe('object');
+  });
+
+  it('should match the full content pack manifest schema', () => {
+    if (pack === null) return;
+    expect(contentPackManifestSchema.safeParse(pack).success).toBe(true);
+  });
+
+  it('should preserve the eight-module golden path as teaching blocks', () => {
+    if (pack === null) return;
+    expect(pack.teachingBlocks).toHaveLength(8);
+    expect(pack.teachingBlocks?.[0]?.id).toBe('tb-uj-orientation-safety');
+    expect(pack.teachingBlocks?.[7]?.id).toBe('tb-uj-assessment-gate');
+  });
+
+  it('should map module prerequisites to teaching block IDs', () => {
+    if (pack === null) return;
+    const blocksById = new Set((pack.teachingBlocks ?? []).map((block) => block.id));
+    for (const block of pack.teachingBlocks ?? []) {
+      for (const prerequisite of block.prerequisites ?? []) {
+        expect(blocksById.has(prerequisite)).toBe(true);
+      }
+    }
+  });
+});
+
+// =============================================================================
 // TEMPLATE CONTENT PACK
 // =============================================================================
 

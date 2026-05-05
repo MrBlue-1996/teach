@@ -16,9 +16,14 @@ import { connectDatabase, type Database } from '../src/index.js';
 import { contentPacks, contentBlocks } from '../src/schema/index.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+const DEFAULT_REGULAR_PACK_FILES = new Set(['content_pack_uncle_julios_v1.json']);
 
 // Load root .env (packages/database/scripts/ → 3 levels up = repo root)
 config({ path: join(__dirname, '../../../.env') });
+
+function includeHiddenContentPacks(): boolean {
+  return process.env['INCLUDE_HIDDEN_CONTENT_PACKS'] === '1';
+}
 
 // =============================================================================
 // TYPES
@@ -63,6 +68,7 @@ interface KitchenChallengePack {
 }
 
 type AnyPack = RegularContentPack | KitchenChallengePack;
+type ContentPackSeedStatus = 'draft' | 'review' | 'approved' | 'published' | 'archived';
 
 // =============================================================================
 // HELPERS
@@ -91,14 +97,44 @@ function readJson(fullPath: string): AnyPack {
 function listRegularPacks(): AnyPack[] {
   const dir = join(__dirname, '../../../content-packs');
   return readdirSync(dir)
-    .filter((f) => f.endsWith('.json') && f !== 'template_content_pack.json')
+    .filter(
+      (f) =>
+        f.endsWith('.json') &&
+        f !== 'template_content_pack.json' &&
+        (includeHiddenContentPacks() || DEFAULT_REGULAR_PACK_FILES.has(f))
+    )
     .map((f) => readJson(join(dir, f)));
+}
+
+function getRegularPackSeedPolicy(pack: RegularContentPack): {
+  status: ContentPackSeedStatus;
+  publishedAt?: Date;
+  releaseStage: 'demo' | 'production';
+  sourceDataStatus: 'demo' | 'authorized';
+  officialTraining: boolean;
+} {
+  if (pack.id === 'pack-uncle-julios-v1') {
+    return {
+      status: 'draft',
+      releaseStage: 'demo',
+      sourceDataStatus: 'demo',
+      officialTraining: false,
+    };
+  }
+
+  return {
+    status: 'published',
+    publishedAt: new Date(),
+    releaseStage: 'production',
+    sourceDataStatus: 'authorized',
+    officialTraining: true,
+  };
 }
 
 function listKitchenPacks(): KitchenChallengePack[] {
   const dir = join(__dirname, '../../../content-packs/kitchen');
   return readdirSync(dir)
-    .filter((f) => f.endsWith('.json'))
+    .filter((f) => f.endsWith('.json') && (includeHiddenContentPacks() || f.startsWith('uj-')))
     .map((f) => readJson(join(dir, f)) as KitchenChallengePack);
 }
 
@@ -108,6 +144,7 @@ function listKitchenPacks(): KitchenChallengePack[] {
 
 async function seedRegularPack(db: Database, pack: RegularContentPack): Promise<void> {
   console.log(`\nSeeding regular pack: ${pack.name} (${pack.id})`);
+  const seedPolicy = getRegularPackSeedPolicy(pack);
 
   const [inserted] = await db
     .insert(contentPacks)
@@ -116,9 +153,13 @@ async function seedRegularPack(db: Database, pack: RegularContentPack): Promise<
       version: pack.version,
       title: pack.name,
       description: pack.description,
-      status: 'published',
-      publishedAt: new Date(),
+      status: seedPolicy.status,
+      ...(seedPolicy.publishedAt !== undefined ? { publishedAt: seedPolicy.publishedAt } : {}),
       metadata: {
+        packType: 'regular_content_pack',
+        releaseStage: seedPolicy.releaseStage,
+        sourceDataStatus: seedPolicy.sourceDataStatus,
+        officialTraining: seedPolicy.officialTraining,
         difficulty: pack.difficulty,
         tags: pack.tags,
         roleMappings: pack.roleMappings,
@@ -235,6 +276,10 @@ async function main(): Promise<void> {
     console.log(
       `Found ${regularPacks.length} regular pack(s) and ${kitchenPacks.length} kitchen pack(s).`
     );
+    if (!includeHiddenContentPacks()) {
+      console.log('  Hidden packs skipped. Set INCLUDE_HIDDEN_CONTENT_PACKS=1 to seed all packs.');
+      console.log('  Default demo regular packs are still seeded as draft for admin review.');
+    }
 
     for (const pack of regularPacks) {
       if (isKitchenPack(pack)) {

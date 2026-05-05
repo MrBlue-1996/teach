@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,41 +13,16 @@ import {
   Users,
   TrendingUp,
   Search,
-  Plus,
-  Eye,
   BarChart3,
   GraduationCap,
   AlertCircle,
   CheckCircle2,
   Calendar,
   FileText,
-  MessageSquare,
   Loader2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { adminApi, type AdminUser, type AdminStats } from '@/lib/api';
-
-interface Student {
-  id: string;
-  name: string;
-  email: string;
-  initials: string;
-  enrolledCourses: number;
-  overallProgress: number;
-  lastActive: string;
-  streak: number;
-  badgesEarned: number;
-  status: 'active' | 'inactive' | 'at-risk';
-}
-
-interface CourseOverview {
-  id: string;
-  title: string;
-  enrolledStudents: number;
-  avgMastery: number;
-  completionRate: number;
-  status: 'published' | 'draft' | 'archived';
-}
+import { instructorApi, type InstructorCourse, type InstructorStudent } from '@/lib/api';
 
 function getInitials(name: string | null): string {
   if (!name) return '?';
@@ -66,38 +42,20 @@ function formatLastActive(dateStr: string | null): string {
   return `${days} day${days !== 1 ? 's' : ''} ago`;
 }
 
-function mapUserToStudent(u: AdminUser): Student {
-  return {
-    id: u.id,
-    name: u.displayName ?? u.email,
-    email: u.email,
-    initials: getInitials(u.displayName ?? u.email),
-    enrolledCourses: 0,
-    overallProgress: 0,
-    lastActive: formatLastActive(u.lastLoginAt),
-    streak: 0,
-    badgesEarned: 0,
-    status: u.isActive ? 'active' : 'inactive',
-  };
-}
-
-// Placeholder courses shown while no course-analytics endpoint exists
-const placeholderCourses: CourseOverview[] = [];
-
 type InstructorTab = 'overview' | 'students' | 'courses' | 'content';
 
 export default function InstructorPage() {
   const [activeTab, setActiveTab] = useState<InstructorTab>('overview');
   const [studentSearch, setStudentSearch] = useState('');
-  const [adminStats, setAdminStats] = useState<AdminStats | null>(null);
-  const [students, setStudents] = useState<Student[]>([]);
+  const [students, setStudents] = useState<InstructorStudent[]>([]);
+  const [courses, setCourses] = useState<InstructorCourse[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([adminApi.getStats(), adminApi.getUsers()])
-      .then(([statsRes, usersRes]) => {
-        setAdminStats(statsRes);
-        setStudents(usersRes.users.map(mapUserToStudent));
+    Promise.all([instructorApi.getStudents(), instructorApi.getCourses()])
+      .then(([studentsRes, coursesRes]) => {
+        setStudents(studentsRes.students);
+        setCourses(coursesRes.courses);
       })
       .catch(() => {})
       .finally(() => setDataLoading(false));
@@ -110,36 +68,26 @@ export default function InstructorPage() {
     { id: 'content' as const, label: 'Content', icon: FileText },
   ];
 
-  const totalStudents = adminStats?.stats.totalUsers ?? students.length;
-  const activeStudents =
-    adminStats?.stats.activeLearners ?? students.filter((s) => s.status === 'active').length;
-  const atRiskStudents = students.filter(
-    (s) => s.status === 'at-risk' || s.status === 'inactive'
+  const uniqueStudents = Array.from(
+    new Map(students.map((student) => [student.userId, student])).values()
+  );
+  const totalStudents = uniqueStudents.length;
+  const learnersWithSessions = uniqueStudents.filter(
+    (student) => student.lastSessionAt !== null
   ).length;
-  const avgProgress =
+  const avgMastery =
     students.length > 0
-      ? Math.round(students.reduce((sum, s) => sum + s.overallProgress, 0) / students.length)
+      ? Math.round(students.reduce((sum, s) => sum + (s.masteryScore ?? 0), 0) / students.length)
       : 0;
+  const publishedCourses = courses.filter((c) => c.status === 'published');
 
   return (
     <div className="space-y-6 page-transition">
       <PageHeader
         title="Instructor Panel"
-        description="Monitor student progress, manage courses, and create content"
+        description="Monitor student progress and manage courses"
         icon={Users}
         badge="Instructor"
-        actions={
-          <div className="flex gap-2">
-            <Button variant="outline">
-              <FileText className="mr-2 h-4 w-4" />
-              Export Report
-            </Button>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Create Course
-            </Button>
-          </div>
-        }
       />
 
       {/* Tab Navigation */}
@@ -168,20 +116,21 @@ export default function InstructorPage() {
             <StatCard icon={Users} label="Total Students" value={totalStudents} color="blue" />
             <StatCard
               icon={CheckCircle2}
-              label="Active"
-              value={activeStudents}
+              label="With Sessions"
+              value={learnersWithSessions}
               color="green"
-              change={`${Math.round((activeStudents / totalStudents) * 100)}%`}
-              trend="up"
             />
-            <StatCard icon={AlertCircle} label="At Risk" value={atRiskStudents} color="red" />
+            <StatCard
+              icon={AlertCircle}
+              label="Published Courses"
+              value={publishedCourses.length}
+              color="red"
+            />
             <StatCard
               icon={TrendingUp}
-              label="Avg Progress"
-              value={`${avgProgress}%`}
+              label="Avg Mastery"
+              value={`${avgMastery}%`}
               color="purple"
-              change="+5% this week"
-              trend="up"
             />
           </div>
 
@@ -221,57 +170,6 @@ export default function InstructorPage() {
             </Card>
           </div>
 
-          {/* At-Risk Students */}
-          {atRiskStudents > 0 && (
-            <Card className="border-red-200 dark:border-red-800">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-base text-red-600 dark:text-red-400">
-                  <AlertCircle className="h-4 w-4" />
-                  Students Needing Attention
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {students
-                    .filter((s) => s.status === 'at-risk' || s.status === 'inactive')
-                    .map((student) => (
-                      <div
-                        key={student.id}
-                        className="flex items-center justify-between rounded-lg border p-3"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-sm font-medium">
-                            {student.initials}
-                          </div>
-                          <div>
-                            <p className="font-medium">{student.name}</p>
-                            <p className="text-xs text-muted-foreground">
-                              Last active: {student.lastActive}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span
-                            className={cn(
-                              'rounded-full px-2 py-0.5 text-xs font-medium',
-                              student.status === 'at-risk'
-                                ? 'bg-red-100 text-red-600 dark:bg-red-900/50 dark:text-red-400'
-                                : 'bg-gray-100 text-gray-600 dark:bg-gray-900/50 dark:text-gray-400'
-                            )}
-                          >
-                            {student.status === 'at-risk' ? 'At Risk' : 'Inactive'}
-                          </span>
-                          <Button variant="ghost" size="sm">
-                            <MessageSquare className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
           {/* Course Summary */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
@@ -281,32 +179,23 @@ export default function InstructorPage() {
               </Button>
             </CardHeader>
             <CardContent>
-              {placeholderCourses.filter((c) => c.status === 'published').length === 0 ? (
+              {publishedCourses.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
-                  Course analytics coming soon. See blockers.
+                  {dataLoading ? 'Loading...' : 'No published courses yet.'}
                 </p>
               ) : (
                 <div className="space-y-4">
-                  {placeholderCourses
-                    .filter((c) => c.status === 'published')
-                    .map((course) => (
-                      <div key={course.id} className="flex items-center gap-4">
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium truncate">{course.title}</p>
-                          <div className="mt-1 flex items-center gap-4 text-xs text-muted-foreground">
-                            <span>{course.enrolledStudents} students</span>
-                            <span>{course.completionRate}% completion</span>
-                          </div>
-                        </div>
-                        <div className="w-32">
-                          <div className="mb-1 flex justify-between text-xs">
-                            <span className="text-muted-foreground">Avg Mastery</span>
-                            <span className="font-medium">{course.avgMastery}%</span>
-                          </div>
-                          <Progress value={course.avgMastery} className="h-1.5" />
+                  {publishedCourses.map((course) => (
+                    <div key={course.id} className="flex items-center gap-4">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium truncate">{course.title}</p>
+                        <div className="mt-1 flex items-center gap-4 text-xs text-muted-foreground">
+                          <span>{course.enrolledCount} students</span>
+                          <span className="capitalize">{course.status}</span>
                         </div>
                       </div>
-                    ))}
+                    </div>
+                  ))}
                 </div>
               )}
             </CardContent>
@@ -327,9 +216,6 @@ export default function InstructorPage() {
                 className="pl-10"
               />
             </div>
-            <Button variant="outline" size="sm">
-              Export
-            </Button>
           </div>
 
           {dataLoading ? (
@@ -342,57 +228,46 @@ export default function InstructorPage() {
                 <thead>
                   <tr className="border-b text-left text-xs font-medium text-muted-foreground">
                     <th className="pb-3 pr-4">Student</th>
-                    <th className="pb-3 pr-4">Role</th>
+                    <th className="pb-3 pr-4">Course</th>
                     <th className="pb-3 pr-4">Last Active</th>
-                    <th className="pb-3 pr-4">Status</th>
-                    <th className="pb-3">Actions</th>
+                    <th className="pb-3">Mastery</th>
                   </tr>
                 </thead>
                 <tbody>
                   {students
-                    .filter((s) => s.name.toLowerCase().includes(studentSearch.toLowerCase()))
+                    .filter(
+                      (s) =>
+                        s.displayName.toLowerCase().includes(studentSearch.toLowerCase()) ||
+                        s.email.toLowerCase().includes(studentSearch.toLowerCase())
+                    )
                     .map((student) => (
-                      <tr key={student.id} className="border-b text-sm hover:bg-muted/50">
+                      <tr
+                        key={`${student.userId}-${student.packId}`}
+                        className="border-b text-sm hover:bg-muted/50"
+                      >
                         <td className="py-3 pr-4">
                           <div className="flex items-center gap-3">
                             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-medium text-primary-foreground">
-                              {student.initials}
+                              {getInitials(student.displayName)}
                             </div>
                             <div>
-                              <p className="font-medium">{student.name}</p>
+                              <p className="font-medium">{student.displayName}</p>
                               <p className="text-xs text-muted-foreground">{student.email}</p>
                             </div>
                           </div>
                         </td>
-                        <td className="py-3 pr-4 text-muted-foreground capitalize">
-                          {student.email}
-                        </td>
-                        <td className="py-3 pr-4 text-muted-foreground">{student.lastActive}</td>
-                        <td className="py-3 pr-4">
-                          <span
-                            className={cn(
-                              'rounded-full px-2 py-0.5 text-xs font-medium',
-                              student.status === 'active' &&
-                                'bg-green-100 text-green-600 dark:bg-green-900/50 dark:text-green-400',
-                              student.status === 'at-risk' &&
-                                'bg-red-100 text-red-600 dark:bg-red-900/50 dark:text-red-400',
-                              student.status === 'inactive' &&
-                                'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
-                            )}
-                          >
-                            {student.status === 'at-risk'
-                              ? 'At Risk'
-                              : student.status.charAt(0).toUpperCase() + student.status.slice(1)}
-                          </span>
+                        <td className="py-3 pr-4 text-muted-foreground">{student.packTitle}</td>
+                        <td className="py-3 pr-4 text-muted-foreground">
+                          {formatLastActive(student.lastSessionAt)}
                         </td>
                         <td className="py-3">
-                          <div className="flex gap-1">
-                            <Button variant="ghost" size="icon" className="h-7 w-7">
-                              <Eye className="h-3 w-3" />
-                            </Button>
-                            <Button variant="ghost" size="icon" className="h-7 w-7">
-                              <MessageSquare className="h-3 w-3" />
-                            </Button>
+                          <div className="flex items-center gap-2">
+                            <div className="w-24">
+                              <Progress value={student.masteryScore ?? 0} className="h-1.5" />
+                            </div>
+                            <span className="text-xs text-muted-foreground">
+                              {student.masteryScore !== null ? `${student.masteryScore}%` : '—'}
+                            </span>
                           </div>
                         </td>
                       </tr>
@@ -407,13 +282,56 @@ export default function InstructorPage() {
       {/* Courses Tab */}
       {activeTab === 'courses' && (
         <div className="space-y-4">
-          <div className="rounded-lg border border-dashed p-8 text-center">
-            <GraduationCap className="mx-auto mb-3 h-10 w-10 text-muted-foreground/40" />
-            <p className="font-medium">Course analytics coming soon</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Per-course enrollment and mastery stats require a dedicated instructor endpoint.
-            </p>
-          </div>
+          {dataLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : courses.length === 0 ? (
+            <div className="rounded-lg border p-8 text-center">
+              <GraduationCap className="mx-auto mb-3 h-10 w-10 text-muted-foreground/40" />
+              <p className="font-medium text-muted-foreground">No courses found</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Courses you author will appear here once created.
+              </p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b text-left text-xs font-medium text-muted-foreground">
+                    <th className="pb-3 pr-4">Title</th>
+                    <th className="pb-3 pr-4">Status</th>
+                    <th className="pb-3 pr-4">Enrolled</th>
+                    <th className="pb-3">Version</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {courses.map((course) => (
+                    <tr key={course.id} className="border-b text-sm hover:bg-muted/50">
+                      <td className="py-3 pr-4 font-medium">{course.title}</td>
+                      <td className="py-3 pr-4">
+                        <span
+                          className={cn(
+                            'rounded-full px-2 py-0.5 text-xs font-medium',
+                            course.status === 'published' &&
+                              'bg-green-100 text-green-600 dark:bg-green-900/50 dark:text-green-400',
+                            course.status === 'draft' &&
+                              'bg-yellow-100 text-yellow-600 dark:bg-yellow-900/50 dark:text-yellow-400',
+                            course.status === 'archived' &&
+                              'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
+                          )}
+                        >
+                          {course.status.charAt(0).toUpperCase() + course.status.slice(1)}
+                        </span>
+                      </td>
+                      <td className="py-3 pr-4 text-muted-foreground">{course.enrolledCount}</td>
+                      <td className="py-3 text-muted-foreground">{course.version}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       )}
 
@@ -422,22 +340,46 @@ export default function InstructorPage() {
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Content Authoring</CardTitle>
+              <CardTitle className="text-base">Course Content</CardTitle>
             </CardHeader>
             <CardContent>
-              <ImagePlaceholder
-                type="animation"
-                aspectRatio="banner"
-                label="Content Editor - Coming Soon"
-              />
-              <p className="mt-4 text-sm text-muted-foreground">
-                Create and manage teaching blocks, quizzes, and course materials. The content
-                authoring tools are being prepared for this section.
-              </p>
-              <Button className="mt-4" disabled>
-                <Plus className="mr-2 h-4 w-4" />
-                Create New Content Pack
-              </Button>
+              {dataLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </div>
+              ) : courses.length === 0 ? (
+                <div className="rounded-lg border p-6 text-center">
+                  <FileText className="mx-auto mb-3 h-10 w-10 text-muted-foreground/40" />
+                  <p className="font-medium text-muted-foreground">No course content found</p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Instructor-owned packs will appear here when they are available.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {courses.map((course) => (
+                    <Link
+                      key={course.id}
+                      href={`/content/${course.id}`}
+                      className="block rounded-lg border p-4 transition-colors hover:bg-muted/50"
+                    >
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="min-w-0">
+                          <p className="font-medium">{course.title}</p>
+                          <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
+                            <span className="capitalize">{course.status}</span>
+                            <span>{course.enrolledCount} students</span>
+                            <span>v{course.version}</span>
+                          </div>
+                        </div>
+                        <Button variant="outline" size="sm">
+                          Open
+                        </Button>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

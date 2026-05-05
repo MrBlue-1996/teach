@@ -113,6 +113,9 @@ const mockDb = {
     learnerProgressEvents: {
       findMany: vi.fn(),
     },
+    contentBlocks: {
+      findFirst: vi.fn(),
+    },
   },
   select: vi.fn(),
   insert: vi.fn().mockReturnValue({
@@ -135,6 +138,13 @@ vi.mock('@topshelf/database', () => ({
     contentPackId: 'contentPackId',
     blocksCompleted: 'blocksCompleted',
     lastActivityAt: 'lastActivityAt',
+  },
+  contentBlocks: {
+    id: 'id',
+    packId: 'packId',
+    blockId: 'blockId',
+    hints: 'hints',
+    sequenceOrder: 'sequenceOrder',
   },
   learnerProgressEvents: { learnerStateId: 'learnerStateId', occurredAt: 'occurredAt' },
   learningSessions: {
@@ -194,6 +204,7 @@ describe('Learner Routes', () => {
     mockDb.query.learningSessions.findFirst.mockResolvedValue(null);
     mockDb.query.learningSessions.findMany.mockResolvedValue([]);
     mockDb.query.learnerProgressEvents.findMany.mockResolvedValue(mockProgressEvents);
+    mockDb.query.contentBlocks.findFirst.mockResolvedValue(null);
     mockDb.select.mockReturnValue({ from: mockSelectFrom });
     mockSelectFrom.mockReturnValue({ where: mockSelectWhere });
     mockSelectWhere.mockResolvedValue([{ totalSessions: 0 }]);
@@ -573,14 +584,23 @@ describe('Learner Routes', () => {
         where: vi.fn().mockResolvedValue(undefined),
       });
 
-      mockDb.query.learningSessions.findFirst.mockResolvedValue({
-        ...mockSession,
-        startedAt: new Date(),
-        teachingMode: 2,
-        errorsEncountered: 0,
-        problemsSolved: 1,
-        triggersFired: [],
-      });
+      mockDb.query.learningSessions.findFirst
+        .mockResolvedValueOnce({
+          ...mockSession,
+          startedAt: new Date(),
+          teachingMode: 2,
+          errorsEncountered: 0,
+          problemsSolved: 1,
+          triggersFired: [],
+        })
+        .mockResolvedValueOnce({
+          ...mockSession,
+          startedAt: new Date(),
+          teachingMode: 2,
+          errorsEncountered: 0,
+          problemsSolved: 2,
+          triggersFired: [],
+        });
       mockDb.update.mockReturnValue({ set: setSpy });
 
       const res = await app.request('/learner/session/session-1/event', {
@@ -596,7 +616,8 @@ describe('Learner Routes', () => {
 
       expect(res.status).toBe(200);
       const learnerStateUpdate = setSpy.mock.calls[0]?.[0];
-      const sessionUpdate = setSpy.mock.calls[1]?.[0];
+      const sessionMetricUpdate = setSpy.mock.calls[1]?.[0];
+      const sessionTriggerUpdate = setSpy.mock.calls[2]?.[0];
 
       expect(learnerStateUpdate).toEqual(
         expect.objectContaining({
@@ -606,7 +627,7 @@ describe('Learner Routes', () => {
           }),
         })
       );
-      expect(sessionUpdate).toEqual(
+      expect(sessionMetricUpdate).toEqual(
         expect.objectContaining({
           blocksCompleted: expect.objectContaining({
             values: expect.arrayContaining(['blocksCompleted']),
@@ -620,6 +641,10 @@ describe('Learner Routes', () => {
           averageCorrectness: expect.objectContaining({
             values: expect.arrayContaining(['averageCorrectness', 'blocksAttempted', 0.85]),
           }),
+        })
+      );
+      expect(sessionTriggerUpdate).toEqual(
+        expect.objectContaining({
           teachingMode: 2,
           triggersFired: [],
           deviceProfile: 'chromebook_standard',
@@ -632,6 +657,15 @@ describe('Learner Routes', () => {
         where: vi.fn().mockResolvedValue(undefined),
       });
 
+      mockDb.query.learningSessions.findFirst
+        .mockResolvedValueOnce(mockSession)
+        .mockResolvedValueOnce({
+          ...mockSession,
+          errorsEncountered: 3,
+          problemsSolved: 0,
+          teachingMode: 2,
+          startedAt: new Date('2026-03-20T10:00:00Z'),
+        });
       mockDb.update.mockReturnValue({ set: setSpy });
 
       const res = await app.request('/learner/session/session-1/event', {
@@ -657,13 +691,21 @@ describe('Learner Routes', () => {
         where: vi.fn().mockResolvedValue(undefined),
       });
 
-      mockDb.query.learningSessions.findFirst.mockResolvedValue({
-        ...mockSession,
-        startedAt: new Date(),
-        errorsEncountered: 1,
-        problemsSolved: 2,
-        teachingMode: 2,
-      });
+      mockDb.query.learningSessions.findFirst
+        .mockResolvedValueOnce({
+          ...mockSession,
+          startedAt: new Date(),
+          errorsEncountered: 1,
+          problemsSolved: 2,
+          teachingMode: 2,
+        })
+        .mockResolvedValueOnce({
+          ...mockSession,
+          startedAt: new Date(),
+          errorsEncountered: 2,
+          problemsSolved: 2,
+          teachingMode: 2,
+        });
       mockDb.update.mockReturnValue({ set: setSpy });
 
       const res = await app.request('/learner/session/session-1/event', {
@@ -676,21 +718,26 @@ describe('Learner Routes', () => {
       });
 
       expect(res.status).toBe(200);
-      expect(setSpy).toHaveBeenCalledTimes(1);
-      const sessionUpdate = setSpy.mock.calls[0]?.[0];
+      expect(setSpy).toHaveBeenCalledTimes(2);
+      const sessionMetricUpdate = setSpy.mock.calls[0]?.[0];
+      const sessionTriggerUpdate = setSpy.mock.calls[1]?.[0];
 
-      expect(sessionUpdate).toEqual(
+      expect(sessionMetricUpdate).toEqual(
         expect.objectContaining({
           errorsEncountered: expect.objectContaining({
             values: expect.arrayContaining(['errorsEncountered']),
           }),
+        })
+      );
+      expect(sessionTriggerUpdate).toEqual(
+        expect.objectContaining({
           teachingMode: 2,
           triggersFired: [],
           deviceProfile: 'chromebook_standard',
         })
       );
-      expect(sessionUpdate).not.toHaveProperty('blocksCompleted');
-      expect(sessionUpdate).not.toHaveProperty('blocksAttempted');
+      expect(sessionMetricUpdate).not.toHaveProperty('blocksCompleted');
+      expect(sessionMetricUpdate).not.toHaveProperty('blocksAttempted');
     });
 
     it('should record skipped event', async () => {
@@ -1124,6 +1171,123 @@ describe('Learner Routes', () => {
       const res = await app.request('/learner/stats');
       const body = await res.json();
       expect(body.packsActive).toBe(1);
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // POST /learner/session/:sessionId/teach
+  // ---------------------------------------------------------------------------
+
+  describe('POST /learner/session/:sessionId/teach', () => {
+    beforeEach(() => {
+      mockDb.query.learningSessions.findFirst.mockResolvedValue({
+        ...mockSession,
+        learnerState: { contentPackId: 'pack-1' },
+      });
+      mockDb.update.mockReturnValue({
+        set: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue(undefined),
+        }),
+      });
+    });
+
+    it('should return 404 for non-existent or inactive session', async () => {
+      mockDb.query.learningSessions.findFirst.mockResolvedValue(null);
+
+      const res = await app.request('/learner/session/session-1/teach', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      });
+
+      expect(res.status).toBe(404);
+    });
+
+    it('should use client content when blockId is absent', async () => {
+      const res = await app.request('/learner/session/session-1/teach', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: 'Hint: check the loop bounds.' }),
+      });
+
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body).toHaveProperty('triggers');
+      expect(body).toHaveProperty('suggestedMode');
+      expect(body).toHaveProperty('currentMode');
+      expect(mockDb.query.contentBlocks.findFirst).not.toHaveBeenCalled();
+    });
+
+    it('should resolve hints from a content block when blockId is provided', async () => {
+      mockDb.query.contentBlocks.findFirst.mockResolvedValue({
+        blockId: 'block-abc',
+        hints: ['Check your loop bounds.', 'Off-by-one errors are common here.'],
+      });
+
+      const res = await app.request('/learner/session/session-1/teach', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ blockId: 'block-abc' }),
+      });
+
+      expect(res.status).toBe(200);
+      expect(mockDb.query.contentBlocks.findFirst).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: [
+            ['packId', 'pack-1'],
+            ['blockId', 'block-abc'],
+          ],
+        })
+      );
+      const body = await res.json();
+      expect(body).toHaveProperty('currentMode');
+    });
+
+    it('should fall back to client content when block has no hints', async () => {
+      mockDb.query.contentBlocks.findFirst.mockResolvedValue({
+        blockId: 'block-no-hints',
+        hints: [],
+      });
+
+      const res = await app.request('/learner/session/session-1/teach', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ blockId: 'block-no-hints', content: 'Fallback hint.' }),
+      });
+
+      expect(res.status).toBe(200);
+    });
+
+    it('should persist elevated teachingMode when suggestedMode exceeds current mode', async () => {
+      const setSpy = vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue(undefined),
+      });
+      mockDb.update.mockReturnValue({ set: setSpy });
+
+      // Session with many errors causes TriggerDetector to fire and suggestModeElevation
+      mockDb.query.learningSessions.findFirst.mockResolvedValue({
+        ...mockSession,
+        teachingMode: 1,
+        errorsEncountered: 5,
+        problemsSolved: 0,
+        startedAt: new Date(Date.now() - 10 * 60 * 1000),
+      });
+
+      const res = await app.request('/learner/session/session-1/teach', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      });
+
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.suggestedMode).toBeGreaterThan(body.currentMode);
+      expect(setSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          teachingMode: expect.any(Number),
+          triggersFired: expect.any(Array),
+        })
+      );
     });
   });
 

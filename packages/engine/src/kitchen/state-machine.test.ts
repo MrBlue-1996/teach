@@ -112,6 +112,15 @@ describe('ChallengeMachine', () => {
       expect(machine.getCurrentPhase()).toBe(ChallengePhase.MASTERY);
     });
 
+    it('TEACH → MASTERY via completeMastery() for skipped verification', () => {
+      const machine = new ChallengeMachine(makeConfig());
+      machine.startSolve();
+      machine.endSolve();
+      machine.enterTeach();
+      machine.completeMastery();
+      expect(machine.getCurrentPhase()).toBe(ChallengePhase.MASTERY);
+    });
+
     it('MASTERY → COMPLETED via complete()', () => {
       const machine = new ChallengeMachine(makeConfig());
       machine.startSolve();

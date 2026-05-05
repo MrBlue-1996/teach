@@ -1,0 +1,328 @@
+{
+  "id": "uj-enchilada-rush-v1",
+  "slug": "uj-enchilada-rush",
+  "type": "rush_hour",
+  "title": "Uncle Julio's: Enchilada Line",
+  "briefing": "Four enchilada tickets. Three different sauces. One has an allergen trap you'd better catch before it leaves the window. Roll, sauce, bake, plate.",
+  "timeLimitSeconds": 480,
+  "difficultyLevel": 4,
+  "recipeId": "recipe-uj-cheese-enchilada-v1",
+  "containsTraps": true,
+  "equipmentFocus": ["oven", "saute"],
+  "hiddenDomains": ["speed", "sequencing", "food_safety", "judgment", "sanitation"],
+  "expertRecipe": {
+    "id": "recipe-uj-cheese-enchilada-v1",
+    "name": "Uncle Julio's Cheese & Onion Enchiladas",
+    "station": "oven",
+    "targetTimeSeconds": 660,
+    "wasteValuePerPlate": 0.65,
+    "platingStandard": "Two enchiladas per plate, seam-side down, sauce ladled evenly, cheese melted and bubbly, garnished with sour cream drizzle and cilantro.",
+    "idealSequence": [
+      "wash_hands",
+      "heat_sauce",
+      "soften_tortilla",
+      "fill_and_roll",
+      "place_seam_down",
+      "ladle_sauce",
+      "top_with_cheese",
+      "bake_400f",
+      "garnish_and_plate"
+    ],
+    "steps": [
+      {
+        "id": "ue1",
+        "order": 1,
+        "instruction": "Wash hands, glove up.",
+        "whyExplanation": "You're handling tortillas that go straight to the guest. One unwashed hand means bacteria on every plate.",
+        "timeSeconds": 10,
+        "isCCP": true,
+        "tools": ["sink", "gloves"]
+      },
+      {
+        "id": "ue2",
+        "order": 2,
+        "instruction": "Heat salsa carne to 180°F in sauce pot. Stir to prevent scorching.",
+        "whyExplanation": "Cold sauce on a hot enchilada drops the plate temp into the danger zone. Scorched sauce tastes bitter and gets sent back.",
+        "timeSeconds": 30,
+        "isCCP": true,
+        "tools": ["sauce_pot", "thermometer"],
+        "targetTemp": 180,
+        "tempRange": { "min": 170, "max": 195 }
+      },
+      {
+        "id": "ue3",
+        "order": 3,
+        "instruction": "Soften corn tortilla on flat top or in hot oil for 5 seconds per side.",
+        "whyExplanation": "A cold corn tortilla cracks when you roll it. Cracked tortilla = filling leaks out in the oven. Wasted plate.",
+        "timeSeconds": 15,
+        "isCCP": false,
+        "tools": ["flat_top", "tongs"]
+      },
+      {
+        "id": "ue4",
+        "order": 4,
+        "instruction": "Fill with 2 oz cheese blend and diced onion. Roll tight, seam down.",
+        "whyExplanation": "Loose roll means the enchilada unravels in the oven. Seam down traps the filling and presents clean to the guest.",
+        "timeSeconds": 20,
+        "isCCP": false,
+        "tools": ["portion_scoop"]
+      },
+      {
+        "id": "ue5",
+        "order": 5,
+        "instruction": "Ladle 3 oz sauce over each enchilada. Top with 1 oz shredded cheese.",
+        "whyExplanation": "Under-saucing dries out the tortilla. Over-saucing drowns the filling. Consistency is what separates a cook from a professional.",
+        "timeSeconds": 15,
+        "isCCP": false,
+        "tools": ["ladle"]
+      },
+      {
+        "id": "ue6",
+        "order": 6,
+        "instruction": "Bake at 400°F for 8-10 minutes until cheese is bubbly and edges crisp.",
+        "whyExplanation": "Under 8 minutes and the cheese isn't melted through. Over 10 and the tortilla edges burn. Watch the oven, don't set-and-forget.",
+        "timeSeconds": 540,
+        "isCCP": true,
+        "tools": ["oven", "timer"],
+        "targetTemp": 400,
+        "tempRange": { "min": 375, "max": 425 }
+      },
+      {
+        "id": "ue7",
+        "order": 7,
+        "instruction": "Garnish with sour cream drizzle and fresh cilantro. Plate with rice and beans.",
+        "whyExplanation": "Garnish goes on AFTER the oven — cilantro wilts and sour cream splits under heat. Plate completeness is what expo checks.",
+        "timeSeconds": 20,
+        "isCCP": false,
+        "tools": ["squeeze_bottle"]
+      }
+    ],
+    "criticalControlPoints": [
+      {
+        "id": "ccp-uj-ench-hands",
+        "stepId": "ue1",
+        "type": "sanitation",
+        "target": "Hands washed before tortilla contact",
+        "tolerance": "zero missed washes",
+        "consequence": "Tortillas are ready-to-eat. Contaminated hands = contaminated plate."
+      },
+      {
+        "id": "ccp-uj-sauce-temp",
+        "stepId": "ue2",
+        "type": "temperature",
+        "target": "Sauce at 170°F+",
+        "tolerance": "zero below 170°F",
+        "consequence": "Cold sauce on hot enchilada = plate enters danger zone within minutes. Health code violation."
+      },
+      {
+        "id": "ccp-uj-oven-temp",
+        "stepId": "ue6",
+        "type": "temperature",
+        "target": "Oven at 375-425°F",
+        "tolerance": "+/- 25°F",
+        "consequence": "Low oven = raw cheese center. High oven = burned tortilla edges, remakes at $3+ each."
+      }
+    ]
+  },
+  "tickets": [
+    {
+      "id": "uj-ench-tk-1",
+      "orderNumber": 401,
+      "items": [
+        {
+          "id": "uj-ench-1a",
+          "name": "Cheese & Onion Enchiladas (2)",
+          "recipeId": "recipe-uj-cheese-enchilada-v1",
+          "modifiers": ["salsa carne"],
+          "isImpossible": false,
+          "quantity": 2
+        }
+      ],
+      "submittedAt": 0,
+      "priority": "normal",
+      "isTrapped": false,
+      "timeWindowSeconds": 360
+    },
+    {
+      "id": "uj-ench-tk-2",
+      "orderNumber": 402,
+      "items": [
+        {
+          "id": "uj-ench-2a",
+          "name": "Chicken Enchiladas Verdes (2)",
+          "recipeId": "recipe-uj-chicken-enchilada-v1",
+          "modifiers": ["hatch chile sauce"],
+          "isImpossible": false,
+          "quantity": 2
+        }
+      ],
+      "submittedAt": 30000,
+      "priority": "rush",
+      "isTrapped": false,
+      "timeWindowSeconds": 300
+    },
+    {
+      "id": "uj-ench-tk-3",
+      "orderNumber": 403,
+      "items": [
+        {
+          "id": "uj-ench-3a",
+          "name": "Gluten-Free Enchiladas",
+          "recipeId": "recipe-uj-cheese-enchilada-v1",
+          "modifiers": ["gluten-free", "flour tortilla"],
+          "isImpossible": true,
+          "impossibleReason": "Guest requested gluten-free but specified flour tortilla. Flour contains wheat gluten. Must clarify with FOH: switch to corn tortilla or cancel the gluten-free claim.",
+          "quantity": 2
+        }
+      ],
+      "submittedAt": 60000,
+      "priority": "normal",
+      "isTrapped": true,
+      "timeWindowSeconds": 360
+    },
+    {
+      "id": "uj-ench-tk-4",
+      "orderNumber": 404,
+      "items": [
+        {
+          "id": "uj-ench-4a",
+          "name": "Combination Plate",
+          "recipeId": "recipe-uj-combo-plate-v1",
+          "modifiers": [
+            "beef enchilada agave queso",
+            "chicken enchilada hatch chile",
+            "crispy beef taco"
+          ],
+          "isImpossible": false,
+          "quantity": 1
+        }
+      ],
+      "submittedAt": 120000,
+      "priority": "vip",
+      "isTrapped": false,
+      "timeWindowSeconds": 360
+    }
+  ],
+  "availableIngredients": [
+    {
+      "id": "uj-ench-corn-tort",
+      "name": "Corn tortillas (house-made)",
+      "category": "dry_goods",
+      "receivedAt": 1712707200000,
+      "useByDate": 1713052800000,
+      "isSpoiled": false,
+      "costPerUnit": 0.12,
+      "unit": "ea",
+      "allergens": [],
+      "requiresRefrigeration": false
+    },
+    {
+      "id": "uj-ench-flour-tort",
+      "name": "Flour tortillas (house-made)",
+      "category": "dry_goods",
+      "receivedAt": 1712707200000,
+      "useByDate": 1713052800000,
+      "isSpoiled": false,
+      "costPerUnit": 0.2,
+      "unit": "ea",
+      "allergens": ["wheat", "gluten"],
+      "requiresRefrigeration": false
+    },
+    {
+      "id": "uj-ench-cheese",
+      "name": "Shredded Mexican blend cheese",
+      "category": "dairy",
+      "receivedAt": 1712620800000,
+      "useByDate": 1713571200000,
+      "isSpoiled": false,
+      "costPerUnit": 2.4,
+      "unit": "lb",
+      "allergens": ["dairy"],
+      "requiresRefrigeration": true
+    },
+    {
+      "id": "uj-ench-chicken",
+      "name": "Pulled chicken (prepped)",
+      "category": "protein",
+      "receivedAt": 1712620800000,
+      "useByDate": 1713139200000,
+      "isSpoiled": false,
+      "costPerUnit": 3.5,
+      "unit": "lb",
+      "allergens": [],
+      "requiresRefrigeration": true
+    },
+    {
+      "id": "uj-ench-ground-beef",
+      "name": "Seasoned ground beef",
+      "category": "protein",
+      "receivedAt": 1712620800000,
+      "useByDate": 1713052800000,
+      "isSpoiled": false,
+      "costPerUnit": 4.0,
+      "unit": "lb",
+      "allergens": [],
+      "requiresRefrigeration": true
+    },
+    {
+      "id": "uj-ench-salsa-carne",
+      "name": "Salsa carne (house-made)",
+      "category": "prepared",
+      "receivedAt": 1712707200000,
+      "useByDate": 1713312000000,
+      "isSpoiled": false,
+      "costPerUnit": 1.8,
+      "unit": "qt",
+      "allergens": [],
+      "requiresRefrigeration": true
+    },
+    {
+      "id": "uj-ench-hatch-sauce",
+      "name": "Creamy hatch chile sauce",
+      "category": "prepared",
+      "receivedAt": 1712707200000,
+      "useByDate": 1713312000000,
+      "isSpoiled": false,
+      "costPerUnit": 2.2,
+      "unit": "qt",
+      "allergens": ["dairy"],
+      "requiresRefrigeration": true
+    },
+    {
+      "id": "uj-ench-onion-diced",
+      "name": "Diced yellow onion",
+      "category": "produce",
+      "receivedAt": 1712707200000,
+      "useByDate": 1713225600000,
+      "isSpoiled": false,
+      "costPerUnit": 0.5,
+      "unit": "lb",
+      "allergens": [],
+      "requiresRefrigeration": true
+    },
+    {
+      "id": "uj-ench-sour-cream",
+      "name": "Sour cream",
+      "category": "dairy",
+      "receivedAt": 1712620800000,
+      "useByDate": 1713744000000,
+      "isSpoiled": false,
+      "costPerUnit": 1.5,
+      "unit": "lb",
+      "allergens": ["dairy"],
+      "requiresRefrigeration": true
+    },
+    {
+      "id": "uj-ench-cilantro",
+      "name": "Fresh cilantro",
+      "category": "produce",
+      "receivedAt": 1712707200000,
+      "useByDate": 1713052800000,
+      "isSpoiled": false,
+      "costPerUnit": 0.3,
+      "unit": "bunch",
+      "allergens": [],
+      "requiresRefrigeration": true
+    }
+  ]
+}

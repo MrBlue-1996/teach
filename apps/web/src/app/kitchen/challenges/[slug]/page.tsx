@@ -52,7 +52,9 @@ export default function ChallengeRunnerPage() {
           <ArrowLeft size={20} aria-hidden /> Exit
         </Link>
         <h1 className="challenge-header__title">{config.title}</h1>
-        <span className="challenge-header__phase">{(ch.phase ?? 'setup').toUpperCase()}</span>
+        <span className="challenge-header__phase">
+          {(ch.phase ?? ChallengePhase.SETUP).toUpperCase()}
+        </span>
       </header>
 
       <PhaseView config={config} ch={ch} onExit={() => router.push('/kitchen')} />

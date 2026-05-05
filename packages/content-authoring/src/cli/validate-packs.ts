@@ -150,6 +150,9 @@ async function main(): Promise<void> {
   const issues: ValidationIssue[] = [];
   const seenIds = new Map<string, string>();
   const discoveredJsonFiles = new Set<string>();
+  // Tracks files that successfully passed shape validation AND claimed a unique ID.
+  // Any discovered file not in this set is an orphan.
+  const claimedFiles = new Set<string>();
 
   issues.push(...(await validateRequiredFiles()));
 
@@ -207,6 +210,8 @@ async function main(): Promise<void> {
         });
       } else {
         seenIds.set(inferredId, relativeFile);
+        // File has a unique identity and passed shape checks — it is claimed.
+        claimedFiles.add(absoluteFile);
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -214,6 +219,23 @@ async function main(): Promise<void> {
         file: relativeFile,
         message: `Invalid JSON: ${message}`,
       });
+    }
+  }
+
+  // Manifest registry parity check — flag any discovered file that was never claimed.
+  // A file is unclaimed if it failed shape validation, had a duplicate ID, or had invalid JSON.
+  for (const absoluteFile of discoveredJsonFiles) {
+    if (!claimedFiles.has(absoluteFile)) {
+      const relativeFile = path.relative(repoRoot, absoluteFile);
+      // Only flag as orphan if it didn't already produce a validation issue.
+      const alreadyFlagged = issues.some((issue) => issue.file === relativeFile);
+      if (!alreadyFlagged) {
+        issues.push({
+          file: relativeFile,
+          message:
+            'Orphaned file: exists in content directory but could not be claimed by any valid pack identifier.',
+        });
+      }
     }
   }
 
@@ -226,7 +248,7 @@ async function main(): Promise<void> {
   }
 
   console.log(
-    `[validate:packs] OK. Validated ${discoveredJsonFiles.size} JSON file(s) across ${existingDirectories.length} content directory(ies).`
+    `[validate:packs] OK. Validated ${claimedFiles.size}/${discoveredJsonFiles.size} JSON file(s) across ${existingDirectories.length} content directory(ies).`
   );
 }
 

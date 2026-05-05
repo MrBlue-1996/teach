@@ -48,7 +48,7 @@ export default function OnboardingPage() {
   const setAuthUser = useAuthStore((store) => store.setUser);
   const [stepIndex, setStepIndex] = useState(0);
   const [displayName, setDisplayName] = useState('');
-  const [contentPackId, setContentPackId] = useState<ResourcePackId>('linux');
+  const [contentPackId, setContentPackId] = useState<ResourcePackId>('uncle-julios');
   const [trainingRole, setTrainingRole] = useState<OnboardingTrainingRole>('learner');
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -56,7 +56,7 @@ export default function OnboardingPage() {
   useEffect(() => {
     if (user !== null) {
       setDisplayName(getInitialDisplayName(user));
-      setContentPackId(user.metadata?.onboarding?.contentPackId ?? 'linux');
+      setContentPackId('uncle-julios');
       setTrainingRole(user.metadata?.onboarding?.trainingRole ?? 'learner');
     }
   }, [user]);
@@ -210,9 +210,7 @@ export default function OnboardingPage() {
                     <span>
                       <span className="block font-medium">{pack.title}</span>
                       <span className="mt-1 block text-sm">
-                        {pack.id === 'linux'
-                          ? 'Linux lab tools, machines, and materials'
-                          : 'Kitchen tools, line stations, and ingredients'}
+                        Kitchen tools, line stations, and ingredients
                       </span>
                     </span>
                   </button>

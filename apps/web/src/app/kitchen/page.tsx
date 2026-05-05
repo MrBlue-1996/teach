@@ -6,17 +6,13 @@ import {
   Zap,
   Flame,
   Timer,
-  ChefHat,
   Thermometer,
-  Package,
   Calculator,
-  ShieldAlert,
   ClipboardList,
   Shuffle,
   Eye,
   QrCode,
   Lock,
-  CheckCircle2,
   AlertTriangle,
   Star,
 } from 'lucide-react';
@@ -33,9 +29,9 @@ const MOCK_USER = {
 };
 
 const DAILY_SPEC = {
-  stationFocus: 'Saut\u00e9',
-  specialOfTheDay: 'Pan-Seared Halibut with Beurre Blanc',
-  quickChallengeSlug: 'rush-hour',
+  stationFocus: 'Mesquite Grill',
+  specialOfTheDay: "Uncle Julio's Chicken Fajitas",
+  quickChallengeSlug: 'uj-fajita-rush',
   greeting: 'Mise is life. Let\u2019s go.',
 };
 
@@ -45,82 +41,50 @@ interface ChallengeCard {
   icon: React.ElementType;
   difficulty: 'Easy' | 'Medium' | 'Hard' | 'Expert';
   difficultyColor: string;
-  completed: boolean;
-  locked: boolean;
 }
 
 const CHALLENGES: ChallengeCard[] = [
   {
-    slug: 'rush-hour',
-    title: 'Rush Hour Simulator',
-    icon: Timer,
+    slug: 'uj-fajita-rush',
+    title: 'UJ: Fajita Rush',
+    icon: Flame,
     difficulty: 'Hard',
     difficultyColor: 'text-[hsl(var(--kitchen-danger))]',
-    completed: false,
-    locked: false,
   },
   {
-    slug: 'ghost-recipe',
-    title: 'Ghost Recipe Quiz',
-    icon: ChefHat,
-    difficulty: 'Medium',
-    difficultyColor: 'text-[hsl(var(--kitchen-caution))]',
-    completed: true,
-    locked: false,
+    slug: 'uj-enchilada-rush',
+    title: 'UJ: Enchilada Line',
+    icon: Timer,
+    difficulty: 'Expert',
+    difficultyColor: 'text-[hsl(var(--kitchen-danger-bright,0_84%_60%))]',
   },
   {
-    slug: 'station-setup',
-    title: 'Station Setup',
-    icon: ClipboardList,
-    difficulty: 'Easy',
-    difficultyColor: 'text-[hsl(var(--kitchen-safe))]',
-    completed: true,
-    locked: false,
-  },
-  {
-    slug: 'temp-check',
-    title: 'Temp Check Challenge',
+    slug: 'uj-line-temps',
+    title: 'UJ: Line Temp Log',
     icon: Thermometer,
     difficulty: 'Medium',
     difficultyColor: 'text-[hsl(var(--kitchen-caution))]',
-    completed: false,
-    locked: false,
   },
   {
-    slug: 'inventory-scramble',
-    title: 'Inventory Scramble',
-    icon: Package,
+    slug: 'uj-grill-setup',
+    title: 'UJ: Grill Station Mise',
+    icon: ClipboardList,
     difficulty: 'Medium',
     difficultyColor: 'text-[hsl(var(--kitchen-caution))]',
-    completed: false,
-    locked: false,
   },
   {
-    slug: 'labor-prep',
-    title: 'Labor & Prep Manager',
+    slug: 'uj-queso-scale',
+    title: 'UJ: Scale the Queso',
     icon: Calculator,
     difficulty: 'Hard',
     difficultyColor: 'text-[hsl(var(--kitchen-danger))]',
-    completed: false,
-    locked: false,
   },
   {
-    slug: 'hazard-scan',
-    title: 'Hazard Scan',
-    icon: ShieldAlert,
-    difficulty: 'Expert',
-    difficultyColor: 'text-[hsl(var(--kitchen-danger-bright,0_84%_60%))]',
-    completed: false,
-    locked: false,
-  },
-  {
-    slug: 'mock-impossible',
-    title: 'Mock Impossible Order',
+    slug: 'uj-allergy-order',
+    title: 'UJ: The Allergy Table',
     icon: AlertTriangle,
     difficulty: 'Expert',
     difficultyColor: 'text-[hsl(var(--kitchen-danger-bright,0_84%_60%))]',
-    completed: false,
-    locked: true,
   },
 ];
 
@@ -131,11 +95,13 @@ interface MasteryDomain {
   hidden: boolean;
 }
 
+// Dashboard preview — shows 4 representative domains. Full 11-domain
+// breakdown lives on /kitchen/mastery (see "View Mastery" quick action).
 const MASTERY_DOMAINS: MasteryDomain[] = [
   { label: 'Sanitation', percent: 72, color: 'hsl(142, 71%, 45%)', hidden: false },
-  { label: 'Safety', percent: 58, color: 'hsl(0, 72%, 51%)', hidden: false },
+  { label: 'Food Safety', percent: 58, color: 'hsl(0, 72%, 51%)', hidden: false },
   { label: 'Speed', percent: 45, color: 'hsl(38, 92%, 50%)', hidden: false },
-  { label: 'Math', percent: 0, color: 'hsl(217, 91%, 60%)', hidden: true },
+  { label: 'Kitchen Math', percent: 30, color: 'hsl(217, 91%, 60%)', hidden: false },
 ];
 
 // ---------------------------------------------------------------------------
@@ -281,24 +247,15 @@ export default function KitchenDashboardPage() {
           {challenges.map((c) => {
             const Icon = c.icon;
             const inner = (
-              <div
-                className={`kitchen-card flex h-full flex-col items-start gap-3 ${c.locked ? 'locked' : ''}`}
-              >
+              <div className="kitchen-card flex h-full flex-col items-start gap-3">
                 {/* Top row: icon + status */}
                 <div className="flex w-full items-center justify-between">
                   <div
                     className="flex h-12 w-12 items-center justify-center rounded-xl"
                     style={{ background: 'hsl(220, 18%, 16%)' }}
                   >
-                    {c.locked ? (
-                      <Lock className="h-6 w-6 text-[hsl(var(--k-muted))]" />
-                    ) : (
-                      <Icon className="h-6 w-6 text-[hsl(var(--kf))]" />
-                    )}
+                    <Icon className="h-6 w-6 text-[hsl(var(--kf))]" />
                   </div>
-                  {c.completed && !c.locked && (
-                    <CheckCircle2 className="h-6 w-6 text-[hsl(var(--kitchen-safe))]" />
-                  )}
                 </div>
 
                 {/* Title */}
@@ -312,10 +269,6 @@ export default function KitchenDashboardPage() {
                 </span>
               </div>
             );
-
-            if (c.locked) {
-              return <div key={c.slug}>{inner}</div>;
-            }
 
             return (
               <Link key={c.slug} href={`/kitchen/challenges/${c.slug}`} className="block">
@@ -359,9 +312,8 @@ export default function KitchenDashboardPage() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <Link
             href={`/kitchen/challenges/${(() => {
-              const unlocked = challenges.filter((c) => !c.locked);
-              const randomChallenge = unlocked[Math.floor(Math.random() * unlocked.length)];
-              return randomChallenge?.slug ?? 'rush-hour';
+              const randomChallenge = challenges[Math.floor(Math.random() * challenges.length)];
+              return randomChallenge?.slug ?? 'uj-fajita-rush';
             })()}`}
           >
             <button className="btn-action btn-primary flex w-full items-center justify-center gap-3">

@@ -29,7 +29,7 @@ const VALID_TRANSITIONS: Record<ChallengePhase, ChallengePhase[]> = {
   [ChallengePhase.SETUP]: [ChallengePhase.SOLVE],
   [ChallengePhase.SOLVE]: [ChallengePhase.CONSEQUENCE, ChallengePhase.COOLDOWN],
   [ChallengePhase.CONSEQUENCE]: [ChallengePhase.TEACH],
-  [ChallengePhase.TEACH]: [ChallengePhase.VERIFY],
+  [ChallengePhase.TEACH]: [ChallengePhase.VERIFY, ChallengePhase.MASTERY],
   [ChallengePhase.VERIFY]: [ChallengePhase.MASTERY, ChallengePhase.COOLDOWN],
   [ChallengePhase.MASTERY]: [ChallengePhase.COMPLETED],
   [ChallengePhase.COOLDOWN]: [ChallengePhase.TEACH, ChallengePhase.SOLVE],
@@ -198,7 +198,7 @@ export class ChallengeMachine {
   }
 
   /**
-   * Complete verification and move to MASTERY scoring.
+   * Complete verification, or skip directly from TEACH, and move to MASTERY scoring.
    */
   completeMastery(): ChallengeState {
     return this.transition(ChallengePhase.MASTERY);

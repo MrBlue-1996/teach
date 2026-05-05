@@ -208,7 +208,7 @@ describe('authApi', () => {
           metadata: {
             onboarding: {
               displayName: 'Test User',
-              contentPackId: 'linux',
+              contentPackId: 'uncle-julios',
               trainingRole: 'staff',
               completedAt: '2026-04-29T00:00:00.000Z',
             },
@@ -219,13 +219,13 @@ describe('authApi', () => {
 
       const result = await authApi.completeOnboarding({
         displayName: 'Test User',
-        contentPackId: 'linux',
+        contentPackId: 'uncle-julios',
         trainingRole: 'staff',
       });
 
       expect(mockApi.patch).toHaveBeenCalledWith('/auth/onboarding', {
         displayName: 'Test User',
-        contentPackId: 'linux',
+        contentPackId: 'uncle-julios',
         trainingRole: 'staff',
       });
       expect(result).toEqual(meResponse);

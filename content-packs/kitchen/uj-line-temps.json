@@ -1,0 +1,122 @@
+{
+  "id": "uj-line-temps-v1",
+  "slug": "uj-line-temps",
+  "type": "temp_check",
+  "title": "Uncle Julio's: Line Temp Log",
+  "briefing": "Opening shift. Grab the thermometer and log every station: walk-in proteins, freezer, queso hot hold, fajita line reach-in, rice and beans steam table. FDA says 41°F–135°F is the danger zone. Prove you know it.",
+  "timeLimitSeconds": 180,
+  "difficultyLevel": 2,
+  "recipeId": "recipe-uj-temp-log-v1",
+  "containsTraps": true,
+  "equipmentFocus": ["cold_station"],
+  "hiddenDomains": ["food_safety", "sanitation", "judgment"],
+  "expertRecipe": {
+    "id": "recipe-uj-temp-log-v1",
+    "name": "Uncle Julio's Temperature Logging Standard",
+    "station": "cold_station",
+    "targetTimeSeconds": 150,
+    "wasteValuePerPlate": 0,
+    "platingStandard": "All five stations logged within safe range. Zero readings in the danger zone. Thermometer calibrated first.",
+    "idealSequence": [
+      "calibrate_thermometer",
+      "walk_in_proteins",
+      "freezer",
+      "queso_hot_hold",
+      "fajita_reach_in",
+      "steam_table",
+      "log_results"
+    ],
+    "steps": [
+      {
+        "id": "ujt1",
+        "order": 1,
+        "instruction": "Calibrate thermometer in ice bath. Must read 32°F ± 2°F.",
+        "whyExplanation": "A thermometer reading 5°F high means your 'safe' 38°F walk-in is actually 43°F — above the danger threshold. Every reading after this is wrong.",
+        "timeSeconds": 15,
+        "isCCP": true,
+        "tools": ["thermometer", "ice_bath"]
+      },
+      {
+        "id": "ujt2",
+        "order": 2,
+        "instruction": "Walk-in cooler: probe air temp between protein shelves. Must be 33-40°F.",
+        "whyExplanation": "Marinated chicken and raw skirt steak live here. Above 40°F, bacteria on raw protein doubles every 20 minutes. Below 33°F, marinade freezes and the texture changes.",
+        "timeSeconds": 25,
+        "isCCP": true,
+        "tools": ["thermometer"],
+        "targetTemp": 38,
+        "tempRange": { "min": 33, "max": 40 }
+      },
+      {
+        "id": "ujt3",
+        "order": 3,
+        "instruction": "Freezer: confirm 0°F or below. Check shrimp and dessert items.",
+        "whyExplanation": "Frozen shrimp above 0°F starts slow-thawing. Ice crystals damage cell walls, making shrimp mushy when cooked. Chocolate piñata shells soften and crack.",
+        "timeSeconds": 20,
+        "isCCP": true,
+        "tools": ["thermometer"],
+        "targetTemp": -5,
+        "tempRange": { "min": -10, "max": 0 }
+      },
+      {
+        "id": "ujt4",
+        "order": 4,
+        "instruction": "Queso hot hold: must be 135°F or above. Stir and probe center.",
+        "whyExplanation": "Queso is a TCS food. Below 135°F it enters the danger zone. Uncle Julio's queso sits on the line all service — if it drops below 135°F, you must reheat to 165°F or discard.",
+        "timeSeconds": 20,
+        "isCCP": true,
+        "tools": ["thermometer"],
+        "targetTemp": 145,
+        "tempRange": { "min": 135, "max": 165 }
+      },
+      {
+        "id": "ujt5",
+        "order": 5,
+        "instruction": "Fajita line reach-in: confirm 33-40°F. Check prepped peppers, onions, and sliced proteins.",
+        "whyExplanation": "Prepped fajita vegetables and sliced proteins sit here all service. Out-of-range reach-in means every fajita platter is suspect.",
+        "timeSeconds": 20,
+        "isCCP": true,
+        "tools": ["thermometer"],
+        "targetTemp": 38,
+        "tempRange": { "min": 33, "max": 40 }
+      },
+      {
+        "id": "ujt6",
+        "order": 6,
+        "instruction": "Steam table: rice and beans must be 135°F or above.",
+        "whyExplanation": "Cooked rice grows Bacillus cereus rapidly in the danger zone. Refried beans are high-moisture, high-protein — perfect bacteria food. Both must stay above 135°F.",
+        "timeSeconds": 20,
+        "isCCP": true,
+        "tools": ["thermometer"],
+        "targetTemp": 150,
+        "tempRange": { "min": 135, "max": 180 }
+      }
+    ],
+    "criticalControlPoints": [
+      {
+        "id": "ccp-uj-cal",
+        "stepId": "ujt1",
+        "type": "sanitation",
+        "target": "Thermometer reads 32°F in ice bath",
+        "tolerance": "+/- 2°F",
+        "consequence": "All subsequent readings untrustworthy. Every temp log for the shift is invalid."
+      },
+      {
+        "id": "ccp-uj-queso",
+        "stepId": "ujt4",
+        "type": "temperature",
+        "target": "Queso at 135°F or above",
+        "tolerance": "zero below 135°F",
+        "consequence": "Queso in danger zone for 4+ hours must be discarded. At $2.20/quart, that's a full batch wasted."
+      },
+      {
+        "id": "ccp-uj-rice",
+        "stepId": "ujt6",
+        "type": "temperature",
+        "target": "Rice and beans at 135°F+",
+        "tolerance": "zero below 135°F",
+        "consequence": "Bacillus cereus in rice causes vomiting within 1-5 hours. Cannot be killed by reheating."
+      }
+    ]
+  }
+}

@@ -100,9 +100,7 @@ async function main() {
     const existingRows = await client.unsafe(
       'select hash, created_at from drizzle.__drizzle_migrations order by created_at asc'
     );
-    const recorded = new Set(
-      existingRows.map((row) => `${row.hash}:${Number(row.created_at)}`)
-    );
+    const recorded = new Set(existingRows.map((row) => `${row.hash}:${Number(row.created_at)}`));
 
     let insertedCount = 0;
 

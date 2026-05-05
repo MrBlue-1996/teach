@@ -1,0 +1,127 @@
+{
+  "id": "uj-queso-scale-v1",
+  "slug": "uj-queso-scale",
+  "type": "ghost_recipe",
+  "title": "Uncle Julio's: Scale the Queso",
+  "briefing": "Catering order just dropped: 70 guests. Your standard queso batch serves 20. Scale it. No calculator. Get the math wrong and you waste $40 in cheese or run short mid-event.",
+  "timeLimitSeconds": 600,
+  "difficultyLevel": 3,
+  "recipeId": "recipe-uj-queso-v1",
+  "containsTraps": false,
+  "equipmentFocus": ["saute"],
+  "hiddenDomains": ["kitchen_math", "judgment", "efficiency", "waste_management"],
+  "expertRecipe": {
+    "id": "recipe-uj-queso-v1",
+    "name": "Uncle Julio's Queso Blanco (Scaled)",
+    "station": "saute",
+    "targetTimeSeconds": 420,
+    "wasteValuePerPlate": 0.55,
+    "platingStandard": "Smooth, pourable queso. No lumps, no separation. Correct yield for 70 covers. Hold at 135°F+ at all times.",
+    "idealSequence": [
+      "calculate_multiplier",
+      "scale_cheese",
+      "scale_milk",
+      "scale_jalapeno",
+      "scale_tomato",
+      "scale_cumin",
+      "execute_melt",
+      "hold_temp"
+    ],
+    "steps": [
+      {
+        "id": "uq1",
+        "order": 1,
+        "instruction": "Calculate multiplier: 70 covers / 20 covers = 3.5x.",
+        "whyExplanation": "Every ingredient scales off this number. Wrong multiplier = every measurement is wrong. A 3x batch shorts 10 people. A 4x batch wastes $15+ in cheese.",
+        "timeSeconds": 15,
+        "isCCP": false,
+        "tools": []
+      },
+      {
+        "id": "uq2",
+        "order": 2,
+        "instruction": "Scale white American cheese: 5 lb × 3.5 = 17.5 lb.",
+        "whyExplanation": "Cheese is the bulk and the cost. Under-scaling means the queso runs out during the event. Over-scaling wastes product that cannot be re-served once held.",
+        "timeSeconds": 15,
+        "isCCP": false,
+        "tools": ["scale"]
+      },
+      {
+        "id": "uq3",
+        "order": 3,
+        "instruction": "Scale whole milk: 1 qt × 3.5 = 3.5 qt (7 cups).",
+        "whyExplanation": "Milk controls consistency. Too little and the queso is thick paste. Too much and it's soup. At 3.5x the tolerance for error gets tighter.",
+        "timeSeconds": 15,
+        "isCCP": false,
+        "tools": ["measuring_cup"]
+      },
+      {
+        "id": "uq4",
+        "order": 4,
+        "instruction": "Scale roasted diced jalapeño: 8 oz × 3.5 = 28 oz (1.75 lb).",
+        "whyExplanation": "Jalapeño heat varies by batch. At 3.5x, taste-test before adding all of it — you can always add more heat, you can't take it out.",
+        "timeSeconds": 15,
+        "isCCP": false,
+        "tools": ["scale"]
+      },
+      {
+        "id": "uq5",
+        "order": 5,
+        "instruction": "Scale roasted diced tomato: 6 oz × 3.5 = 21 oz.",
+        "whyExplanation": "Tomato adds moisture and acidity. Too much dilutes the cheese flavor. Measure, don't eyeball — at this batch size, a couple extra ounces changes the texture.",
+        "timeSeconds": 10,
+        "isCCP": false,
+        "tools": ["scale"]
+      },
+      {
+        "id": "uq6",
+        "order": 6,
+        "instruction": "Scale cumin: 1 tbsp × 3.5 = 3.5 tbsp.",
+        "whyExplanation": "Spices don't always scale linearly at large batches. 3.5 tbsp is correct here, but taste and adjust — cumin can overpower at volume.",
+        "timeSeconds": 10,
+        "isCCP": false,
+        "tools": ["measuring_spoon"]
+      },
+      {
+        "id": "uq7",
+        "order": 7,
+        "instruction": "Melt cheese in milk over medium heat, stirring constantly. Add jalapeño, tomato, cumin when smooth.",
+        "whyExplanation": "High heat scorches cheese to the bottom of the pot. Scorched queso tastes bitter and the batch is ruined — $40 gone. Medium heat and constant stirring prevents it.",
+        "timeSeconds": 300,
+        "isCCP": true,
+        "tools": ["stock_pot", "whisk", "thermometer"],
+        "targetTemp": 165,
+        "tempRange": { "min": 155, "max": 180 }
+      },
+      {
+        "id": "uq8",
+        "order": 8,
+        "instruction": "Transfer to hot hold. Maintain 135°F or above. Stir every 15 minutes.",
+        "whyExplanation": "Queso is a TCS food. Below 135°F it enters the danger zone. After 4 hours below 135°F, the entire batch — 17.5 lb of cheese — must be discarded.",
+        "timeSeconds": 30,
+        "isCCP": true,
+        "tools": ["steam_table", "thermometer"],
+        "targetTemp": 145,
+        "tempRange": { "min": 135, "max": 165 }
+      }
+    ],
+    "criticalControlPoints": [
+      {
+        "id": "ccp-uj-q-scorch",
+        "stepId": "uq7",
+        "type": "temperature",
+        "target": "Melt at medium heat, 155-180°F",
+        "tolerance": "zero scorching",
+        "consequence": "Scorched queso = bitter taste = entire $40+ batch wasted. Cannot be fixed once burned."
+      },
+      {
+        "id": "ccp-uj-q-hold",
+        "stepId": "uq8",
+        "type": "temperature",
+        "target": "Hot hold at 135°F+",
+        "tolerance": "zero below 135°F",
+        "consequence": "17.5 lb of queso in the danger zone. If held below 135°F for 4 hours, discard the entire batch. $40+ in product lost."
+      }
+    ]
+  }
+}

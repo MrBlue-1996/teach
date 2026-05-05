@@ -1,0 +1,389 @@
+{
+  "id": "uj-fajita-rush-v1",
+  "slug": "uj-fajita-rush",
+  "type": "rush_hour",
+  "title": "Uncle Julio's: Fajita Rush",
+  "briefing": "Friday night. Five fajita tickets just printed. Mesquite grill is screaming at 500°F. Fire proteins, check temps, plate on sizzle platters. Move.",
+  "timeLimitSeconds": 600,
+  "difficultyLevel": 3,
+  "recipeId": "recipe-uj-chicken-fajita-v1",
+  "containsTraps": true,
+  "equipmentFocus": ["grill"],
+  "hiddenDomains": ["speed", "sanitation", "food_safety", "sequencing", "waste_management"],
+  "expertRecipe": {
+    "id": "recipe-uj-chicken-fajita-v1",
+    "name": "Mesquite-Grilled Chicken Fajitas",
+    "station": "grill",
+    "targetTimeSeconds": 900,
+    "wasteValuePerPlate": 1.1,
+    "platingStandard": "Chicken sliced against the grain, fanned on cast-iron sizzle platter. Charred peppers and onions alongside. Sizzle platter smoking when it hits the table.",
+    "idealSequence": [
+      "wash_hands",
+      "pull_protein_fifo",
+      "check_grill_temp",
+      "season_chicken",
+      "grill_presentation_side",
+      "rotate_marks",
+      "flip_to_cool_zone",
+      "temp_check_165",
+      "rest_3min",
+      "slice_against_grain",
+      "grill_vegetables",
+      "plate_sizzle_platter"
+    ],
+    "steps": [
+      {
+        "id": "uf1",
+        "order": 1,
+        "instruction": "Wash hands, glove up. Fresh gloves for raw protein.",
+        "whyExplanation": "Mesquite grill handles are shared. Gloves prevent cross-contamination from raw chicken to everything you touch next.",
+        "timeSeconds": 10,
+        "isCCP": true,
+        "tools": ["sink", "gloves"]
+      },
+      {
+        "id": "uf2",
+        "order": 2,
+        "instruction": "Pull marinated chicken from walk-in. FIFO — oldest non-spoiled lot.",
+        "whyExplanation": "Chicken marinates 4-24 hours. Older lot is more flavorful AND must be used first to prevent waste. Never grab the back-of-cooler mystery tray.",
+        "timeSeconds": 15,
+        "isCCP": false,
+        "tools": ["tongs"]
+      },
+      {
+        "id": "uf3",
+        "order": 3,
+        "instruction": "Check grill surface temp. Mesquite ember bed should read 450-550°F.",
+        "whyExplanation": "Below 450°F the chicken steams instead of searing. Above 550°F the marinade sugar burns black before the protein cooks through.",
+        "timeSeconds": 10,
+        "isCCP": true,
+        "tools": ["thermometer"],
+        "targetTemp": 500,
+        "tempRange": { "min": 450, "max": 550 }
+      },
+      {
+        "id": "uf4",
+        "order": 4,
+        "instruction": "Season chicken lightly — marinade carries most flavor.",
+        "whyExplanation": "Over-seasoning marinated protein doubles the salt. The marinade already has lime, cumin, garlic, and chili.",
+        "timeSeconds": 10,
+        "isCCP": false,
+        "tools": []
+      },
+      {
+        "id": "uf5",
+        "order": 5,
+        "instruction": "Place chicken presentation-side down on hottest zone. Do not move for 3 minutes.",
+        "whyExplanation": "Moving the protein breaks the sear. Three uninterrupted minutes on mesquite creates the signature char lines customers expect.",
+        "timeSeconds": 180,
+        "isCCP": false,
+        "tools": ["tongs"]
+      },
+      {
+        "id": "uf6",
+        "order": 6,
+        "instruction": "Rotate 90° for crosshatch marks. Two more minutes.",
+        "whyExplanation": "Crosshatch marks signal professional technique to the guest. It also distributes heat more evenly across the surface.",
+        "timeSeconds": 120,
+        "isCCP": false,
+        "tools": ["tongs"]
+      },
+      {
+        "id": "uf7",
+        "order": 7,
+        "instruction": "Flip to cooler zone. Cook until internal temp reaches 165°F.",
+        "whyExplanation": "Chicken must hit 165°F per USDA for Salmonella kill. No exceptions, no 'it looks done.' Thermometer is the only authority.",
+        "timeSeconds": 180,
+        "isCCP": true,
+        "tools": ["tongs", "thermometer"],
+        "targetTemp": 165,
+        "tempRange": { "min": 165, "max": 180 }
+      },
+      {
+        "id": "uf8",
+        "order": 8,
+        "instruction": "Rest chicken on clean cutting board for 3 minutes.",
+        "whyExplanation": "Resting lets juices redistribute. Slicing immediately dumps juice on the board instead of in the meat — dry fajitas get sent back.",
+        "timeSeconds": 180,
+        "isCCP": false,
+        "tools": ["cutting_board"]
+      },
+      {
+        "id": "uf9",
+        "order": 9,
+        "instruction": "Slice against the grain in 1/4-inch strips.",
+        "whyExplanation": "Cutting with the grain makes chewy strips. Against the grain shortens the muscle fibers — tender bite every time.",
+        "timeSeconds": 30,
+        "isCCP": false,
+        "tools": ["chef_knife", "cutting_board"]
+      },
+      {
+        "id": "uf10",
+        "order": 10,
+        "instruction": "Grill peppers and onions on hottest zone. Char edges, keep crisp center.",
+        "whyExplanation": "Overcooked vegetables turn mushy and watery on the platter. The char is flavor; the crisp is texture. Both matter.",
+        "timeSeconds": 120,
+        "isCCP": false,
+        "tools": ["tongs"]
+      },
+      {
+        "id": "uf11",
+        "order": 11,
+        "instruction": "Fan sliced chicken on pre-heated cast-iron sizzle platter. Add vegetables. Send immediately.",
+        "whyExplanation": "The sizzle platter must be smoking when it reaches the table — that's the Uncle Julio's signature. A cold platter kills the presentation and cools the food.",
+        "timeSeconds": 30,
+        "isCCP": false,
+        "tools": ["sizzle_platter"]
+      }
+    ],
+    "criticalControlPoints": [
+      {
+        "id": "ccp-uj-hands",
+        "stepId": "uf1",
+        "type": "sanitation",
+        "target": "Hands washed before raw protein contact",
+        "tolerance": "zero missed washes",
+        "consequence": "Cross-contamination from grill handles to chicken to plate. Foodborne illness complaint."
+      },
+      {
+        "id": "ccp-uj-grill-temp",
+        "stepId": "uf3",
+        "type": "temperature",
+        "target": "Grill surface 450-550°F",
+        "tolerance": "+/- 50°F",
+        "consequence": "Below 450°F = steamed chicken, no sear. Above 550°F = charred exterior, raw interior."
+      },
+      {
+        "id": "ccp-uj-chicken-temp",
+        "stepId": "uf7",
+        "type": "temperature",
+        "target": "Chicken internal 165°F",
+        "tolerance": "zero below 165°F",
+        "consequence": "Salmonella survival below 165°F. Single undercooked plate = health department investigation."
+      }
+    ]
+  },
+  "tickets": [
+    {
+      "id": "uj-tk-1",
+      "orderNumber": 301,
+      "items": [
+        {
+          "id": "uj-it-1",
+          "name": "Chicken Fajitas for 2",
+          "recipeId": "recipe-uj-chicken-fajita-v1",
+          "modifiers": [],
+          "isImpossible": false,
+          "quantity": 2
+        }
+      ],
+      "submittedAt": 0,
+      "priority": "normal",
+      "isTrapped": false,
+      "timeWindowSeconds": 360
+    },
+    {
+      "id": "uj-tk-2",
+      "orderNumber": 302,
+      "items": [
+        {
+          "id": "uj-it-2",
+          "name": "Steak Fajitas",
+          "recipeId": "recipe-uj-steak-fajita-v1",
+          "modifiers": ["medium"],
+          "isImpossible": false,
+          "quantity": 1
+        }
+      ],
+      "submittedAt": 30000,
+      "priority": "rush",
+      "isTrapped": false,
+      "timeWindowSeconds": 300
+    },
+    {
+      "id": "uj-tk-3",
+      "orderNumber": 303,
+      "items": [
+        {
+          "id": "uj-it-3",
+          "name": "Chicken Fajitas",
+          "recipeId": "recipe-uj-chicken-fajita-v1",
+          "modifiers": ["medium rare"],
+          "isImpossible": true,
+          "impossibleReason": "Chicken must reach 165°F internal per USDA. Medium rare (~145°F) leaves Salmonella alive. This order cannot be fired.",
+          "quantity": 1
+        }
+      ],
+      "submittedAt": 60000,
+      "priority": "normal",
+      "isTrapped": true,
+      "timeWindowSeconds": 300
+    },
+    {
+      "id": "uj-tk-4",
+      "orderNumber": 304,
+      "items": [
+        {
+          "id": "uj-it-4a",
+          "name": "Chicken Fajitas",
+          "recipeId": "recipe-uj-chicken-fajita-v1",
+          "modifiers": [],
+          "isImpossible": false,
+          "quantity": 1
+        },
+        {
+          "id": "uj-it-4b",
+          "name": "Shrimp Fajitas",
+          "recipeId": "recipe-uj-shrimp-fajita-v1",
+          "modifiers": [],
+          "isImpossible": false,
+          "quantity": 1
+        }
+      ],
+      "submittedAt": 120000,
+      "priority": "normal",
+      "isTrapped": false,
+      "timeWindowSeconds": 360
+    },
+    {
+      "id": "uj-tk-5",
+      "orderNumber": 305,
+      "items": [
+        {
+          "id": "uj-it-5",
+          "name": "Steak Fajitas for 2",
+          "recipeId": "recipe-uj-steak-fajita-v1",
+          "modifiers": ["extra peppers"],
+          "isImpossible": false,
+          "quantity": 2
+        }
+      ],
+      "submittedAt": 180000,
+      "priority": "vip",
+      "isTrapped": false,
+      "timeWindowSeconds": 300
+    }
+  ],
+  "availableIngredients": [
+    {
+      "id": "uj-ing-chicken-fresh",
+      "name": "Marinated chicken breast (Tuesday lot)",
+      "category": "protein",
+      "receivedAt": 1712534400000,
+      "useByDate": 1713312000000,
+      "isSpoiled": false,
+      "costPerUnit": 3.25,
+      "unit": "lb",
+      "allergens": [],
+      "requiresRefrigeration": true
+    },
+    {
+      "id": "uj-ing-chicken-spoiled",
+      "name": "Marinated chicken breast (old lot)",
+      "category": "protein",
+      "receivedAt": 1711497600000,
+      "useByDate": 1712448000000,
+      "isSpoiled": true,
+      "costPerUnit": 3.25,
+      "unit": "lb",
+      "allergens": [],
+      "requiresRefrigeration": true
+    },
+    {
+      "id": "uj-ing-skirt-steak",
+      "name": "Skirt steak (marinated)",
+      "category": "protein",
+      "receivedAt": 1712620800000,
+      "useByDate": 1713225600000,
+      "isSpoiled": false,
+      "costPerUnit": 8.5,
+      "unit": "lb",
+      "allergens": [],
+      "requiresRefrigeration": true
+    },
+    {
+      "id": "uj-ing-shrimp",
+      "name": "Gulf shrimp 16/20 (peeled, deveined)",
+      "category": "protein",
+      "receivedAt": 1712620800000,
+      "useByDate": 1713052800000,
+      "isSpoiled": false,
+      "costPerUnit": 12.0,
+      "unit": "lb",
+      "allergens": ["shellfish"],
+      "requiresRefrigeration": true
+    },
+    {
+      "id": "uj-ing-peppers",
+      "name": "Bell peppers (tri-color, sliced)",
+      "category": "produce",
+      "receivedAt": 1712707200000,
+      "useByDate": 1713398400000,
+      "isSpoiled": false,
+      "costPerUnit": 1.8,
+      "unit": "lb",
+      "allergens": [],
+      "requiresRefrigeration": true
+    },
+    {
+      "id": "uj-ing-onions",
+      "name": "Yellow onions (sliced)",
+      "category": "produce",
+      "receivedAt": 1712707200000,
+      "useByDate": 1713398400000,
+      "isSpoiled": false,
+      "costPerUnit": 0.65,
+      "unit": "lb",
+      "allergens": [],
+      "requiresRefrigeration": false
+    },
+    {
+      "id": "uj-ing-tortillas",
+      "name": "Flour tortillas (house-made)",
+      "category": "dry_goods",
+      "receivedAt": 1712707200000,
+      "useByDate": 1713052800000,
+      "isSpoiled": false,
+      "costPerUnit": 0.2,
+      "unit": "ea",
+      "allergens": ["wheat", "gluten"],
+      "requiresRefrigeration": false
+    },
+    {
+      "id": "uj-ing-cheese",
+      "name": "Shredded Mexican blend",
+      "category": "dairy",
+      "receivedAt": 1712620800000,
+      "useByDate": 1713571200000,
+      "isSpoiled": false,
+      "costPerUnit": 2.4,
+      "unit": "lb",
+      "allergens": ["dairy"],
+      "requiresRefrigeration": true
+    },
+    {
+      "id": "uj-ing-sour-cream",
+      "name": "Sour cream",
+      "category": "dairy",
+      "receivedAt": 1712620800000,
+      "useByDate": 1713744000000,
+      "isSpoiled": false,
+      "costPerUnit": 1.5,
+      "unit": "lb",
+      "allergens": ["dairy"],
+      "requiresRefrigeration": true
+    },
+    {
+      "id": "uj-ing-limes",
+      "name": "Limes (wedges)",
+      "category": "produce",
+      "receivedAt": 1712707200000,
+      "useByDate": 1713571200000,
+      "isSpoiled": false,
+      "costPerUnit": 0.1,
+      "unit": "ea",
+      "allergens": [],
+      "requiresRefrigeration": true
+    }
+  ]
+}

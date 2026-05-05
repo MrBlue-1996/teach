@@ -1,0 +1,141 @@
+{
+  "id": "uj-allergy-order-v1",
+  "slug": "uj-allergy-order",
+  "type": "mock_impossible",
+  "title": "Uncle Julio's: The Allergy Table",
+  "briefing": "Table 14 has four guests with dietary restrictions. FOH just handed you the ticket. Read every modifier. Some of these are doable. Some will send someone to the ER if you fire them wrong.",
+  "timeLimitSeconds": 120,
+  "difficultyLevel": 4,
+  "recipeId": "recipe-uj-allergy-review-v1",
+  "containsTraps": true,
+  "equipmentFocus": ["prep_table"],
+  "hiddenDomains": ["judgment", "food_safety", "sanitation"],
+  "expertRecipe": {
+    "id": "recipe-uj-allergy-review-v1",
+    "name": "Allergen Order Review",
+    "station": "prep_table",
+    "targetTimeSeconds": 90,
+    "wasteValuePerPlate": 0,
+    "platingStandard": "All impossible items identified and rejected. Safe items modified correctly and fired. Zero allergen violations.",
+    "idealSequence": [
+      "read_full_ticket",
+      "check_each_modifier",
+      "identify_impossible",
+      "flag_allergen_conflicts",
+      "reject_unsafe",
+      "modify_safe_items",
+      "fire_safe"
+    ],
+    "steps": [
+      {
+        "id": "ua1",
+        "order": 1,
+        "instruction": "Read the entire ticket before touching a single pan.",
+        "whyExplanation": "Firing before reading means you might start an impossible order and waste product. Or worse — you serve it and trigger an allergic reaction.",
+        "timeSeconds": 15,
+        "isCCP": false,
+        "tools": []
+      },
+      {
+        "id": "ua2",
+        "order": 2,
+        "instruction": "Check each modifier against known allergens in every ingredient.",
+        "whyExplanation": "Dairy-free means no cheese, no sour cream, no queso, AND no creamy hatch chile sauce (it contains cream). Missing one hidden dairy source is the same as ignoring the allergy.",
+        "timeSeconds": 20,
+        "isCCP": true,
+        "tools": []
+      },
+      {
+        "id": "ua3",
+        "order": 3,
+        "instruction": "Identify impossible combinations: shellfish allergy + shrimp, gluten-free + flour tortilla.",
+        "whyExplanation": "Shrimp IS shellfish. Flour tortilla IS gluten. These aren't modifications — they're contradictions. Firing them is negligence.",
+        "timeSeconds": 15,
+        "isCCP": true,
+        "tools": []
+      },
+      {
+        "id": "ua4",
+        "order": 4,
+        "instruction": "Reject impossible items. Notify FOH to clarify with the guest.",
+        "whyExplanation": "The cook is the last line of defense. FOH may not understand the allergen. Sending it back with a clear explanation protects the guest and the restaurant.",
+        "timeSeconds": 15,
+        "isCCP": true,
+        "tools": []
+      },
+      {
+        "id": "ua5",
+        "order": 5,
+        "instruction": "Modify and fire safe items: dairy-free fajitas (hold cheese, sour cream, use corn tortillas), nut allergy dessert (verify ingredients).",
+        "whyExplanation": "Don't hold the entire table's food because two items are impossible. Fire what's safe, communicate what's not, keep the table moving.",
+        "timeSeconds": 25,
+        "isCCP": false,
+        "tools": []
+      }
+    ],
+    "criticalControlPoints": [
+      {
+        "id": "ccp-uj-allergen",
+        "stepId": "ua3",
+        "type": "allergen",
+        "target": "All allergen conflicts identified",
+        "tolerance": "zero missed allergens",
+        "consequence": "Serving shrimp to a shellfish-allergic guest = anaphylaxis. One missed allergen can kill a guest and close the restaurant permanently."
+      },
+      {
+        "id": "ccp-uj-reject",
+        "stepId": "ua4",
+        "type": "sanitation",
+        "target": "All impossible items rejected before firing",
+        "tolerance": "zero impossible items served",
+        "consequence": "Gluten-free flour tortilla served to a celiac guest = hospitalization. Lawsuit plus health department investigation."
+      }
+    ]
+  },
+  "tickets": [
+    {
+      "id": "uj-allergy-tk-1",
+      "orderNumber": 501,
+      "items": [
+        {
+          "id": "uj-al-1a",
+          "name": "Chicken Fajitas (dairy-free)",
+          "recipeId": "recipe-uj-chicken-fajita-v1",
+          "modifiers": ["dairy-free", "no cheese", "no sour cream", "corn tortillas"],
+          "isImpossible": false,
+          "quantity": 1
+        },
+        {
+          "id": "uj-al-1b",
+          "name": "Shrimp Fajitas (shellfish allergy)",
+          "recipeId": "recipe-uj-shrimp-fajita-v1",
+          "modifiers": ["shellfish allergy"],
+          "isImpossible": true,
+          "impossibleReason": "Guest has a shellfish allergy but ordered shrimp. Shrimp is shellfish. This order cannot be fired. Notify FOH to suggest chicken or steak fajitas instead.",
+          "quantity": 1
+        },
+        {
+          "id": "uj-al-1c",
+          "name": "Cheese Enchiladas (gluten-free, flour tortilla)",
+          "recipeId": "recipe-uj-cheese-enchilada-v1",
+          "modifiers": ["gluten-free", "flour tortilla"],
+          "isImpossible": true,
+          "impossibleReason": "Flour tortilla contains wheat gluten. Cannot be gluten-free. Must clarify: switch to corn tortilla (which IS gluten-free) or remove the gluten-free requirement.",
+          "quantity": 2
+        },
+        {
+          "id": "uj-al-1d",
+          "name": "Steak Fajitas",
+          "recipeId": "recipe-uj-steak-fajita-v1",
+          "modifiers": ["medium", "no onions"],
+          "isImpossible": false,
+          "quantity": 1
+        }
+      ],
+      "submittedAt": 0,
+      "priority": "normal",
+      "isTrapped": true,
+      "timeWindowSeconds": 120
+    }
+  ]
+}

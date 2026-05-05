@@ -1,0 +1,760 @@
+{
+  "id": "pack-uncle-julios-v1",
+  "name": "Uncle Julio's Service-Ready Line Cook Training",
+  "version": "0.1.0-demo",
+  "description": "Service-ready line cook training pack for Uncle Julio's. Demo-content build with structurally complete placeholders for any brand-specific data that requires authorized source. Solve-first pedagogy throughout. This converted repo manifest is demo/staging content only; brand-specific fields still require authorized Uncle Julio's or Sun Holdings source before official use.",
+  "tags": ["required"],
+  "roleMappings": [
+    "badge-orientation-safety",
+    "badge-color-barriers",
+    "badge-station-setup",
+    "badge-line-readiness",
+    "badge-ticket-flow",
+    "badge-downtime-discipline",
+    "badge-cleaning-reset",
+    "badge-service-ready"
+  ],
+  "difficulty": "beginner",
+  "minDeviceProfile": {
+    "ramMb": 1024,
+    "networkKbps": 0,
+    "requiresWebGL": false,
+    "requiresWebGPU": false,
+    "requiresWasm": false
+  },
+  "teachingBlocks": [
+    {
+      "id": "tb-uj-orientation-safety",
+      "concept": "Orientation and Safety",
+      "mode": "L0",
+      "canonicalSolution": "Prompt: You are walking from the dish pit back to your station carrying a hot sauté pan in your right hand and a knife in your left. Three coworkers are on the line. List exactly what you say, in order, between leaving the dish pit and arriving at your station.\n\nExpected response:\n1. 'Hot, sharp, behind' as you start moving\n2. 'Corner' at every blind corner you pass\n3. 'Behind' as you pass each coworker\n\nSuccess criteria:\n1. Cook calls hot, sharp, and behind before moving — not during or after.\n2. Cook calls corner at blind corners every time, not selectively.\n3. Cook does not lower their voice; calls are made to be heard.",
+      "explanation": "Set the floor for every shift. Before any cook touches a knife or a pan on a live line, they have to understand that safety is the default state of the work, not an interruption to it.\n\nThe cook can recite the four most common line hazards, demonstrate the safe response to each, and explain why calling movement out loud is faster, not slower, than working in silence.\n\nOn a working line, the only way to move six bodies through a five-foot space without injuries is to make movement audible. Hot, sharp, behind, corner — these are not optional manners; they are the system that lets cooks turn quickly without looking. A cook who does not call is a cook who will be hit, or who will hit someone else. Falling knives are never caught. Hot pans are flagged the moment they leave the burner. A cook who internalizes this stops thinking about it during service, and that is the goal.\n\nSource data note: Generic line-safety standards. Uncle Julio's specific safety reporting chain, on-site emergency procedures, and any brand-specific call vocabulary need authorized source for production use.",
+      "surfaceVariants": [
+        {
+          "id": "variant-solve-first",
+          "description": "You are walking from the dish pit back to your station carrying a hot sauté pan in your right hand and a knife in your left. Three coworkers are on the line. List exactly what you say, in order, between leaving the dish pit and arriving at your station.",
+          "data": {
+            "sourceModuleId": "MD6-orientation-safety",
+            "sourceDataStatus": "demo",
+            "stationRelevance": ["ST3-generic-line-station"],
+            "roleTarget": ["new_cook", "trainer"],
+            "inputType": "ordered_steps",
+            "expectedResponse": [
+              "'Hot, sharp, behind' as you start moving",
+              "'Corner' at every blind corner you pass",
+              "'Behind' as you pass each coworker"
+            ]
+          }
+        },
+        {
+          "id": "variant-module-1-recall",
+          "description": "What three calls do you make when carrying both a hot pan and a knife behind a working line?",
+          "data": {
+            "sourceModuleId": "MD6-orientation-safety",
+            "assessmentId": "module-1-recall",
+            "type": "short_answer",
+            "options": [],
+            "expected": "Hot, sharp, behind — called before movement starts.",
+            "passingCriteria": "All three calls named, with the timing rule (before movement)."
+          }
+        },
+        {
+          "id": "variant-module-1-application",
+          "description": "Trainer drops a knife handle-first toward the floor next to you. What do you do?",
+          "data": {
+            "sourceModuleId": "MD6-orientation-safety",
+            "assessmentId": "module-1-application",
+            "type": "multiple_choice",
+            "options": [
+              "Catch it.",
+              "Step back and let it fall.",
+              "Kick it away.",
+              "Yell for help."
+            ],
+            "expected": "Step back and let it fall.",
+            "passingCriteria": "Correct answer chosen on first attempt."
+          }
+        }
+      ],
+      "timeBudgetSeconds": 1200,
+      "difficulty": "beginner",
+      "prerequisites": [],
+      "successCriteria": {
+        "minCorrectnessScore": 0.8,
+        "maxTimeSeconds": 2400,
+        "maxRetries": 3,
+        "requiresExplanation": true
+      },
+      "hints": [
+        "Three things are dangerous on you at once: heat, blade, body. Each one has its own call.",
+        "You call before you move, not as you move. The whole point is that nobody behind you has to react.",
+        "There is no professionalism in silence on a working line. The pros are the loudest in the right way."
+      ],
+      "commonErrors": [
+        {
+          "pattern": "Saying the calls quietly, as if professionalism means silence.",
+          "description": "Saying the calls quietly, as if professionalism means silence.",
+          "remediation": "Use the module hints, success criteria, and trainer observation standard before retrying."
+        },
+        {
+          "pattern": "Calling 'behind' only when crowded, missing it on an empty line.",
+          "description": "Calling 'behind' only when crowded, missing it on an empty line.",
+          "remediation": "Use the module hints, success criteria, and trainer observation standard before retrying."
+        },
+        {
+          "pattern": "Catching a falling knife instead of stepping back.",
+          "description": "Catching a falling knife instead of stepping back.",
+          "remediation": "Use the module hints, success criteria, and trainer observation standard before retrying."
+        },
+        {
+          "pattern": "Holding a hot pan handle without flagging it the moment it leaves the burner.",
+          "description": "Holding a hot pan handle without flagging it the moment it leaves the burner.",
+          "remediation": "Use the module hints, success criteria, and trainer observation standard before retrying."
+        }
+      ]
+    },
+    {
+      "id": "tb-uj-tools-color-barriers",
+      "concept": "Tools and Color Barriers",
+      "mode": "L0",
+      "canonicalSolution": "Prompt: You are setting up to portion four items: raw chicken thighs, sliced tomato, cooked carnitas, and raw shrimp. Match each item to the correct cutting-board color using the industry-standard mapping. Then explain what you do if the yellow board is in the dish pit.\n\nExpected response:\n1. raw chicken thighs:yellow\n2. sliced tomato:green\n3. cooked carnitas:brown\n4. raw shrimp:blue\n5. fallback:wash-rinse-sanitize an alternate board, document the substitution, and replace the missing board to par before next service\n\nSuccess criteria:\n1. All four boards mapped correctly.\n2. Fallback procedure includes wash-rinse-sanitize and a notation step, not just substitution.\n3. Cook does not skip the documentation step; a missing board today is a missing board tomorrow.",
+      "explanation": "Get a cook fluent in the color-coded separation system that prevents cross-contamination. A cook who picks up the wrong colored board on a busy line is one ticket away from a recall conversation.\n\nThe cook can name the standard color-board mapping, identify the correct board for the protein in front of them, and explain what to do when the right color is not available.\n\nColor-coded boards are the most low-tech and most effective cross-contamination control in any kitchen. The mapping is industry-standard for a reason: a cook switching from raw poultry to ready-to-eat product cannot rely on cleaning to be perfect mid-rush. Color separation makes the wrong move physically obvious. When a board is missing, the right answer is never 'use any board' — it is wash-rinse-sanitize a substitute, flag it on the prep board so it gets replaced, and tell the lead. Allergen (purple) tools are dedicated; they do not enter the general dish rotation during service because a single trace cross-contact event is the kind of mistake that ends careers.\n\nSource data note: Industry-standard color mapping shown. Uncle Julio's may have additional internal mappings (tortilla press, salsa station, fajita prep) that need authorized source.",
+      "surfaceVariants": [
+        {
+          "id": "variant-solve-first",
+          "description": "You are setting up to portion four items: raw chicken thighs, sliced tomato, cooked carnitas, and raw shrimp. Match each item to the correct cutting-board color using the industry-standard mapping. Then explain what you do if the yellow board is in the dish pit.",
+          "data": {
+            "sourceModuleId": "MD6-tools-color-barriers",
+            "sourceDataStatus": "demo",
+            "stationRelevance": ["ST3-generic-line-station", "ST3-prep-production-demo"],
+            "roleTarget": ["new_cook", "trainer"],
+            "inputType": "checklist",
+            "expectedResponse": [
+              "raw chicken thighs:yellow",
+              "sliced tomato:green",
+              "cooked carnitas:brown",
+              "raw shrimp:blue",
+              "fallback:wash-rinse-sanitize an alternate board, document the substitution, and replace the missing board to par before next service"
+            ]
+          }
+        },
+        {
+          "id": "variant-module-2-mapping",
+          "description": "Match: raw beef → ?, raw fish → ?, lettuce → ?, cooked chicken → ?",
+          "data": {
+            "sourceModuleId": "MD6-tools-color-barriers",
+            "assessmentId": "module-2-mapping",
+            "type": "checklist",
+            "options": [],
+            "expected": ["raw beef:red", "raw fish:blue", "lettuce:green", "cooked chicken:brown"],
+            "passingCriteria": "All four mappings correct."
+          }
+        },
+        {
+          "id": "variant-module-2-fallback",
+          "description": "The yellow board is in the dish pit. What do you do?",
+          "data": {
+            "sourceModuleId": "MD6-tools-color-barriers",
+            "assessmentId": "module-2-fallback",
+            "type": "short_answer",
+            "options": [],
+            "expected": "Wash-rinse-sanitize a substitute board, flag the missing yellow on the prep board, tell the lead. Do not work poultry on a non-substituted board.",
+            "passingCriteria": "Includes wash-rinse-sanitize, a notation step, and communication to the lead."
+          }
+        }
+      ],
+      "timeBudgetSeconds": 900,
+      "difficulty": "beginner",
+      "prerequisites": ["tb-uj-orientation-safety"],
+      "successCriteria": {
+        "minCorrectnessScore": 0.8,
+        "maxTimeSeconds": 1800,
+        "maxRetries": 3,
+        "requiresExplanation": true
+      },
+      "hints": [
+        "The mapping has a logic: blue is sea, yellow is bird, red is mammal, green grows.",
+        "Cooked-or-ready-to-eat is brown — separate from anything raw, always.",
+        "Allergen (purple) is dedicated, not shared. It does not rotate with the general dish stream during service."
+      ],
+      "commonErrors": [
+        {
+          "pattern": "Assuming any clean board is fine in a pinch.",
+          "description": "Assuming any clean board is fine in a pinch.",
+          "remediation": "Use the module hints, success criteria, and trainer observation standard before retrying."
+        },
+        {
+          "pattern": "Substituting silently without telling the lead so the missing board never gets replaced.",
+          "description": "Substituting silently without telling the lead so the missing board never gets replaced.",
+          "remediation": "Use the module hints, success criteria, and trainer observation standard before retrying."
+        },
+        {
+          "pattern": "Confusing yellow (raw poultry) with brown (cooked or ready-to-eat).",
+          "description": "Confusing yellow (raw poultry) with brown (cooked or ready-to-eat).",
+          "remediation": "Use the module hints, success criteria, and trainer observation standard before retrying."
+        },
+        {
+          "pattern": "Treating allergen (purple) as optional when an allergen ticket comes through.",
+          "description": "Treating allergen (purple) as optional when an allergen ticket comes through.",
+          "remediation": "Use the module hints, success criteria, and trainer observation standard before retrying."
+        }
+      ]
+    },
+    {
+      "id": "tb-uj-station-setup",
+      "concept": "Station Setup",
+      "mode": "L0",
+      "canonicalSolution": "Prompt: Your station is cold. You have 12 minutes until first ticket. Put these eight steps in the correct order: stage tools, wipe and sanitize surfaces, mix sanitizer bucket, verify equipment temperature, confirm cutting board color matches assigned protein, stock rail to par in FIFO order, wash hands and check apron, tell the lead the station is up.\n\nExpected response:\n1. wash hands and check apron\n2. wipe and sanitize surfaces\n3. confirm cutting board color matches assigned protein\n4. verify equipment temperature\n5. mix sanitizer bucket\n6. stock rail to par in FIFO order\n7. stage tools\n8. tell the lead the station is up\n\nSuccess criteria:\n1. Hand-wash is first, every time.\n2. Surface sanitation comes before any food contact.\n3. Equipment temperature verified by thermometer, not by sight.\n4. Readiness call goes to the lead; the cook does not self-declare ready.",
+      "explanation": "Bring a cold station up to ready in the right order, the same way every time, so nothing is missed and nothing is rushed at the wrong time.\n\nThe cook can perform a station open without a checklist, can call readiness through the lead instead of self-declaring, and can identify what cannot be verified by sight alone.\n\nA station open is layered: clean hands, clean surface, correct board, correct equipment temperature, correct sanitizer, correct stock, correct tool placement, and a public readiness call. Every layer is a defense. Cooks who freelance the order eventually skip a layer, and the kitchen finds out the hard way. The readiness call goes through the lead because cooks are biased reporters of their own readiness; the lead is the one who sees the whole line and confirms whether the station is actually ready to take a ticket. Calling readiness through the lead is not bureaucracy — it is how the line stays in sync.\n\nSource data note: Generic open. Uncle Julio's specific open sheet, par sheet, station-specific equipment warmup (mesquite grill, tortilla press, salsa station), and brand-specific readiness markers need authorized source.",
+      "surfaceVariants": [
+        {
+          "id": "variant-solve-first",
+          "description": "Your station is cold. You have 12 minutes until first ticket. Put these eight steps in the correct order: stage tools, wipe and sanitize surfaces, mix sanitizer bucket, verify equipment temperature, confirm cutting board color matches assigned protein, stock rail to par in FIFO order, wash hands and check apron, tell the lead the station is up.",
+          "data": {
+            "sourceModuleId": "MD6-station-setup",
+            "sourceDataStatus": "demo",
+            "stationRelevance": [
+              "ST3-generic-line-station",
+              "ST3-grill-service-demo",
+              "ST3-saute-service-demo"
+            ],
+            "roleTarget": ["new_cook", "trainer"],
+            "inputType": "ordered_steps",
+            "expectedResponse": [
+              "wash hands and check apron",
+              "wipe and sanitize surfaces",
+              "confirm cutting board color matches assigned protein",
+              "verify equipment temperature",
+              "mix sanitizer bucket",
+              "stock rail to par in FIFO order",
+              "stage tools",
+              "tell the lead the station is up"
+            ]
+          }
+        },
+        {
+          "id": "variant-module-3-order",
+          "description": "First three steps of a station open, in order.",
+          "data": {
+            "sourceModuleId": "MD6-station-setup",
+            "assessmentId": "module-3-order",
+            "type": "ordered_steps",
+            "options": [],
+            "expected": [
+              "wash hands and check apron",
+              "wipe and sanitize surfaces",
+              "confirm cutting board color matches assigned protein"
+            ],
+            "passingCriteria": "All three correct in this order."
+          }
+        },
+        {
+          "id": "variant-module-3-readiness",
+          "description": "Who declares your station ready?",
+          "data": {
+            "sourceModuleId": "MD6-station-setup",
+            "assessmentId": "module-3-readiness",
+            "type": "multiple_choice",
+            "options": ["You.", "The lead or expo.", "The first ticket.", "The clock."],
+            "expected": "The lead or expo.",
+            "passingCriteria": "Correct on first attempt."
+          }
+        }
+      ],
+      "timeBudgetSeconds": 1500,
+      "difficulty": "beginner",
+      "prerequisites": ["tb-uj-orientation-safety", "tb-uj-tools-color-barriers"],
+      "successCriteria": {
+        "minCorrectnessScore": 0.8,
+        "maxTimeSeconds": 3000,
+        "maxRetries": 3,
+        "requiresExplanation": true
+      },
+      "hints": [
+        "Hands first. Always. The dirtiest surface in the kitchen at the start of a shift is on you.",
+        "Wipe surfaces before tools touch them, and tools before food touches them.",
+        "Equipment temperature is verified, not assumed — a thermometer is faster than a callback ticket."
+      ],
+      "commonErrors": [
+        {
+          "pattern": "Staging tools before sanitizing the surface they sit on.",
+          "description": "Staging tools before sanitizing the surface they sit on.",
+          "remediation": "Use the module hints, success criteria, and trainer observation standard before retrying."
+        },
+        {
+          "pattern": "Eyeballing equipment temperature instead of using a thermometer.",
+          "description": "Eyeballing equipment temperature instead of using a thermometer.",
+          "remediation": "Use the module hints, success criteria, and trainer observation standard before retrying."
+        },
+        {
+          "pattern": "Mixing sanitizer too weak — or too strong, which does not help.",
+          "description": "Mixing sanitizer too weak — or too strong, which does not help.",
+          "remediation": "Use the module hints, success criteria, and trainer observation standard before retrying."
+        },
+        {
+          "pattern": "Calling 'I'm up' to nobody in particular instead of through the lead.",
+          "description": "Calling 'I'm up' to nobody in particular instead of through the lead.",
+          "remediation": "Use the module hints, success criteria, and trainer observation standard before retrying."
+        }
+      ]
+    },
+    {
+      "id": "tb-uj-line-readiness",
+      "concept": "Line Readiness",
+      "mode": "L0",
+      "canonicalSolution": "Prompt: Your station is open. Pre-shift huddle just ended. You learned: a 60-top is on the books at 7 PM, a regular VIP is in at 6:30, and the produce delivery is short on a key item. With 30 minutes until first ticket, name the three positioning moves you make right now to absorb the load.\n\nExpected response:\n1. Pre-portion or pre-fire the items the 60-top will hit hardest, in batches sized to your hold capacity\n2. Brief the expo and the lead on the short item so the menu call-out is consistent and substitutions are pre-decided\n3. Stage tools and pans for the highest-volume item with extras within reach so you are not rotating mid-rush\n\nSuccess criteria:\n1. Cook anticipates load instead of reacting to it.\n2. Cook synchronizes with expo and lead, not just within their own station.\n3. Cook positions tools for volume, not for tidiness.",
+      "explanation": "Take a station that is technically open and turn it into a station that is actually ready to absorb tickets at a working pace. Open is not the same as ready.\n\nThe cook can identify the difference between an open station and a service-ready station, can read the board for the day's load, and can position tools and stock so the first ticket does not catch them flat-footed.\n\nA station that is open passes a checklist. A station that is ready absorbs the next 30 minutes of tickets without panic. The difference is information and positioning. The cook reads the board, hears the pre-shift, and then makes three decisions: what to pre-fire or pre-portion, what to communicate up the chain, and where to put hands and tools so the highest-volume item builds itself. Cooks who skip the readiness pass are the ones who are technically clean during slow service and visibly underwater during a real rush.\n\nSource data note: Generic readiness logic. Uncle Julio's specific pre-shift huddle format, board codes, and reservation-system data integration need authorized source.",
+      "surfaceVariants": [
+        {
+          "id": "variant-solve-first",
+          "description": "Your station is open. Pre-shift huddle just ended. You learned: a 60-top is on the books at 7 PM, a regular VIP is in at 6:30, and the produce delivery is short on a key item. With 30 minutes until first ticket, name the three positioning moves you make right now to absorb the load.",
+          "data": {
+            "sourceModuleId": "MD6-line-readiness",
+            "sourceDataStatus": "demo",
+            "stationRelevance": [
+              "ST3-generic-line-station",
+              "ST3-grill-service-demo",
+              "ST3-saute-service-demo"
+            ],
+            "roleTarget": ["new_cook", "trainer"],
+            "inputType": "ordered_steps",
+            "expectedResponse": [
+              "Pre-portion or pre-fire the items the 60-top will hit hardest, in batches sized to your hold capacity",
+              "Brief the expo and the lead on the short item so the menu call-out is consistent and substitutions are pre-decided",
+              "Stage tools and pans for the highest-volume item with extras within reach so you are not rotating mid-rush"
+            ]
+          }
+        },
+        {
+          "id": "variant-module-4-distinction",
+          "description": "In one sentence, how is a ready station different from an open station?",
+          "data": {
+            "sourceModuleId": "MD6-line-readiness",
+            "assessmentId": "module-4-distinction",
+            "type": "short_answer",
+            "options": [],
+            "expected": "Open is set; ready is positioned for the next 30 minutes of tickets based on what's actually coming.",
+            "passingCriteria": "Names the load-and-positioning distinction."
+          }
+        },
+        {
+          "id": "variant-module-4-load",
+          "description": "Three signals you read before a service to set readiness.",
+          "data": {
+            "sourceModuleId": "MD6-line-readiness",
+            "assessmentId": "module-4-load",
+            "type": "checklist",
+            "options": [],
+            "expected": [
+              "party size or covers",
+              "VIP or timed reservations",
+              "supply gaps or 86 items"
+            ],
+            "passingCriteria": "All three signals named (wording can vary)."
+          }
+        }
+      ],
+      "timeBudgetSeconds": 1200,
+      "difficulty": "beginner",
+      "prerequisites": ["tb-uj-station-setup"],
+      "successCriteria": {
+        "minCorrectnessScore": 0.8,
+        "maxTimeSeconds": 2400,
+        "maxRetries": 3,
+        "requiresExplanation": true
+      },
+      "hints": [
+        "Open means the station is set. Ready means the station is positioned for what is coming next.",
+        "Pre-fire only what you can hold without quality drop — usually a fraction of expected volume, not all of it.",
+        "If something is short, expo and the lead need to know before the first ticket, not during it."
+      ],
+      "commonErrors": [
+        {
+          "pattern": "Treating 'open' as 'ready' and then getting buried by ticket two.",
+          "description": "Treating 'open' as 'ready' and then getting buried by ticket two.",
+          "remediation": "Use the module hints, success criteria, and trainer observation standard before retrying."
+        },
+        {
+          "pattern": "Hoarding information from expo about a short item until the first ticket asks for it.",
+          "description": "Hoarding information from expo about a short item until the first ticket asks for it.",
+          "remediation": "Use the module hints, success criteria, and trainer observation standard before retrying."
+        },
+        {
+          "pattern": "Pre-portioning so much that hold quality drops before the rush hits.",
+          "description": "Pre-portioning so much that hold quality drops before the rush hits.",
+          "remediation": "Use the module hints, success criteria, and trainer observation standard before retrying."
+        }
+      ]
+    },
+    {
+      "id": "tb-uj-ticket-flow-basics",
+      "concept": "Ticket Flow Basics",
+      "mode": "L0",
+      "canonicalSolution": "Prompt: Expo fires a ticket: one item that takes 12 minutes, two items that take 6 minutes, one item that takes 90 seconds. You have to call your acknowledgment, identify the anchor, and decide when each item starts so the plate goes up together. Walk through it.\n\nExpected response:\n1. Acknowledge the fire out loud, audibly enough that expo confirms\n2. Identify the 12-minute item as the anchor\n3. Start the anchor first\n4. Start the 6-minute items at the 6-minute mark of the anchor\n5. Start the 90-second item with about 90 seconds left on the anchor\n6. Plate together at the pass\n\nSuccess criteria:\n1. Acknowledgment is audible.\n2. Anchor is correctly identified as the longest-cook item.\n3. Other items are timed against the anchor, not started in parallel and held.",
+      "explanation": "Teach the cook to think about a ticket as a synchronized handoff with multiple owners, not as a private to-do list. The plate is judged at the pass; the cook is judged on whether their portion arrived on time and on standard.\n\nThe cook can identify the anchor item on a multi-item ticket, time secondary items against it, and acknowledge the expo audibly. The cook understands that finishing first is not winning if it means a held plate.\n\nEvery multi-item ticket has an anchor: the item that takes the longest to cook. Every other item on that ticket is timed backward from when the anchor will be ready. Cooks who do not think this way either start everything at once and hold most of it (which loses quality) or start late and finish late (which loses tables). Acknowledgment is not optional and not silent. The expo cannot route what they cannot hear, so the call goes up clearly and confirmed. Plating together at the pass is the standard; finishing your part first is not a win when the plate sits.\n\nSource data note: Generic anchor logic. Uncle Julio's specific item timing standards (fajita timing, mesquite grill timing, tortilla press timing) require authorized source for accurate practice problems.",
+      "surfaceVariants": [
+        {
+          "id": "variant-solve-first",
+          "description": "Expo fires a ticket: one item that takes 12 minutes, two items that take 6 minutes, one item that takes 90 seconds. You have to call your acknowledgment, identify the anchor, and decide when each item starts so the plate goes up together. Walk through it.",
+          "data": {
+            "sourceModuleId": "MD6-ticket-flow-basics",
+            "sourceDataStatus": "demo",
+            "stationRelevance": [
+              "ST3-generic-line-station",
+              "ST3-grill-service-demo",
+              "ST3-saute-service-demo"
+            ],
+            "roleTarget": ["new_cook", "trainer"],
+            "inputType": "ordered_steps",
+            "expectedResponse": [
+              "Acknowledge the fire out loud, audibly enough that expo confirms",
+              "Identify the 12-minute item as the anchor",
+              "Start the anchor first",
+              "Start the 6-minute items at the 6-minute mark of the anchor",
+              "Start the 90-second item with about 90 seconds left on the anchor",
+              "Plate together at the pass"
+            ]
+          }
+        },
+        {
+          "id": "variant-module-5-anchor",
+          "description": "On a ticket with a 14-minute item, an 8-minute item, and a 2-minute item, which is the anchor and when does the 8-minute item start?",
+          "data": {
+            "sourceModuleId": "MD6-ticket-flow-basics",
+            "assessmentId": "module-5-anchor",
+            "type": "short_answer",
+            "options": [],
+            "expected": "The 14-minute item is the anchor. The 8-minute item starts 6 minutes into the anchor.",
+            "passingCriteria": "Anchor identified correctly and timing math is correct."
+          }
+        },
+        {
+          "id": "variant-module-5-acknowledgment",
+          "description": "Expo fires your ticket. You are mid-stir. What do you do?",
+          "data": {
+            "sourceModuleId": "MD6-ticket-flow-basics",
+            "assessmentId": "module-5-acknowledgment",
+            "type": "multiple_choice",
+            "options": [
+              "Nod and keep stirring.",
+              "Acknowledge audibly so expo confirms, then keep stirring.",
+              "Ignore until you can stop stirring.",
+              "Stop stirring entirely until you confirm."
+            ],
+            "expected": "Acknowledge audibly so expo confirms, then keep stirring.",
+            "passingCriteria": "Correct on first attempt."
+          }
+        }
+      ],
+      "timeBudgetSeconds": 1500,
+      "difficulty": "beginner",
+      "prerequisites": ["tb-uj-line-readiness"],
+      "successCriteria": {
+        "minCorrectnessScore": 0.8,
+        "maxTimeSeconds": 3000,
+        "maxRetries": 3,
+        "requiresExplanation": true
+      },
+      "hints": [
+        "Anchor first. Other items start counting backward from when the anchor finishes.",
+        "A held plate loses quality before a late plate does. The goal is together, not fast.",
+        "Acknowledge out loud or expo will fire it again, and now you are behind two tickets, not one."
+      ],
+      "commonErrors": [
+        {
+          "pattern": "Starting all items at the same time and holding the fast ones until the slow one finishes.",
+          "description": "Starting all items at the same time and holding the fast ones until the slow one finishes.",
+          "remediation": "Use the module hints, success criteria, and trainer observation standard before retrying."
+        },
+        {
+          "pattern": "Starting the anchor late because it 'feels' like a long time before pickup.",
+          "description": "Starting the anchor late because it 'feels' like a long time before pickup.",
+          "remediation": "Use the module hints, success criteria, and trainer observation standard before retrying."
+        },
+        {
+          "pattern": "Acknowledging the fire silently — a nod is not an acknowledgment.",
+          "description": "Acknowledging the fire silently — a nod is not an acknowledgment.",
+          "remediation": "Use the module hints, success criteria, and trainer observation standard before retrying."
+        },
+        {
+          "pattern": "Counting time against your own item instead of against the slowest item on the ticket.",
+          "description": "Counting time against your own item instead of against the slowest item on the ticket.",
+          "remediation": "Use the module hints, success criteria, and trainer observation standard before retrying."
+        }
+      ]
+    },
+    {
+      "id": "tb-uj-downtime-decisions",
+      "concept": "Downtime Decisions",
+      "mode": "L0",
+      "canonicalSolution": "Prompt: The rush is over. You have about 12 minutes before the next push. The rail is half-empty, the station is messy but functional, and a deep cleaning task on your sidework list is overdue. List your priority order and explain why.\n\nExpected response:\n1. Restock the rail to par first\n2. Reset and reorganize the station second\n3. Tackle the deep-cleaning task last, only if the remaining window allows\n\nSuccess criteria:\n1. Restock is named first.\n2. Cook articulates that an empty rail breaks faster than a messy station does.\n3. Deep cleaning is treated as a downtime bonus, not a downtime priority.",
+      "explanation": "Train the cook to use the gap between rushes correctly. The next rush is decided in the previous gap, and the most common failure is doing the right things in the wrong order.\n\nThe cook can prioritize restock, reset, and clean correctly between rushes, and can articulate why restock comes first even when the station looks dirty.\n\nDowntime is finite, and almost every kitchen has a default order that minimizes damage in the next rush. Restock first, because an empty rail kills tickets within seconds of a fire. Reset second, because a disorganized station accumulates errors throughout a service. Deep cleaning is the third priority — important, but not gating, and best done in pieces over many shifts rather than rushed before a push. Cooks who clean first because the station looks bad are responding to social pressure, not to operational reality. Managers who reward post-rush appearance over next-rush readiness train the wrong instinct.\n\nSource data note: Generic priority logic. Uncle Julio's specific sidework lists, par sheets, and brand-specific deep-cleaning schedule need authorized source.",
+      "surfaceVariants": [
+        {
+          "id": "variant-solve-first",
+          "description": "The rush is over. You have about 12 minutes before the next push. The rail is half-empty, the station is messy but functional, and a deep cleaning task on your sidework list is overdue. List your priority order and explain why.",
+          "data": {
+            "sourceModuleId": "MD6-downtime-decisions",
+            "sourceDataStatus": "demo",
+            "stationRelevance": [
+              "ST3-generic-line-station",
+              "ST3-grill-service-demo",
+              "ST3-saute-service-demo",
+              "ST3-prep-production-demo"
+            ],
+            "roleTarget": ["new_cook", "trainer", "manager"],
+            "inputType": "ordered_steps",
+            "expectedResponse": [
+              "Restock the rail to par first",
+              "Reset and reorganize the station second",
+              "Tackle the deep-cleaning task last, only if the remaining window allows"
+            ]
+          }
+        },
+        {
+          "id": "variant-module-6-priority",
+          "description": "Order: restock, deep clean, reset.",
+          "data": {
+            "sourceModuleId": "MD6-downtime-decisions",
+            "assessmentId": "module-6-priority",
+            "type": "ordered_steps",
+            "options": [],
+            "expected": ["restock", "reset", "deep clean"],
+            "passingCriteria": "Order correct."
+          }
+        },
+        {
+          "id": "variant-module-6-why",
+          "description": "Why is restock the first priority during downtime?",
+          "data": {
+            "sourceModuleId": "MD6-downtime-decisions",
+            "assessmentId": "module-6-why",
+            "type": "short_answer",
+            "options": [],
+            "expected": "Because an empty rail kills tickets faster than a messy station does. The next rush will fail at the rail before it fails at appearance.",
+            "passingCriteria": "Reasoning includes the speed of failure on an empty rail vs. a messy but stocked station."
+          }
+        }
+      ],
+      "timeBudgetSeconds": 900,
+      "difficulty": "beginner",
+      "prerequisites": ["tb-uj-ticket-flow-basics"],
+      "successCriteria": {
+        "minCorrectnessScore": 0.8,
+        "maxTimeSeconds": 1800,
+        "maxRetries": 3,
+        "requiresExplanation": true
+      },
+      "hints": [
+        "The next rush kills you fastest if the rail is empty, not if the station is messy.",
+        "Restocking is also FIFO — old product in front, new behind. Skipping that creates a different kind of problem 24 hours from now.",
+        "Reset before deep clean: organization compounds in the rush; cleanliness can be patched."
+      ],
+      "commonErrors": [
+        {
+          "pattern": "Cleaning first because the station looks bad and feels embarrassing.",
+          "description": "Cleaning first because the station looks bad and feels embarrassing.",
+          "remediation": "Use the module hints, success criteria, and trainer observation standard before retrying."
+        },
+        {
+          "pattern": "Restocking lazily — putting new product on top of old, breaking FIFO.",
+          "description": "Restocking lazily — putting new product on top of old, breaking FIFO.",
+          "remediation": "Use the module hints, success criteria, and trainer observation standard before retrying."
+        },
+        {
+          "pattern": "Skipping the reset and going straight from restock to break.",
+          "description": "Skipping the reset and going straight from restock to break.",
+          "remediation": "Use the module hints, success criteria, and trainer observation standard before retrying."
+        },
+        {
+          "pattern": "Treating downtime as rest time and starting the next rush from scratch.",
+          "description": "Treating downtime as rest time and starting the next rush from scratch.",
+          "remediation": "Use the module hints, success criteria, and trainer observation standard before retrying."
+        }
+      ]
+    },
+    {
+      "id": "tb-uj-cleaning-reset",
+      "concept": "Cleaning and Reset",
+      "mode": "L0",
+      "canonicalSolution": "Prompt: Mid-service. Tickets are still firing but slower. Your station has accumulated three sauté pans on the side, the cutting board has trim on it, and the sanitizer cloth on the counter is gray. In what order do you fix this without breaking ticket flow?\n\nExpected response:\n1. Refresh the sanitizer cloth first — a gray cloth is contaminating, not cleaning\n2. Clear the cutting board of trim and wipe it down\n3. Hand the spent sauté pans to the dish pit on your way back to the rail\n4. Continue answering tickets between each micro-step so flow is not broken\n\nSuccess criteria:\n1. Cook recognizes a gray sanitizer cloth as a hazard, not a cosmetic issue.\n2. Cook breaks reset into micro-steps that fit between tickets.\n3. Cook does not stop ticket flow to do a full reset.",
+      "explanation": "Build the habit of resetting in the small gaps so the station never accumulates a deficit. Cleanliness is not a post-shift task; it is a continuous practice.\n\nThe cook can perform a mid-service reset without breaking ticket flow, can recognize when a sanitizer bucket has gone bad, and can hand off a clean station for the next shift.\n\nMid-service reset is a different skill than post-shift cleanup. The point is to keep the station functional without breaking ticket flow. A cook who tries to do a full reset between two tickets will miss the second ticket. A cook who never resets will be buried by the third. The right move is micro-steps: refresh the cloth between tickets, wipe the board between tickets, hand off pans on the path you were already walking. The question to ask before any mid-service action is: 'is this a hazard right now, or is it a cosmetic issue I can sweep into the next downtime window?' Hazards get fixed now; cosmetics wait.\n\nSource data note: Generic. Uncle Julio's specific sanitizer concentration standards, brand-specific cleaning chemicals, and post-shift checklist need authorized source.",
+      "surfaceVariants": [
+        {
+          "id": "variant-solve-first",
+          "description": "Mid-service. Tickets are still firing but slower. Your station has accumulated three sauté pans on the side, the cutting board has trim on it, and the sanitizer cloth on the counter is gray. In what order do you fix this without breaking ticket flow?",
+          "data": {
+            "sourceModuleId": "MD6-cleaning-reset",
+            "sourceDataStatus": "demo",
+            "stationRelevance": [
+              "ST3-generic-line-station",
+              "ST3-grill-service-demo",
+              "ST3-saute-service-demo"
+            ],
+            "roleTarget": ["new_cook", "trainer"],
+            "inputType": "ordered_steps",
+            "expectedResponse": [
+              "Refresh the sanitizer cloth first — a gray cloth is contaminating, not cleaning",
+              "Clear the cutting board of trim and wipe it down",
+              "Hand the spent sauté pans to the dish pit on your way back to the rail",
+              "Continue answering tickets between each micro-step so flow is not broken"
+            ]
+          }
+        },
+        {
+          "id": "variant-module-7-cloth",
+          "description": "Your sanitizer cloth on the counter is visibly gray. The bucket is still wet. What do you do?",
+          "data": {
+            "sourceModuleId": "MD6-cleaning-reset",
+            "assessmentId": "module-7-cloth",
+            "type": "multiple_choice",
+            "options": [
+              "Keep using it — the bucket is still wet.",
+              "Replace the cloth immediately, even mid-rush.",
+              "Wait until end of service.",
+              "Wring it out and reuse it."
+            ],
+            "expected": "Replace the cloth immediately, even mid-rush.",
+            "passingCriteria": "Correct on first attempt."
+          }
+        },
+        {
+          "id": "variant-module-7-microsteps",
+          "description": "Why do mid-service resets happen in micro-steps instead of a full block?",
+          "data": {
+            "sourceModuleId": "MD6-cleaning-reset",
+            "assessmentId": "module-7-microsteps",
+            "type": "short_answer",
+            "options": [],
+            "expected": "Because tickets are still firing and a full block of reset time means missed tickets. Micro-steps fit between tickets without breaking flow.",
+            "passingCriteria": "Names the trade-off between reset time and ticket flow."
+          }
+        }
+      ],
+      "timeBudgetSeconds": 1200,
+      "difficulty": "beginner",
+      "prerequisites": ["tb-uj-downtime-decisions"],
+      "successCriteria": {
+        "minCorrectnessScore": 0.8,
+        "maxTimeSeconds": 2400,
+        "maxRetries": 3,
+        "requiresExplanation": true
+      },
+      "hints": [
+        "A gray sanitizer cloth is not low-priority. It is moving contamination around.",
+        "Reset in micro-steps, not in a single block. Tickets do not pause for a full reset.",
+        "Pans go to the dish pit on the way to somewhere else, not as a separate trip."
+      ],
+      "commonErrors": [
+        {
+          "pattern": "Doing a full reset all at once and missing two tickets in the process.",
+          "description": "Doing a full reset all at once and missing two tickets in the process.",
+          "remediation": "Use the module hints, success criteria, and trainer observation standard before retrying."
+        },
+        {
+          "pattern": "Treating a gray sanitizer cloth as still useful because the bucket is still wet.",
+          "description": "Treating a gray sanitizer cloth as still useful because the bucket is still wet.",
+          "remediation": "Use the module hints, success criteria, and trainer observation standard before retrying."
+        },
+        {
+          "pattern": "Stacking pans on the station instead of handing them off as a hand-off-the-pass move.",
+          "description": "Stacking pans on the station instead of handing them off as a hand-off-the-pass move.",
+          "remediation": "Use the module hints, success criteria, and trainer observation standard before retrying."
+        },
+        {
+          "pattern": "Saying 'I'll clean it after the rush' for items that are actively contaminating now.",
+          "description": "Saying 'I'll clean it after the rush' for items that are actively contaminating now.",
+          "remediation": "Use the module hints, success criteria, and trainer observation standard before retrying."
+        }
+      ]
+    },
+    {
+      "id": "tb-uj-assessment-gate",
+      "concept": "Assessment Gate: Service-Ready Cook",
+      "mode": "L0",
+      "canonicalSolution": "Prompt: Live observation by a trainer or manager. The cook holds an assigned station through a service window that includes at least one ticket spike (chaos event), at least one downtime window, and at least one full ticket from fire to pass. The trainer signs off live, in person, on the AS7-final-pack-gate items.\n\nExpected response:\n1. Trainer sign-off on every item in AS7-final-pack-gate, with no gating violations on safe handling, color barriers, or audible communication.\n\nSuccess criteria:\n1. Cook acknowledges every fire audibly.\n2. Cook anchors multi-item tickets correctly.\n3. Cook recovers from at least one chaos event without manager intervention.\n4. Cook prioritizes restock-reset-clean correctly during the downtime window.\n5. No gating violations on safe handling or color barriers.",
+      "explanation": "Final gate. The cook either holds a station through a real service window with no gating violations, or they go back to the relevant module. There is no middle.\n\nThe cook is certified service-ready: they hold a station, recover from a chaos event, prioritize correctly during downtime, and can articulate one durable habit they have built during the pack.\n\nThe assessment gate is binary by design. A service-ready cook is one who can hold a station through a real service window without gating violations. Anything less means the cook is not yet service-ready, and the right answer is to send them back to the relevant module rather than pass them through with a borderline call. Pass-through certification creates cooks who fail later, often in front of guests. This gate is the contract: when the trainer signs off, the cook is on the line for real.\n\nSource data note: Generic gate structure. Uncle Julio's specific certification authority (who is allowed to sign off), badge meaning in their HR system, and any tie-in to their training records platform need authorized source.",
+      "surfaceVariants": [
+        {
+          "id": "variant-solve-first",
+          "description": "Live observation by a trainer or manager. The cook holds an assigned station through a service window that includes at least one ticket spike (chaos event), at least one downtime window, and at least one full ticket from fire to pass. The trainer signs off live, in person, on the AS7-final-pack-gate items.",
+          "data": {
+            "sourceModuleId": "MD6-assessment-gate",
+            "sourceDataStatus": "demo",
+            "stationRelevance": [
+              "ST3-generic-line-station",
+              "ST3-grill-service-demo",
+              "ST3-saute-service-demo",
+              "ST3-prep-production-demo"
+            ],
+            "roleTarget": ["new_cook", "trainer", "manager"],
+            "inputType": "manager_observation",
+            "expectedResponse": "Trainer sign-off on every item in AS7-final-pack-gate, with no gating violations on safe handling, color barriers, or audible communication."
+          }
+        },
+        {
+          "id": "variant-module-8-final",
+          "description": "Live observation. Trainer signs off on all items in AS7-final-pack-gate.",
+          "data": {
+            "sourceModuleId": "MD6-assessment-gate",
+            "assessmentId": "module-8-final",
+            "type": "manager_signoff",
+            "options": [],
+            "expected": null,
+            "passingCriteria": "All items in AS7-final-pack-gate pass with trainer sign-off; no gating violations."
+          }
+        }
+      ],
+      "timeBudgetSeconds": 3600,
+      "difficulty": "beginner",
+      "prerequisites": [
+        "tb-uj-orientation-safety",
+        "tb-uj-tools-color-barriers",
+        "tb-uj-station-setup",
+        "tb-uj-line-readiness",
+        "tb-uj-ticket-flow-basics",
+        "tb-uj-downtime-decisions",
+        "tb-uj-cleaning-reset"
+      ],
+      "successCriteria": {
+        "minCorrectnessScore": 0.8,
+        "maxTimeSeconds": 7200,
+        "maxRetries": 3,
+        "requiresExplanation": true
+      },
+      "hints": [
+        "This is a live observation. The trainer is reading you against the standard, not against the room.",
+        "If you fall behind, say so out loud. A cook who calls 'behind' early gets help. A cook who hides it gets buried.",
+        "The chaos drill is not a trick. The standard does not change because you are being observed."
+      ],
+      "commonErrors": [
+        {
+          "pattern": "Treating the gate as a written test instead of a live observation.",
+          "description": "Treating the gate as a written test instead of a live observation.",
+          "remediation": "Use the module hints, success criteria, and trainer observation standard before retrying."
+        },
+        {
+          "pattern": "Trying to game the chaos drill by guessing when it will happen.",
+          "description": "Trying to game the chaos drill by guessing when it will happen.",
+          "remediation": "Use the module hints, success criteria, and trainer observation standard before retrying."
+        },
+        {
+          "pattern": "Going silent under pressure — quiet is not pro on a working line.",
+          "description": "Going silent under pressure — quiet is not pro on a working line.",
+          "remediation": "Use the module hints, success criteria, and trainer observation standard before retrying."
+        },
+        {
+          "pattern": "Self-declaring readiness instead of getting the trainer's call.",
+          "description": "Self-declaring readiness instead of getting the trainer's call.",
+          "remediation": "Use the module hints, success criteria, and trainer observation standard before retrying."
+        }
+      ]
+    }
+  ],
+  "author": "TopShelf Teaching Team",
+  "createdAt": "2026-05-05T00:00:00.000Z",
+  "updatedAt": "2026-05-05T00:00:00.000Z",
+  "signature": "sig-v1-ECDSA-P256-SHA256-cccd585bdc8bb40b321afad6c229156822d69f87e2fa27e1fe9525f12d61acd4",
+  "signingKeyId": "key-dev-001",
+  "schemaVersion": "1.0.0"
+}

@@ -319,7 +319,7 @@ export function createAuthRoutes(): Hono {
     const db = getDatabase();
 
     // Check if we already have this OAuth account linked
-    console.info('[oauth] checking existing oauth account...');
+    console.log('[oauth] checking existing oauth account...');
     const existingOAuth = await db.query.oauthAccounts.findFirst({
       where: and(
         eq(oauthAccounts.provider, provider),
@@ -328,7 +328,7 @@ export function createAuthRoutes(): Hono {
       with: { user: true },
     });
 
-    console.info('[oauth] existing oauth result:', existingOAuth ? 'found' : 'not found');
+    console.log('[oauth] existing oauth result:', existingOAuth ? 'found' : 'not found');
     let userId: string;
     let userEmail: string;
     let userRole: string;
@@ -348,13 +348,13 @@ export function createAuthRoutes(): Hono {
       await db.update(users).set({ lastLoginAt: new Date() }).where(eq(users.id, u.id));
     } else {
       // No OAuth link yet — find or create user by email
-      console.info('[oauth] looking up user by email...');
+      console.log('[oauth] looking up user by email...');
       const existingUser = await db.query.users.findFirst({
         where: and(eq(users.email, email.toLowerCase()), isNull(users.deletedAt)),
       });
 
       if (existingUser) {
-        console.info('[oauth] found existing user, linking oauth account...');
+        console.log('[oauth] found existing user, linking oauth account...');
         userId = existingUser.id;
         userEmail = existingUser.email;
         userRole = existingUser.role;
@@ -364,7 +364,7 @@ export function createAuthRoutes(): Hono {
         await db.update(users).set({ lastLoginAt: new Date() }).where(eq(users.id, userId));
       } else {
         // Create new user (no password — OAuth-only)
-        console.info('[oauth] creating new user...');
+        console.log('[oauth] creating new user...');
         const displayName =
           firstName !== undefined &&
           firstName.length > 0 &&
@@ -397,7 +397,7 @@ export function createAuthRoutes(): Hono {
       }
 
       // Link the OAuth account
-      console.info('[oauth] inserting oauth account link...');
+      console.log('[oauth] inserting oauth account link...');
       await db.insert(oauthAccounts).values({
         userId,
         provider,
@@ -406,7 +406,7 @@ export function createAuthRoutes(): Hono {
     }
 
     // Create session + tokens (same pattern as /auth/login)
-    console.info('[oauth] inserting auth session...');
+    console.log('[oauth] inserting auth session...');
     const sessionId = generateSessionId();
 
     await db.insert(authSessions).values({
@@ -425,7 +425,7 @@ export function createAuthRoutes(): Hono {
       sessionId,
     });
 
-    console.info('[oauth] done, returning tokens');
+    console.log('[oauth] done, returning tokens');
     return c.json({
       message: 'OAuth login successful',
       user: {

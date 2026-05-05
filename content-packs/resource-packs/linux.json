@@ -1,0 +1,182 @@
+{
+  "id": "linux",
+  "schemaVersion": "resource-pack.v1",
+  "version": "1.0.0",
+  "title": "Linux Fundamentals",
+  "shortTitle": "Linux+",
+  "sidebarTitle": "Linux Lab",
+  "resourceDescription": "Linux certification lab resources stay separate from culinary packs.",
+  "nav": {
+    "tools": "Lab Tools",
+    "machines": "Lab Machines",
+    "ingredients": "Lab Materials"
+  },
+  "pages": {
+    "tools": {
+      "title": "Linux Lab Tools",
+      "description": "Browse, reserve, and manage Linux and IT training tools",
+      "action": "Add Tool",
+      "emptyTitle": "No Linux lab tools found"
+    },
+    "machines": {
+      "title": "Linux Lab Machines",
+      "description": "Monitor virtual machines, lab hosts, and certification environments",
+      "action": "Register Machine",
+      "emptyTitle": "No Linux lab machines found"
+    },
+    "ingredients": {
+      "title": "Linux Lab Materials",
+      "description": "Track cables, media, and consumables used by the Linux pack",
+      "action": "Add Material",
+      "emptyTitle": "No Linux lab materials found"
+    }
+  },
+  "tools": [
+    {
+      "id": "linux-tool-1",
+      "name": "Terminal Workstation",
+      "category": "Shell",
+      "description": "Configured Linux workstation for command-line drills and package labs.",
+      "status": "available",
+      "condition": 96,
+      "location": "Linux Lab - Bench 1",
+      "lastServiced": "2026-03-20",
+      "specifications": ["Ubuntu LTS", "Zsh and Bash shells", "Local VM support"]
+    },
+    {
+      "id": "linux-tool-2",
+      "name": "Network Cable Tester",
+      "category": "Networking",
+      "description": "CableIQ tester for validating lab network drops before Linux networking labs.",
+      "status": "available",
+      "condition": 92,
+      "location": "Linux Lab - Drawer 2",
+      "lastServiced": "2026-01-10",
+      "specifications": ["Cat5e/Cat6", "PoE testing", "Length measurement"]
+    },
+    {
+      "id": "linux-tool-3",
+      "name": "USB Recovery Kit",
+      "category": "Recovery",
+      "description": "Bootable rescue media for filesystem repair, imaging, and recovery practice.",
+      "status": "in-use",
+      "condition": 84,
+      "location": "Linux Lab - Cabinet 1",
+      "lastServiced": "2026-03-01",
+      "assignedTo": "Filesystem Recovery Block",
+      "specifications": ["Ventoy drive", "Rescue ISO set", "Encrypted storage case"]
+    },
+    {
+      "id": "linux-tool-4",
+      "name": "Serial Console Adapter",
+      "category": "Administration",
+      "description": "USB-to-serial adapter for bootloader and headless server troubleshooting.",
+      "status": "available",
+      "condition": 89,
+      "location": "Linux Lab - Drawer 4",
+      "lastServiced": "2026-02-11",
+      "specifications": ["USB-C", "RJ45 rollover cable", "TTL adapter"]
+    }
+  ],
+  "machines": [
+    {
+      "id": "linux-machine-1",
+      "name": "Ubuntu Server VM Pool",
+      "type": "Virtual Machine Pool",
+      "model": "KVM/libvirt",
+      "status": "running",
+      "location": "Hypervisor A",
+      "health": 94,
+      "uptime": "412 hrs",
+      "lastMaintenance": "2026-03-25",
+      "nextMaintenance": "2026-05-01",
+      "metrics": { "temperature": 35, "power": 62, "load": 58 },
+      "description": "Disposable Ubuntu Server instances for services, users, and permissions labs.",
+      "operator": "Auto-Provisioner"
+    },
+    {
+      "id": "linux-machine-2",
+      "name": "Rocky Linux Host",
+      "type": "Bare Metal Server",
+      "model": "Dell PowerEdge R340",
+      "status": "idle",
+      "location": "Rack A - U12",
+      "health": 90,
+      "uptime": "1,108 hrs",
+      "lastMaintenance": "2026-03-12",
+      "nextMaintenance": "2026-05-15",
+      "metrics": { "temperature": 31, "power": 18, "load": 0 },
+      "description": "Bare-metal host for systemd, storage, and SELinux practice."
+    },
+    {
+      "id": "linux-machine-3",
+      "name": "Network Namespace Lab",
+      "type": "Container Lab",
+      "model": "Podman Netavark",
+      "status": "maintenance",
+      "location": "Hypervisor B",
+      "health": 67,
+      "uptime": "73 hrs",
+      "lastMaintenance": "2026-04-01",
+      "nextMaintenance": "2026-04-30",
+      "metrics": { "temperature": 38, "power": 44, "load": 21 },
+      "description": "Containerized routing and firewall lab currently being refreshed."
+    }
+  ],
+  "ingredients": [
+    {
+      "id": "linux-material-1",
+      "name": "Cat6 Ethernet Cable",
+      "category": "Cabling",
+      "description": "Bulk Cat6 UTP cable used for Linux networking and service labs.",
+      "unit": "feet",
+      "currentStock": 2500,
+      "minStock": 500,
+      "maxStock": 5000,
+      "stockLevel": "full",
+      "costPerUnit": 0.35,
+      "supplier": "Monoprice",
+      "lastOrdered": "2026-02-15",
+      "location": "Linux Lab - Reel Rack",
+      "usedInCourses": ["Linux Fundamentals", "Network Services"],
+      "hazardous": false,
+      "msdsAvailable": false
+    },
+    {
+      "id": "linux-material-2",
+      "name": "USB 3.0 Flash Drives",
+      "category": "Boot Media",
+      "description": "Reusable flash drives for install, rescue, and image validation exercises.",
+      "unit": "pieces",
+      "currentStock": 18,
+      "minStock": 10,
+      "maxStock": 40,
+      "stockLevel": "adequate",
+      "costPerUnit": 8,
+      "supplier": "Kingston",
+      "lastOrdered": "2026-03-05",
+      "location": "Linux Lab - Cabinet 1",
+      "usedInCourses": ["Linux Fundamentals"],
+      "hazardous": false,
+      "msdsAvailable": false
+    },
+    {
+      "id": "linux-material-3",
+      "name": "RJ45 Connectors",
+      "category": "Connectors",
+      "description": "Pass-through RJ45 connectors for cabling labs tied to Linux networking.",
+      "unit": "pieces",
+      "currentStock": 75,
+      "minStock": 100,
+      "maxStock": 500,
+      "stockLevel": "low",
+      "costPerUnit": 0.45,
+      "supplier": "Monoprice",
+      "lastOrdered": "2026-01-20",
+      "location": "Linux Lab - Drawer 3",
+      "usedInCourses": ["Network Services"],
+      "hazardous": false,
+      "msdsAvailable": false
+    }
+  ]
+}

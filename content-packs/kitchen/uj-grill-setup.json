@@ -1,0 +1,251 @@
+{
+  "id": "uj-grill-setup-v1",
+  "slug": "uj-grill-setup",
+  "type": "station_setup",
+  "title": "Uncle Julio's: Grill Station Mise",
+  "briefing": "Dinner service in 20 minutes. Your mesquite grill station needs to be set before the first ticket prints. Fire management, protein staging, tool placement. Go.",
+  "timeLimitSeconds": 300,
+  "difficultyLevel": 2,
+  "recipeId": "recipe-uj-grill-mise-v1",
+  "containsTraps": false,
+  "equipmentFocus": ["grill", "prep_table"],
+  "hiddenDomains": ["sequencing", "efficiency", "sanitation"],
+  "stationLayout": {
+    "id": "uj-grill-station",
+    "name": "Mesquite Grill Station",
+    "maxCapacity": 12,
+    "requiredTools": [
+      "tongs_raw",
+      "tongs_cooked",
+      "grill_brush",
+      "thermometer",
+      "sani_bucket",
+      "chef_knife"
+    ],
+    "requiredIngredients": ["chicken_marinated", "skirt_steak", "shrimp", "peppers_onions"],
+    "positions": [
+      {
+        "slotId": "uj-gs-1",
+        "label": "Grill — hot zone",
+        "x": 0,
+        "y": 0,
+        "width": 2,
+        "height": 1,
+        "zone": "hot",
+        "idealItemId": "grill_surface_clear"
+      },
+      {
+        "slotId": "uj-gs-2",
+        "label": "Grill — cool zone",
+        "x": 2,
+        "y": 0,
+        "width": 1,
+        "height": 1,
+        "zone": "hot",
+        "idealItemId": "grill_surface_clear"
+      },
+      {
+        "slotId": "uj-gs-3",
+        "label": "Side burner (sizzle platters)",
+        "x": 3,
+        "y": 0,
+        "width": 1,
+        "height": 1,
+        "zone": "hot",
+        "idealItemId": "sizzle_platters"
+      },
+      {
+        "slotId": "uj-gs-4",
+        "label": "Cold rail — chicken",
+        "x": 0,
+        "y": 1,
+        "width": 1,
+        "height": 1,
+        "zone": "cold",
+        "idealItemId": "chicken_marinated"
+      },
+      {
+        "slotId": "uj-gs-5",
+        "label": "Cold rail — steak",
+        "x": 1,
+        "y": 1,
+        "width": 1,
+        "height": 1,
+        "zone": "cold",
+        "idealItemId": "skirt_steak"
+      },
+      {
+        "slotId": "uj-gs-6",
+        "label": "Cold rail — shrimp",
+        "x": 2,
+        "y": 1,
+        "width": 1,
+        "height": 1,
+        "zone": "cold",
+        "idealItemId": "shrimp_prepped"
+      },
+      {
+        "slotId": "uj-gs-7",
+        "label": "Cold rail — peppers/onions",
+        "x": 3,
+        "y": 1,
+        "width": 1,
+        "height": 1,
+        "zone": "cold",
+        "idealItemId": "peppers_onions"
+      },
+      {
+        "slotId": "uj-gs-8",
+        "label": "Tool rack — raw tongs",
+        "x": 0,
+        "y": 2,
+        "width": 1,
+        "height": 1,
+        "zone": "prep",
+        "idealItemId": "tongs_raw"
+      },
+      {
+        "slotId": "uj-gs-9",
+        "label": "Tool rack — cooked tongs",
+        "x": 1,
+        "y": 2,
+        "width": 1,
+        "height": 1,
+        "zone": "prep",
+        "idealItemId": "tongs_cooked"
+      },
+      {
+        "slotId": "uj-gs-10",
+        "label": "Cutting board",
+        "x": 2,
+        "y": 2,
+        "width": 1,
+        "height": 1,
+        "zone": "prep",
+        "idealItemId": "cutting_board"
+      },
+      {
+        "slotId": "uj-gs-11",
+        "label": "Thermometer & knife",
+        "x": 3,
+        "y": 2,
+        "width": 1,
+        "height": 1,
+        "zone": "prep",
+        "idealItemId": "thermometer_and_knife"
+      },
+      {
+        "slotId": "uj-gs-12",
+        "label": "Sani bucket",
+        "x": 0,
+        "y": 3,
+        "width": 1,
+        "height": 1,
+        "zone": "prep",
+        "idealItemId": "sani_bucket"
+      }
+    ]
+  },
+  "expertRecipe": {
+    "id": "recipe-uj-grill-mise-v1",
+    "name": "Mesquite Grill Station Setup",
+    "station": "grill",
+    "targetTimeSeconds": 240,
+    "wasteValuePerPlate": 0,
+    "platingStandard": "All 12 positions filled. Raw and cooked tongs separated. Cold rail at 40°F or below. Mesquite fire started and approaching 450°F. Sani bucket fresh.",
+    "idealSequence": [
+      "wash_hands",
+      "sani_bucket",
+      "start_mesquite_fire",
+      "stage_cold_rail",
+      "set_tools",
+      "preheat_sizzle_platters",
+      "final_temp_check"
+    ],
+    "steps": [
+      {
+        "id": "ugs1",
+        "order": 1,
+        "instruction": "Wash hands, glove up.",
+        "whyExplanation": "You're about to touch raw protein staging areas and tools that contact food. Start clean.",
+        "timeSeconds": 10,
+        "isCCP": true,
+        "tools": ["sink", "gloves"]
+      },
+      {
+        "id": "ugs2",
+        "order": 2,
+        "instruction": "Mix fresh sani bucket. Place within arm's reach of the grill.",
+        "whyExplanation": "Sani solution must be mixed fresh every 2 hours. Old solution loses its kill concentration. You'll need it constantly to wipe tongs between proteins.",
+        "timeSeconds": 20,
+        "isCCP": true,
+        "tools": ["sani_bucket"]
+      },
+      {
+        "id": "ugs3",
+        "order": 3,
+        "instruction": "Start mesquite fire. Load wood, ignite, let burn down to ember bed. Takes 30-45 minutes to reach 450°F+.",
+        "whyExplanation": "Mesquite must burn to embers — flames char the outside and leave the inside raw. Starting the fire first gives it time to come to temp while you set the rest of the station.",
+        "timeSeconds": 60,
+        "isCCP": false,
+        "tools": ["mesquite_wood", "lighter"]
+      },
+      {
+        "id": "ugs4",
+        "order": 4,
+        "instruction": "Stock cold rail: marinated chicken, skirt steak, shrimp, peppers/onions. All at 40°F or below.",
+        "whyExplanation": "Proteins go out last because they start warming immediately. Chicken separate from shrimp — cross-contamination between poultry and shellfish affects allergen safety.",
+        "timeSeconds": 45,
+        "isCCP": false,
+        "tools": ["sheet_pan"]
+      },
+      {
+        "id": "ugs5",
+        "order": 5,
+        "instruction": "Set tools: RAW tongs on left, COOKED tongs on right. Never swap. Grill brush, thermometer, and knife within reach.",
+        "whyExplanation": "Using raw-protein tongs to plate cooked fajitas is textbook cross-contamination. Two sets of tongs, clearly separated, is non-negotiable.",
+        "timeSeconds": 25,
+        "isCCP": true,
+        "tools": ["tongs_raw", "tongs_cooked", "grill_brush", "thermometer", "chef_knife"]
+      },
+      {
+        "id": "ugs6",
+        "order": 6,
+        "instruction": "Place cast-iron sizzle platters on side burner to preheat.",
+        "whyExplanation": "A cold sizzle platter doesn't sizzle. The smoking platter arriving at the table is the Uncle Julio's signature. Pre-heating takes 10+ minutes.",
+        "timeSeconds": 15,
+        "isCCP": false,
+        "tools": ["sizzle_platters"]
+      },
+      {
+        "id": "ugs7",
+        "order": 7,
+        "instruction": "Check grill surface temp. Confirm ember bed is building toward 450°F. Adjust air flow if needed.",
+        "whyExplanation": "Final check before first ticket. If the fire isn't right, you have minutes to fix it — not during a 5-ticket rush.",
+        "timeSeconds": 15,
+        "isCCP": true,
+        "tools": ["thermometer"],
+        "targetTemp": 350,
+        "tempRange": { "min": 300, "max": 450 }
+      }
+    ],
+    "criticalControlPoints": [
+      {
+        "id": "ccp-uj-gs-sani",
+        "stepId": "ugs2",
+        "type": "sanitation",
+        "target": "Fresh sani solution at correct concentration",
+        "tolerance": "zero old solution",
+        "consequence": "Every tong wipe and surface clean with dead solution is a contamination event."
+      },
+      {
+        "id": "ccp-uj-gs-tongs",
+        "stepId": "ugs5",
+        "type": "sanitation",
+        "target": "Raw and cooked tongs physically separated",
+        "tolerance": "zero shared tongs",
+        "consequence": "Cross-contamination from raw chicken tongs to cooked fajita strips. Salmonella on a finished plate."
+      }
+    ]
+  }
+}

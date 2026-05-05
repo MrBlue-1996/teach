@@ -5,7 +5,7 @@
 
 import { api } from './client';
 
-export type OnboardingContentPackId = 'linux' | 'uncle-julios';
+export type OnboardingContentPackId = 'uncle-julios';
 export type OnboardingTrainingRole = 'learner' | 'staff' | 'manager' | 'instructor';
 
 export interface UserOnboardingMetadata {

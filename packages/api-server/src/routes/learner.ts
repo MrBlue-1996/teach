@@ -294,24 +294,23 @@ export function createLearnerRoutes(): Hono {
     }
 
     // ---- Update teaching metrics on the session ----
-    const sessionUpdates: Record<string, unknown> = {};
-    let nextProblemsSolved = session.problemsSolved ?? 0;
-    let nextErrorsEncountered = session.errorsEncountered ?? 0;
+    const sessionMetricUpdates: Record<string, unknown> = {};
 
     if (eventData.eventType === 'completed') {
-      sessionUpdates['blocksCompleted'] = sql`coalesce(${learningSessions.blocksCompleted}, 0) + 1`;
-      sessionUpdates['blocksAttempted'] = sql`coalesce(${learningSessions.blocksAttempted}, 0) + 1`;
+      sessionMetricUpdates['blocksCompleted'] =
+        sql`coalesce(${learningSessions.blocksCompleted}, 0) + 1`;
+      sessionMetricUpdates['blocksAttempted'] =
+        sql`coalesce(${learningSessions.blocksAttempted}, 0) + 1`;
 
       // Correct answer → increment problems solved
       if (eventData.correctness !== undefined && eventData.correctness >= 0.5) {
-        nextProblemsSolved += 1;
-        sessionUpdates['problemsSolved'] = sql`coalesce(${learningSessions.problemsSolved}, 0) + 1`;
+        sessionMetricUpdates['problemsSolved'] =
+          sql`coalesce(${learningSessions.problemsSolved}, 0) + 1`;
       }
 
       // Wrong answer → increment errors
       if (eventData.correctness !== undefined && eventData.correctness < 0.5) {
-        nextErrorsEncountered += 1;
-        sessionUpdates['errorsEncountered'] =
+        sessionMetricUpdates['errorsEncountered'] =
           sql`coalesce(${learningSessions.errorsEncountered}, 0) + 1`;
       }
 
@@ -328,40 +327,17 @@ export function createLearnerRoutes(): Hono {
 
     if (eventData.eventType === 'hint_used') {
       // Requesting a hint counts as an implicit error signal
-      nextErrorsEncountered += 1;
-      sessionUpdates['errorsEncountered'] =
+      sessionMetricUpdates['errorsEncountered'] =
         sql`coalesce(${learningSessions.errorsEncountered}, 0) + 1`;
     }
 
     if (eventData.eventType === 'skipped') {
-      nextErrorsEncountered += 1;
-      sessionUpdates['errorsEncountered'] =
+      sessionMetricUpdates['errorsEncountered'] =
         sql`coalesce(${learningSessions.errorsEncountered}, 0) + 1`;
     }
 
-    const deviceProfile = ConstraintEngine.inferProfile(
-      session.deviceInfo as Record<string, unknown> | null
-    );
-
-    const teachingContext: TeachingContext = {
-      mode: (session.teachingMode ?? TeachingMode.L2_CONTEXTUAL) as TeachingMode,
-      deviceProfile,
-      constraints: ConstraintEngine.getConstraints(deviceProfile),
-      triggers: [],
-      sessionStartTime: session.startedAt,
-      problemsSolved: nextProblemsSolved,
-      errorsEncountered: nextErrorsEncountered,
-    };
-
-    const triggers = TriggerDetector.detectTriggers(teachingContext);
-    const suggestedMode = TriggerDetector.suggestModeElevation(teachingContext.mode, triggers);
-
-    sessionUpdates['triggersFired'] = triggers;
-    sessionUpdates['teachingMode'] = suggestedMode;
-    sessionUpdates['deviceProfile'] = deviceProfile;
-
     if (eventData.correctness !== undefined && eventData.eventType === 'completed') {
-      sessionUpdates['averageCorrectness'] = sql`
+      sessionMetricUpdates['averageCorrectness'] = sql`
         (
           (coalesce(${learningSessions.averageCorrectness}, 0) * coalesce(${learningSessions.blocksAttempted}, 0))
           + ${eventData.correctness}
@@ -369,12 +345,47 @@ export function createLearnerRoutes(): Hono {
       `;
     }
 
-    if (Object.keys(sessionUpdates).length > 0) {
+    if (Object.keys(sessionMetricUpdates).length > 0) {
       await db
         .update(learningSessions)
-        .set(sessionUpdates)
+        .set(sessionMetricUpdates)
         .where(eq(learningSessions.id, sessionId));
     }
+
+    const refreshedSession =
+      (await db.query.learningSessions.findFirst({
+        where: and(
+          eq(learningSessions.id, sessionId),
+          eq(learningSessions.userId, userId),
+          eq(learningSessions.status, 'active')
+        ),
+      })) ?? session;
+
+    const deviceProfile = ConstraintEngine.inferProfile(
+      refreshedSession.deviceInfo as Record<string, unknown> | null
+    );
+
+    const teachingContext: TeachingContext = {
+      mode: (refreshedSession.teachingMode ?? TeachingMode.L2_CONTEXTUAL) as TeachingMode,
+      deviceProfile,
+      constraints: ConstraintEngine.getConstraints(deviceProfile),
+      triggers: [],
+      sessionStartTime: refreshedSession.startedAt,
+      problemsSolved: refreshedSession.problemsSolved ?? 0,
+      errorsEncountered: refreshedSession.errorsEncountered ?? 0,
+    };
+
+    const triggers = TriggerDetector.detectTriggers(teachingContext);
+    const suggestedMode = TriggerDetector.suggestModeElevation(teachingContext.mode, triggers);
+
+    await db
+      .update(learningSessions)
+      .set({
+        triggersFired: triggers,
+        teachingMode: suggestedMode,
+        deviceProfile,
+      })
+      .where(eq(learningSessions.id, sessionId));
 
     return c.json({
       eventId: event.id,
@@ -658,7 +669,10 @@ export function createLearnerRoutes(): Hono {
 
     if (blockId !== undefined) {
       const block = await db.query.contentBlocks.findFirst({
-        where: eq(contentBlocks.blockId, blockId),
+        where: and(
+          eq(contentBlocks.packId, session.learnerState.contentPackId),
+          eq(contentBlocks.blockId, blockId)
+        ),
       });
 
       if (block) {

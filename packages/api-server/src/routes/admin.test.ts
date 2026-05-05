@@ -7,6 +7,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Hono } from 'hono';
+import { createMiddleware } from 'hono/factory';
 import { createAdminRoutes } from './admin.js';
 import { errorHandler } from '../middleware/error-handler.js';
 
@@ -66,6 +67,9 @@ const mockDb = {
     contentPacks: {
       findMany: vi.fn().mockResolvedValue(mockContentPacks),
     },
+    contentBlocks: {
+      findFirst: vi.fn(),
+    },
   },
   select: vi.fn().mockReturnThis(),
   from: vi.fn().mockReturnThis(),
@@ -80,34 +84,38 @@ const mockDb = {
 };
 
 vi.mock('@topshelf/database', () => ({
-  getDatabase: () => mockDb,
+  getDatabase: (): typeof mockDb => mockDb,
   users: { id: 'id', email: 'email', createdAt: 'createdAt' },
   organizations: { id: 'id', createdAt: 'createdAt' },
   contentPacks: { id: 'id', status: 'status', createdAt: 'createdAt' },
+  contentBlocks: { id: 'id', sequenceOrder: 'sequenceOrder' },
   learnerStates: { userId: 'userId' },
-  eq: (...args: unknown[]) => args,
-  desc: (field: unknown) => field,
-  sql: (strings: TemplateStringsArray, ...values: unknown[]) => ({ strings, values }),
+  eq: (...args: unknown[]): unknown[] => args,
+  asc: (field: unknown): unknown => field,
+  desc: (field: unknown): unknown => field,
+  isNull: (field: unknown): unknown => field,
+  sql: (
+    strings: TemplateStringsArray,
+    ...values: unknown[]
+  ): { strings: TemplateStringsArray; values: unknown[] } => ({ strings, values }),
 }));
 
 vi.mock('@topshelf/config', () => ({
-  getConfig: () => ({
+  getConfig: (): { environment: string } => ({
     environment: 'development',
   }),
 }));
 
 vi.mock('../middleware/auth.js', () => ({
-  requireRole: (..._roles: string[]) => {
-    const { createMiddleware } = require('hono/factory');
-    return createMiddleware(async (c: any, next: any) => {
+  requireRole: (..._roles: string[]): ReturnType<typeof createMiddleware> =>
+    createMiddleware(async (c, next): Promise<void> => {
       // Check if role is set (for unauthorized tests)
       const role = c.get('userRole');
-      if (!role) {
+      if (role === undefined || role === null || role === '') {
         throw new Error('Authentication required');
       }
       await next();
-    });
-  },
+    }),
 }));
 
 // =============================================================================
@@ -117,7 +125,7 @@ vi.mock('../middleware/auth.js', () => ({
 describe('Admin Routes', () => {
   let app: Hono;
 
-  const createAppWithRole = (role: string) => {
+  const createAppWithRole = (role: string): Hono => {
     const testApp = new Hono();
     testApp.onError(errorHandler);
     testApp.use('*', async (c, next) => {
@@ -138,6 +146,7 @@ describe('Admin Routes', () => {
     mockDb.query.users.findFirst.mockResolvedValue(null);
     mockDb.query.organizations.findMany.mockResolvedValue(mockOrganizations);
     mockDb.query.contentPacks.findMany.mockResolvedValue(mockContentPacks);
+    mockDb.query.contentBlocks.findFirst.mockResolvedValue(null);
 
     // Setup select chain for stats
     mockDb.select.mockReturnValue({
@@ -155,12 +164,10 @@ describe('Admin Routes', () => {
       let callCount = 0;
       mockDb.select.mockReturnValue({
         from: vi.fn().mockImplementation(() => ({
-          where: vi.fn().mockImplementation(() => {
-            return [{ count: 5 }];
-          }),
+          where: vi.fn().mockImplementation((): Array<{ count: number }> => [{ count: 5 }]),
           // Direct return for queries without where
-          then: (resolve: (v: unknown) => void) => resolve([{ count: callCount++ * 5 + 10 }]),
-          [Symbol.iterator]: function* () {
+          then: (resolve: (v: unknown) => void): void => resolve([{ count: callCount++ * 5 + 10 }]),
+          [Symbol.iterator]: function* (): Generator<{ count: number }, void, undefined> {
             yield { count: 10 };
           },
         })),
@@ -507,6 +514,34 @@ describe('Admin Routes', () => {
       expect(res.status).toBe(200);
       const body = await res.json();
       expect(body.contentPacks).toEqual([]);
+    });
+  });
+
+  describe('PATCH /admin/content-packs/:packId', () => {
+    it('should reject content pack updates from non-system admins', async () => {
+      const schoolAdminApp = createAppWithRole('school_admin');
+
+      const res = await schoolAdminApp.request('/admin/content-packs/pack-1', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: 'Updated Title' }),
+      });
+
+      expect(res.status).toBe(403);
+    });
+  });
+
+  describe('PATCH /admin/content-packs/:packId/blocks/:blockId', () => {
+    it('should reject block updates from non-system admins', async () => {
+      const schoolAdminApp = createAppWithRole('school_admin');
+
+      const res = await schoolAdminApp.request('/admin/content-packs/pack-1/blocks/block-1', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: 'Updated Block' }),
+      });
+
+      expect(res.status).toBe(403);
     });
   });
 });

@@ -18,7 +18,6 @@ import {
   Thermometer,
   Gauge,
   Zap,
-  Plus,
   Eye,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -97,12 +96,6 @@ export default function MachinesPage() {
         title={resourcePack.pages.machines.title}
         description={resourcePack.pages.machines.description}
         icon={Cog}
-        actions={
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            {resourcePack.pages.machines.action}
-          </Button>
-        }
       />
 
       {/* Live Stats */}
@@ -444,14 +437,10 @@ function MachineDetailPanel({ machine, onClose }: { machine: Machine; onClose: (
               </div>
             )}
 
-            {/* Performance chart — visualization not yet implemented */}
-            <div className="flex aspect-video items-center justify-center rounded-lg border border-dashed">
-              <p className="text-xs text-muted-foreground">Performance chart coming soon</p>
-            </div>
-
-            <div className="flex gap-2 pt-2">
-              <Button className="flex-1">Schedule Maintenance</Button>
-              <Button variant="outline">View History</Button>
+            <div className="rounded-lg border border-dashed p-4">
+              <p className="text-center text-xs text-muted-foreground">
+                Maintenance scheduling and history are managed through your facility ops system.
+              </p>
             </div>
           </div>
         </div>

@@ -8,15 +8,14 @@
  */
 
 import { create } from 'zustand';
+import { ChallengePhase, InfractionSeverity } from '@topshelf/engine';
 import type {
   ChallengeConfig,
   ChallengeEvent,
   HiddenInfraction,
   ConsequencePayload,
   MasteryDomain,
-  ChallengePhase,
 } from '@topshelf/engine';
-import { InfractionSeverity } from '@topshelf/engine';
 
 // =============================================================================
 // STORE TYPES
@@ -116,7 +115,7 @@ export const useChallengeStore = create<ChallengeStore>((set) => ({
     set({
       config,
       challengeId: config.id,
-      phase: 'setup' as ChallengePhase,
+      phase: ChallengePhase.SETUP,
       timeRemainingMs: config.timeLimitSeconds * 1000,
       ticketsTotal: config.tickets?.length ?? 0,
       ticketsCompleted: 0,

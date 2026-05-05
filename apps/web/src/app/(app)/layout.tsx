@@ -6,6 +6,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/use-auth';
+import { useRole } from '@/hooks/use-role';
 import {
   getResourcePack,
   getResourcePackId,
@@ -35,6 +36,8 @@ import {
   Bell,
   HelpCircle,
   Loader2,
+  Shield,
+  FileEdit,
 } from 'lucide-react';
 
 interface NavItem {
@@ -49,7 +52,11 @@ interface NavSection {
   items: NavItem[];
 }
 
-function buildNavSections(userRole: string | undefined, resourceSection: NavSection): NavSection[] {
+function buildNavSections(
+  userRole: string | undefined,
+  resourceSection: NavSection,
+  isSuperuser: boolean
+): NavSection[] {
   const manageItems: NavItem[] = [];
 
   if (
@@ -72,6 +79,16 @@ function buildNavSections(userRole: string | undefined, resourceSection: NavSect
 
   manageItems.push({ name: 'Settings', href: '/settings', icon: Settings });
 
+  const adminSection: NavSection | null = isSuperuser
+    ? {
+        title: 'Admin',
+        items: [
+          { name: 'Content Editor', href: '/admin/content-editor', icon: FileEdit },
+          { name: 'User Management', href: '/admin/users', icon: Shield },
+        ],
+      }
+    : null;
+
   return [
     {
       title: 'Overview',
@@ -93,6 +110,7 @@ function buildNavSections(userRole: string | undefined, resourceSection: NavSect
       title: 'Manage',
       items: manageItems,
     },
+    ...(adminSection ? [adminSection] : []),
   ];
 }
 
@@ -104,6 +122,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const { user: authUser, logout, isAuthenticated, isLoading } = useAuth();
+  const { isSuperuser } = useRole();
   const onboardingComplete = hasCompletedOnboarding(authUser);
   const defaultPackId = getUserDefaultPackId(authUser);
   const packParam = searchParams.get('pack');
@@ -137,7 +156,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     ],
   };
 
-  const navSections = buildNavSections(authUser?.role, resourceSection);
+  const navSections = buildNavSections(authUser?.role, resourceSection, isSuperuser);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {

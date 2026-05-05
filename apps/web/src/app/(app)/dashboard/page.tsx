@@ -215,8 +215,9 @@ export default function DashboardPage() {
                 <div>
                   <h2 className="text-xl font-semibold">Start with {starterPack.title}</h2>
                   <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-                    This is the shortest path from signup to a real lesson. Open the seeded Linux
-                    pack, start the first block, and let the teaching engine adapt from there.
+                    This is the shortest path from signup to a real lesson. Open the{' '}
+                    {starterPack.title} course, start the first block, and let the teaching engine
+                    adapt from there.
                   </p>
                 </div>
                 <div className="grid gap-2 text-sm text-muted-foreground sm:grid-cols-3">
