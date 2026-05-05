@@ -75,10 +75,15 @@
     "typescript": "^5.3.3",
     "typescript-eslint": "^8.0.0"
   },
-  "packageManager": "pnpm@8.14.0",
+  "packageManager": "pnpm@10.33.3",
   "engines": {
     "node": ">=20.0.0",
-    "pnpm": ">=8.0.0"
+    "pnpm": ">=10.0.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
