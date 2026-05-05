@@ -135,7 +135,11 @@ Drizzle ORM + PostgreSQL. Key table clusters:
  */
 ```
 
-**TypeScript:** strict mode + `exactOptionalPropertyTypes` (see `tsconfig.base.json`). ES2022 target, ESNext modules. Optional properties must be explicitly `undefined`-typed — don't add optional fields that could be `| undefined` without acknowledging it.
+**TypeScript:** strict mode + `exactOptionalPropertyTypes` (see `tsconfig.base.json`). ES2022 target, ESNext modules. Optional properties must be explicitly `undefined`-typed — don't add optional fields that could be `| undefined` without acknowledging it. Use the spread pattern for optional returns:
+
+```ts
+return { required, ...(opt ? { opt } : {}) };
+```
 
 **Build tooling:** `tsup` for library packages, Next.js for web app, Turbo for task orchestration. Turbo caches `build/lint/test` outputs; `globalEnv` includes `NODE_ENV`, `CI`, `TOPSHELF_ENV`.
 
@@ -143,4 +147,59 @@ Drizzle ORM + PostgreSQL. Key table clusters:
 
 **`pnpm dev` concurrency:** Turbo's default concurrency (CPU-based) is used. Do not add a global `"concurrency"` to `turbo.json` — the machine has 6 GB RAM and no swap; 20 parallel Node processes will OOM-kill.
 
-See `.github/instructions/workspace.instructions.md` for full monorepo conventions, and `.github/instructions/agent-comms.instructions.md` for agent communication standards.
+**Package management:**
+
+```bash
+pnpm install <pkg> -w                      # Add to workspace root
+pnpm --filter @topshelf/<name> add <pkg>   # Add to specific package
+```
+
+Workspace deps use `"@topshelf/engine": "workspace:*"` in `package.json`.
+
+**Content signing:** `CONTENT_SIGNING_MODE` controls pack signing — `off` for pilot/dev, `hmac` for HMAC-SHA256 (requires `CONTENT_SIGNING_KEY`). Generate key with `openssl rand -hex 32`.
+
+## Additional Packages
+
+- **`packages/auth/`** — auth utilities (JWT helpers, session logic) consumed by `api-server`
+- **`packages/config/`** — centralized env var parsing via `packages/config/src/index.ts`; add new env var references here
+- **`packages/ui/`** — shared React component library for `apps/web`
+- **`packages/billing/`** — Stripe integration; subscription + invoice management
+- **`packages/observability/`** — metrics, tracing, structured logging primitives
+- **`packages/agent/`** — agent coordination utilities
+- **`packages/testkit/`** — shared test helpers and fixtures
+
+## Local Infrastructure
+
+```bash
+# Start PostgreSQL + Redis (required before pnpm dev)
+docker compose -f infrastructure/docker/docker-compose.yml up -d
+```
+
+Web app requires `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` (see `.env.example`). API server reads DB config from `packages/config/src/index.ts`.
+
+## Agent Blackboard Protocol
+
+When working as part of a multi-agent workflow, read `.github/state/board.md` before starting and append a timestamped update when done. Check `.github/state/blockers.md` for dependencies and `.github/state/decisions.md` for architectural decisions you must follow.
+
+**Integration hotspot tags** — when a task carries one of these tags, read the listed files before making changes:
+
+| Tag         | Must-read files                                              |
+| ----------- | ------------------------------------------------------------ |
+| `schema`    | `packages/database/src/schema/index.ts`                      |
+| `types`     | `packages/engine/src/types.ts`, `packages/shared/src/types/` |
+| `api`       | `packages/api-server/src/routes/learner.ts`                  |
+| `contracts` | The API route AND `apps/web/src/lib/api/`                    |
+| `config`    | `packages/config/src/index.ts`, `.env.example`               |
+| `infra`     | `infrastructure/docker/docker-compose.yml`                   |
+| `policy`    | `governance/policies/promotion_policy_config.json`           |
+| `pedagogy`  | `packages/engine/src/pedagogy-engine.ts`                     |
+
+## UI / Brand Rules
+
+Before any UI work in `apps/web/src/`, read:
+
+- `governance/standards/brand/tokens/design-tokens.md` — color palette (`ts-*`), typography, spacing
+- `governance/standards/brand/voice/voice-and-tone.md` — "Direct, calm, competent. No hype, no jargon."
+- `governance/standards/brand/doctrine/brand-doctrine.md` — dark-first, Chromebook-first, boulder logo
+
+Quick rules: use semantic tokens (`primary`, `success`, `destructive`) not raw hex; `font-heading` = Montserrat 600–800, `font-sans` = Inter; icons via `lucide-react` only; touch targets ≥ 44×44 px; buttons verb-first max 3 words; company name is "Top Shelf Service LLC™", product name is "Top Shelf Teaching".
