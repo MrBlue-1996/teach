@@ -82,8 +82,13 @@
   },
   "pnpm": {
     "onlyBuiltDependencies": [
-      "esbuild"
-    ]
+      "esbuild",
+      "sharp"
+    ],
+    "overrides": {
+      "vite": ">=6.4.2",
+      "postcss": ">=8.5.10"
+    }
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [

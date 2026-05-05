@@ -6,7 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowRight, Mail, Lock, Chrome } from 'lucide-react';
+import { ArrowRight, Mail, Lock, Globe } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { getSupabaseBrowserClient } from '@/lib/supabase';
 
@@ -85,7 +85,7 @@ function LoginForm() {
           onClick={handleGoogleLogin}
           loading={isLoading}
         >
-          <Chrome className="mr-2 h-4 w-4" />
+          <Globe className="mr-2 h-4 w-4" />
           Continue with Google
         </Button>
 

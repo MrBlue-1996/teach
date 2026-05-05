@@ -6,7 +6,7 @@
 
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { use, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -181,7 +181,8 @@ function extractMessage(error: unknown) {
   return 'Unable to load learning content.';
 }
 
-export default function LearnPage({ params }: { params: { courseId: string } }) {
+export default function LearnPage({ params }: { params: Promise<{ courseId: string }> }) {
+  const { courseId } = use(params);
   const router = useRouter();
   const [pack, setPack] = useState<ContentPackDetail['pack'] | null>(null);
   const [lesson, setLesson] = useState<LessonData | null>(null);
@@ -324,8 +325,8 @@ export default function LearnPage({ params }: { params: { courseId: string } }) 
     }
 
     const [blockResult, progressResult] = await Promise.allSettled([
-      contentApi.getBlock(params.courseId, blockSummary.blockId),
-      learnerApi.getProgress(params.courseId),
+      contentApi.getBlock(courseId, blockSummary.blockId),
+      learnerApi.getProgress(courseId),
     ]);
 
     const blockDetail = blockResult.status === 'fulfilled' ? blockResult.value : null;
@@ -407,7 +408,7 @@ export default function LearnPage({ params }: { params: { courseId: string } }) 
     setErrorMessage(null);
 
     try {
-      const nextData = await contentApi.getNextBlock(params.courseId);
+      const nextData = await contentApi.getNextBlock(courseId);
 
       if (nextData.complete) {
         setCompletion({
@@ -422,7 +423,7 @@ export default function LearnPage({ params }: { params: { courseId: string } }) 
         return;
       }
 
-      const refreshedPack = await contentApi.getPack(params.courseId);
+      const refreshedPack = await contentApi.getPack(courseId);
       setPack(refreshedPack.pack);
       await loadBlock(refreshedPack, sessionContext.sessionId, nextData);
     } catch (error) {
@@ -588,9 +589,9 @@ export default function LearnPage({ params }: { params: { courseId: string } }) 
         };
 
         const [packResult, nextResult, sessionResult] = await Promise.allSettled([
-          contentApi.getPack(params.courseId),
-          contentApi.getNextBlock(params.courseId),
-          learnerApi.startSession(params.courseId, deviceInfo),
+          contentApi.getPack(courseId),
+          contentApi.getNextBlock(courseId),
+          learnerApi.startSession(courseId, deviceInfo),
         ]);
 
         if (packResult.status !== 'fulfilled') {
@@ -655,7 +656,7 @@ export default function LearnPage({ params }: { params: { courseId: string } }) 
     return () => {
       cancelled = true;
     };
-  }, [params.courseId]);
+  }, [courseId]);
 
   useEffect(() => {
     const timer = setInterval(() => {

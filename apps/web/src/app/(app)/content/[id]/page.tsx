@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { use, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -12,7 +12,8 @@ import { contentApi, learnerApi } from '@/lib/api';
 import type { ContentPackDetail } from '@/lib/api';
 import { isGoldenPathPackTitle } from '@/lib/golden-path';
 
-export default function CourseDetailPage({ params }: { params: { id: string } }) {
+export default function CourseDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const router = useRouter();
   const [isEnrolling, setIsEnrolling] = useState(false);
   const [packDetail, setPackDetail] = useState<ContentPackDetail | null>(null);
@@ -22,7 +23,7 @@ export default function CourseDetailPage({ params }: { params: { id: string } })
   useEffect(() => {
     async function loadPack() {
       try {
-        const detail = await contentApi.getPack(params.id);
+        const detail = await contentApi.getPack(id);
         setPackDetail(detail);
         setIsLoading(false);
       } catch (err) {
@@ -32,18 +33,18 @@ export default function CourseDetailPage({ params }: { params: { id: string } })
     }
 
     loadPack();
-  }, [params.id]);
+  }, [id]);
 
   const handleEnroll = async () => {
     setIsEnrolling(true);
     try {
       // Start a learning session, which creates the learner state on the backend
-      await learnerApi.startSession(params.id);
-      router.push(`/learn/${params.id}`);
+      await learnerApi.startSession(id);
+      router.push(`/learn/${id}`);
     } catch {
       setIsEnrolling(false);
       // If session start fails, still navigate as a fallback
-      router.push(`/learn/${params.id}`);
+      router.push(`/learn/${id}`);
     }
   };
 

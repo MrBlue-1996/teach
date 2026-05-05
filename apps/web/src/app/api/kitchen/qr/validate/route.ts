@@ -16,7 +16,7 @@ const WHITELIST = new Set(['WALK-IN-TMP-042', 'LINE-SANI-001', 'PREP-MISE-007', 
 
 export async function POST(req: Request) {
   // Authenticate the request via Supabase session cookie
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
