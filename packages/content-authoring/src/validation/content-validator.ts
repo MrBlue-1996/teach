@@ -26,6 +26,105 @@ export interface ValidationOptions {
   readonly llmOutputs?: ReadonlyMap<string, LLMFormattedOutput>;
   /** Strict mode - treat warnings as errors */
   readonly strict?: boolean;
+  /** Source file path used for filename-to-id consistency checks */
+  readonly sourcePath?: string;
+}
+
+const OFFICIAL_CLAIM_PATTERN = /official uncle julio'?s?/i;
+
+const STRUCTURED_ASSET_FIELDS = [
+  {
+    catalogKey: 'fundamentals' as const,
+    linkKey: 'fundamentalsTaught' as const,
+    orphanCode: 'ORPHAN_FUNDAMENTAL',
+    unresolvedCode: 'MISSING_FUNDAMENTAL_REFERENCE',
+  },
+  {
+    catalogKey: 'downtimeDecisions' as const,
+    linkKey: 'downtimeDecisions' as const,
+    orphanCode: 'ORPHAN_DOWNTIME_DECISION',
+    unresolvedCode: 'MISSING_DOWNTIME_DECISION_REFERENCE',
+  },
+  {
+    catalogKey: 'chaosEvents' as const,
+    linkKey: 'chaosEvents' as const,
+    orphanCode: 'ORPHAN_CHAOS_EVENT',
+    unresolvedCode: 'MISSING_CHAOS_EVENT_REFERENCE',
+  },
+  {
+    catalogKey: 'ticketFlows' as const,
+    linkKey: 'ticketFlows' as const,
+    orphanCode: 'ORPHAN_TICKET_FLOW',
+    unresolvedCode: 'MISSING_TICKET_FLOW_REFERENCE',
+  },
+];
+
+function expectedPackIdFromSourcePath(sourcePath: string): string | null {
+  const normalizedPath = sourcePath.replace(/\\/g, '/');
+  const fileName = normalizedPath.split('/').at(-1);
+  if (fileName === undefined) {
+    return null;
+  }
+
+  if (!fileName.startsWith('content_pack_') || !fileName.endsWith('.json')) {
+    return null;
+  }
+
+  const normalizedName = fileName.slice('content_pack_'.length, -'.json'.length).replace(/_/g, '-');
+  return `pack-${normalizedName}`;
+}
+
+function getRecordValue(record: Record<string, unknown>, key: string): unknown {
+  return record[key];
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function collectReferencedResponseStrings(value: unknown): string[] {
+  if (typeof value === 'string') {
+    return [value];
+  }
+
+  if (Array.isArray(value)) {
+    return value.flatMap((item) => collectReferencedResponseStrings(item));
+  }
+
+  return [];
+}
+
+function blockHasInlineAssessment(block: ContentPackManifest['teachingBlocks'][number]): boolean {
+  return block.surfaceVariants.some((variant) => {
+    const data = variant.data;
+    if (!isRecord(data)) {
+      return false;
+    }
+
+    const assessmentId = getRecordValue(data, 'assessmentId');
+    const type = getRecordValue(data, 'type');
+    return typeof assessmentId === 'string' || type === 'manager_signoff';
+  });
+}
+
+function hasAuthorizedSourceReference(pack: ContentPackManifest): boolean {
+  if (pack.assetCatalog === undefined) {
+    return false;
+  }
+
+  const catalogGroups = [
+    pack.assetCatalog.fundamentals,
+    pack.assetCatalog.downtimeDecisions,
+    pack.assetCatalog.chaosEvents,
+    pack.assetCatalog.assessments,
+    pack.assetCatalog.ticketFlows,
+  ];
+
+  return catalogGroups.some((group) =>
+    group.some(
+      (entry) => entry.sourceDataStatus === 'authorized' && entry.sourceReference !== undefined
+    )
+  );
 }
 
 /**
@@ -56,7 +155,7 @@ export class ContentPackValidator {
     const validPack = pack as ContentPackManifest;
 
     // Step 2: Business rule validation
-    const businessErrors = this.validateBusinessRules(validPack);
+    const businessErrors = this.validateBusinessRules(validPack, options.sourcePath);
     errors.push(...businessErrors.errors);
     warnings.push(...businessErrors.warnings);
 
@@ -138,12 +237,71 @@ export class ContentPackValidator {
   /**
    * Validate business rules
    */
-  private validateBusinessRules(pack: ContentPackManifest): {
+  private validateBusinessRules(
+    pack: ContentPackManifest,
+    sourcePath?: string
+  ): {
     errors: ValidationError[];
     warnings: ValidationWarning[];
   } {
     const errors: ValidationError[] = [];
     const warnings: ValidationWarning[] = [];
+
+    if (sourcePath !== undefined) {
+      const expectedPackId = expectedPackIdFromSourcePath(sourcePath);
+      if (expectedPackId !== null && pack.id !== expectedPackId) {
+        errors.push({
+          code: 'PACK_FILENAME_ID_MISMATCH',
+          path: 'id',
+          message: `Pack ID ${pack.id} does not match filename-derived ID ${expectedPackId}`,
+          severity: 'error',
+        });
+      }
+    }
+
+    if (pack.assetCatalog !== undefined && pack.locale === undefined) {
+      errors.push({
+        code: 'MISSING_LOCALE',
+        path: 'locale',
+        message: 'Structured content packs must declare a locale.',
+        severity: 'error',
+      });
+    }
+
+    if (
+      pack.integrity?.releaseMode === 'release' &&
+      (pack.integrity.checksum === null || pack.integrity.checksum === undefined)
+    ) {
+      errors.push({
+        code: 'MISSING_RELEASE_CHECKSUM',
+        path: 'integrity.checksum',
+        message: 'Release-mode content packs must include a checksum.',
+        severity: 'error',
+      });
+    }
+
+    if (
+      pack.integrity?.releaseMode === 'demo' &&
+      (pack.integrity.checksum === null || pack.integrity.checksum === undefined)
+    ) {
+      warnings.push({
+        code: 'DEMO_CHECKSUM_SKIPPED',
+        path: 'integrity.checksum',
+        message:
+          'Demo-mode content packs may omit a checksum, but packaged releases should supply one.',
+        severity: 'warning',
+      });
+    }
+
+    if (OFFICIAL_CLAIM_PATTERN.test(JSON.stringify(pack)) && !hasAuthorizedSourceReference(pack)) {
+      errors.push({
+        code: 'UNAUTHORIZED_OFFICIAL_CLAIM',
+        path: '<root>',
+        message:
+          "Official Uncle Julio's claims require at least one authorized source reference in the pack asset catalog.",
+        severity: 'error',
+      });
+    }
 
     // Rule: Required packs must have role mappings
     if (pack.tags.includes('required') && pack.roleMappings.length === 0) {
@@ -217,8 +375,101 @@ export class ContentPackValidator {
   } {
     const errors: ValidationError[] = [];
     const warnings: ValidationWarning[] = [];
+    const referencedAssets = {
+      fundamentals: new Map<string, number>(),
+      downtimeDecisions: new Map<string, number>(),
+      chaosEvents: new Map<string, number>(),
+      assessments: new Map<string, number>(),
+      ticketFlows: new Map<string, number>(),
+    };
+
+    const catalogMaps =
+      pack.assetCatalog === undefined
+        ? undefined
+        : {
+            fundamentals: new Map(pack.assetCatalog.fundamentals.map((entry) => [entry.id, entry])),
+            downtimeDecisions: new Map(
+              pack.assetCatalog.downtimeDecisions.map((entry) => [entry.id, entry])
+            ),
+            chaosEvents: new Map(pack.assetCatalog.chaosEvents.map((entry) => [entry.id, entry])),
+            assessments: new Map(pack.assetCatalog.assessments.map((entry) => [entry.id, entry])),
+            ticketFlows: new Map(pack.assetCatalog.ticketFlows.map((entry) => [entry.id, entry])),
+          };
+
+    if (pack.assetCatalog !== undefined) {
+      const globalAssetIds = new Map<string, string>();
+      for (const catalogName of [
+        'fundamentals',
+        'downtimeDecisions',
+        'chaosEvents',
+        'assessments',
+        'ticketFlows',
+      ] as const) {
+        const entries = pack.assetCatalog[catalogName];
+        for (const entry of entries) {
+          const seenInCatalog = globalAssetIds.get(entry.id);
+          if (seenInCatalog !== undefined) {
+            errors.push({
+              code: 'DUPLICATE_ASSET_ID',
+              path: `assetCatalog.${catalogName}.${entry.id}`,
+              message: `Asset ID ${entry.id} is duplicated in ${seenInCatalog} and ${catalogName}.`,
+              severity: 'error',
+            });
+          } else {
+            globalAssetIds.set(entry.id, catalogName);
+          }
+
+          if (entry.sourceDataStatus === 'authorized' && entry.sourceReference === undefined) {
+            errors.push({
+              code: 'MISSING_AUTHORIZED_SOURCE_REFERENCE',
+              path: `assetCatalog.${catalogName}.${entry.id}.sourceReference`,
+              message: `Authorized asset ${entry.id} must include a source reference.`,
+              severity: 'error',
+            });
+          }
+        }
+      }
+    }
 
     for (const block of pack.teachingBlocks) {
+      if (pack.assetCatalog !== undefined) {
+        if (block.title === undefined) {
+          errors.push({
+            code: 'MISSING_BLOCK_TITLE',
+            path: `teachingBlocks.${block.id}.title`,
+            message: 'Structured content packs must provide a block title.',
+            severity: 'error',
+          });
+        }
+
+        if (block.objective === undefined) {
+          errors.push({
+            code: 'MISSING_BLOCK_OBJECTIVE',
+            path: `teachingBlocks.${block.id}.objective`,
+            message: 'Structured content packs must provide a block objective.',
+            severity: 'error',
+          });
+        }
+
+        if (block.deviceConstraints === undefined) {
+          errors.push({
+            code: 'MISSING_DEVICE_CONSTRAINTS',
+            path: `teachingBlocks.${block.id}.deviceConstraints`,
+            message: 'Structured content packs must declare device constraints per block.',
+            severity: 'error',
+          });
+        }
+
+        if (block.moduleLinks === undefined) {
+          errors.push({
+            code: 'MISSING_MODULE_LINKS',
+            path: `teachingBlocks.${block.id}.moduleLinks`,
+            message: 'Structured content packs must provide structured module links.',
+            severity: 'error',
+          });
+        }
+      }
+
       // Check surface variants have unique IDs
       const variantIds = new Set<string>();
       for (const variant of block.surfaceVariants) {
@@ -231,6 +482,39 @@ export class ContentPackValidator {
           });
         }
         variantIds.add(variant.id);
+
+        const sourceDataStatus = isRecord(variant.data)
+          ? getRecordValue(variant.data, 'sourceDataStatus')
+          : undefined;
+        if (
+          sourceDataStatus !== undefined &&
+          sourceDataStatus !== 'demo' &&
+          sourceDataStatus !== 'authorized' &&
+          sourceDataStatus !== 'requires-client-source' &&
+          sourceDataStatus !== 'deprecated'
+        ) {
+          let sourceDataStatusLabel: string;
+          if (typeof sourceDataStatus === 'string') {
+            sourceDataStatusLabel = sourceDataStatus;
+          } else if (typeof sourceDataStatus === 'object') {
+            sourceDataStatusLabel = JSON.stringify(sourceDataStatus);
+          } else if (
+            typeof sourceDataStatus === 'number' ||
+            typeof sourceDataStatus === 'boolean' ||
+            typeof sourceDataStatus === 'bigint' ||
+            typeof sourceDataStatus === 'symbol'
+          ) {
+            sourceDataStatusLabel = sourceDataStatus.toString();
+          } else {
+            sourceDataStatusLabel = typeof sourceDataStatus;
+          }
+          errors.push({
+            code: 'INVALID_SOURCE_DATA_STATUS',
+            path: `teachingBlocks.${block.id}.surfaceVariants.${variant.id}.data.sourceDataStatus`,
+            message: `Unsupported sourceDataStatus value: ${sourceDataStatusLabel}`,
+            severity: 'error',
+          });
+        }
       }
 
       // Check hints are not empty
@@ -261,6 +545,170 @@ export class ContentPackValidator {
           message: `Time budget ${block.timeBudgetSeconds}s may be too short for ${block.difficulty} difficulty`,
           severity: 'warning',
         });
+      }
+
+      if (block.deviceConstraints !== undefined) {
+        const maxResponseChars = block.deviceConstraints.maxResponseChars;
+        if (block.explanation.length > maxResponseChars) {
+          errors.push({
+            code: 'RESPONSE_CAP_EXCEEDED',
+            path: `teachingBlocks.${block.id}.explanation`,
+            message: `Explanation exceeds maxResponseChars (${maxResponseChars}).`,
+            severity: 'error',
+          });
+        }
+
+        for (let i = 0; i < block.hints.length; i++) {
+          const hint = block.hints[i];
+          if (hint !== undefined && hint.length > maxResponseChars) {
+            errors.push({
+              code: 'RESPONSE_CAP_EXCEEDED',
+              path: `teachingBlocks.${block.id}.hints[${i}]`,
+              message: `Hint exceeds maxResponseChars (${maxResponseChars}).`,
+              severity: 'error',
+            });
+          }
+        }
+
+        if (block.content !== undefined && block.content.length > maxResponseChars) {
+          errors.push({
+            code: 'RESPONSE_CAP_EXCEEDED',
+            path: `teachingBlocks.${block.id}.content`,
+            message: `Content exceeds maxResponseChars (${maxResponseChars}).`,
+            severity: 'error',
+          });
+        }
+
+        for (let i = 0; i < block.surfaceVariants.length; i++) {
+          const variant = block.surfaceVariants[i];
+          const data = variant?.data;
+          if (!isRecord(data)) {
+            continue;
+          }
+
+          for (const key of ['expected', 'passingCriteria', 'expectedResponse']) {
+            const candidate = getRecordValue(data, key);
+            for (const responseText of collectReferencedResponseStrings(candidate)) {
+              if (responseText.length > maxResponseChars) {
+                errors.push({
+                  code: 'RESPONSE_CAP_EXCEEDED',
+                  path: `teachingBlocks.${block.id}.surfaceVariants[${i}].data.${key}`,
+                  message: `${key} exceeds maxResponseChars (${maxResponseChars}).`,
+                  severity: 'error',
+                });
+              }
+            }
+          }
+        }
+      }
+
+      if (block.moduleLinks !== undefined) {
+        if (
+          (block.moduleLinks.externalAssessmentId === null ||
+            block.moduleLinks.externalAssessmentId === undefined) &&
+          !blockHasInlineAssessment(block)
+        ) {
+          errors.push({
+            code: 'MISSING_ASSESSMENT_LINK',
+            path: `teachingBlocks.${block.id}.moduleLinks.externalAssessmentId`,
+            message:
+              'Each structured module must provide an external assessment or inline assessment.',
+            severity: 'error',
+          });
+        }
+
+        for (const [i, rule] of block.moduleLinks.triggerRules.entries()) {
+          if (rule.type === 'repeated_errors' && rule.threshold === undefined) {
+            errors.push({
+              code: 'INVALID_TRIGGER_RULE',
+              path: `teachingBlocks.${block.id}.moduleLinks.triggerRules[${i}]`,
+              message: 'repeated_errors trigger rules require a numeric threshold.',
+              severity: 'error',
+            });
+          }
+
+          if (
+            rule.type === 'stuck_time' &&
+            (rule.threshold === undefined || rule.unit !== 'seconds')
+          ) {
+            errors.push({
+              code: 'INVALID_TRIGGER_RULE',
+              path: `teachingBlocks.${block.id}.moduleLinks.triggerRules[${i}]`,
+              message: 'stuck_time trigger rules require a numeric threshold and unit "seconds".',
+              severity: 'error',
+            });
+          }
+
+          if (rule.type === 'help_requested' && rule.threshold !== 1) {
+            errors.push({
+              code: 'INVALID_TRIGGER_RULE',
+              path: `teachingBlocks.${block.id}.moduleLinks.triggerRules[${i}]`,
+              message: 'help_requested trigger rules must use threshold 1.',
+              severity: 'error',
+            });
+          }
+        }
+
+        if (catalogMaps !== undefined) {
+          for (const config of STRUCTURED_ASSET_FIELDS) {
+            const referencedIds = block.moduleLinks[config.linkKey];
+            for (const assetId of referencedIds) {
+              const asset = catalogMaps[config.catalogKey].get(assetId);
+              if (asset === undefined) {
+                errors.push({
+                  code: config.unresolvedCode,
+                  path: `teachingBlocks.${block.id}.moduleLinks.${config.linkKey}`,
+                  message: `Referenced asset ${assetId} is not defined in assetCatalog.${config.catalogKey}.`,
+                  severity: 'error',
+                });
+              } else {
+                const count = referencedAssets[config.catalogKey].get(asset.id) ?? 0;
+                referencedAssets[config.catalogKey].set(asset.id, count + 1);
+              }
+            }
+          }
+
+          const externalAssessmentId = block.moduleLinks.externalAssessmentId;
+          if (externalAssessmentId !== null && externalAssessmentId !== undefined) {
+            if (!catalogMaps.assessments.has(externalAssessmentId)) {
+              errors.push({
+                code: 'MISSING_ASSESSMENT_REFERENCE',
+                path: `teachingBlocks.${block.id}.moduleLinks.externalAssessmentId`,
+                message: `Referenced assessment ${externalAssessmentId} is not defined in assetCatalog.assessments.`,
+                severity: 'error',
+              });
+            } else {
+              const count = referencedAssets.assessments.get(externalAssessmentId) ?? 0;
+              referencedAssets.assessments.set(externalAssessmentId, count + 1);
+            }
+          }
+        }
+      }
+    }
+
+    if (pack.assetCatalog !== undefined) {
+      for (const config of STRUCTURED_ASSET_FIELDS) {
+        for (const entry of pack.assetCatalog[config.catalogKey]) {
+          if ((referencedAssets[config.catalogKey].get(entry.id) ?? 0) === 0) {
+            errors.push({
+              code: config.orphanCode,
+              path: `assetCatalog.${config.catalogKey}.${entry.id}`,
+              message: `Asset ${entry.id} is not referenced by any module.`,
+              severity: 'error',
+            });
+          }
+        }
+      }
+
+      for (const entry of pack.assetCatalog.assessments) {
+        if ((referencedAssets.assessments.get(entry.id) ?? 0) === 0) {
+          errors.push({
+            code: 'ORPHAN_ASSESSMENT',
+            path: `assetCatalog.assessments.${entry.id}`,
+            message: `Assessment ${entry.id} is not referenced by any module.`,
+            severity: 'error',
+          });
+        }
       }
     }
 

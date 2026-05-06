@@ -38,6 +38,8 @@
     "bench:compare": "node scripts/bench-compare.mjs",
     "logs:clean": "node scripts/rotate-logs.mjs --clean",
     "validate:content-packs": "pnpm --filter @topshelf/content-authoring run validate:packs",
+    "checksum:uncle-julios": "node scripts/release/checksum-uncle-julios.mjs",
+    "package:uncle-julios": "node scripts/release/package-uncle-julios.mjs",
     "validate:policies": "pnpm --filter @topshelf/policy-engine run validate:policies",
     "db:migrate": "pnpm --filter @topshelf/database run db:migrate",
     "db:generate": "pnpm --filter @topshelf/database run db:generate",

@@ -105,10 +105,12 @@ describe('Enum Schemas', () => {
       expect(contentTagSchema.safeParse('elective').success).toBe(true);
       expect(contentTagSchema.safeParse('capstone').success).toBe(true);
       expect(contentTagSchema.safeParse('retention').success).toBe(true);
+      expect(contentTagSchema.safeParse('optional').success).toBe(true);
     });
 
     it('should reject invalid tags', () => {
-      expect(contentTagSchema.safeParse('optional').success).toBe(false);
+      expect(contentTagSchema.safeParse('').success).toBe(false);
+      expect(contentTagSchema.safeParse('x'.repeat(51)).success).toBe(false);
     });
   });
 });
@@ -227,7 +229,7 @@ describe('Object Schemas', () => {
 // =============================================================================
 
 describe('teachingBlockSchema', () => {
-  function createValidBlock() {
+  function createValidBlock(): Record<string, unknown> {
     return {
       id: 'tb-test-001',
       concept: 'Test Concept',
@@ -324,7 +326,7 @@ describe('semanticVersionSchema', () => {
 // =============================================================================
 
 describe('contentPackManifestSchema', () => {
-  function createValidManifest() {
+  function createValidManifest(): Record<string, unknown> {
     return {
       id: 'pack-test-v1',
       name: 'Test Pack',

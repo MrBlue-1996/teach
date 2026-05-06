@@ -1,275 +1,186 @@
 # Content Pack Guide
 
-> How to create content for the TopShelf Teaching platform.
+This guide reflects the current manifest contract and validator behavior in the repo.
 
----
+## File Convention
 
-## Overview
+Author shipped manifests as top-level files under `content-packs/`.
 
-A **Content Pack** is a JSON file containing everything needed to teach a specific subject. It includes:
+- Filename format: `content_pack_<slug>.json`
+- Pack ID format: `pack-<slug>`
+- Example: `content-packs/content_pack_linux_v1.json` must declare `"id": "pack-linux-v1"`
 
-- **Teaching Blocks** - Individual lessons/challenges
-- **Badges** - Achievements learners can earn
-- **Metadata** - Title, description, difficulty
+Nested JSON files under `content-packs/kitchen/`, `content-packs/resource-packs/`, and `template_content_pack.json` are not treated as shipped manifests by the validator.
 
----
+## Required Root Fields
 
-## Quick Start
+Every manifest must include these fields:
 
-### 1. Copy the Template
+- `id`
+- `name`
+- `version`
+- `description`
+- `tags`
+- `roleMappings`
+- `difficulty`
+- `minDeviceProfile`
+- `teachingBlocks`
+- `author`
+- `createdAt`
+- `updatedAt`
+- `signature`
+- `signingKeyId`
+- `schemaVersion`
 
-```bash
-cp content-packs/template_content_pack.json content-packs/my_course_v1.json
-```
+Common optional fields include `slug`, `title`, `domain`, `certificationTarget`, `chromebookCompatible`, `targetDeviceProfile`, `status`, and `metadata`.
 
-### 2. Update Metadata
+## Required Teaching Block Fields
+
+Every teaching block must include these fields:
+
+- `id`
+- `concept`
+- `mode`
+- `canonicalSolution`
+- `explanation`
+- `surfaceVariants`
+- `timeBudgetSeconds`
+- `difficulty`
+- `prerequisites`
+- `successCriteria`
+- `hints`
+- `commonErrors`
+
+Current pack `mode` values are `L0`, `L1`, `L2`, `L3`, and `L4`.
+
+Each block must also provide at least two `surfaceVariants`.
+
+## Structured Pack Fields
+
+Structured packs may additionally use:
+
+- `locale`
+- `translationStatus`
+- `assetCatalog`
+- `integrity`
+- block-level `title`
+- block-level `objective`
+- block-level `deviceConstraints`
+- block-level `moduleLinks`
+
+When `assetCatalog` is present, the validator also enforces these rules:
+
+- `locale` is required.
+- Every block must include `title`, `objective`, `deviceConstraints`, and `moduleLinks`.
+- `moduleLinks.externalAssessmentId` must be present unless a block includes an inline assessment surface.
+- Every referenced asset ID must exist in the matching `assetCatalog` section.
+- Every asset in the catalog must be referenced by at least one block.
+- `integrity.releaseMode: "release"` requires `integrity.checksum`.
+- Claims of official Uncle Julio's source material require at least one authorized asset with a source reference.
+
+## Minimal Manifest Example
 
 ```json
 {
   "id": "pack-my-course-v1",
-  "name": "My Course Name",
+  "name": "My Course",
   "version": "1.0.0",
-  "description": "What this course teaches",
-  "difficulty": "beginner"
-}
-```
-
-### 3. Add Teaching Blocks
-
-```json
-{
-  "teachingBlocks": [
-    {
-      "id": "tb-001",
-      "concept": "Introduction to Topic",
-      "question": "What is the command to list files?",
-      "correctAnswer": "ls",
-      "hints": ["It's a two-letter command", "It stands for 'list'", "The command is 'ls'"],
-      "explanation": "The ls command lists directory contents..."
-    }
-  ]
-}
-```
-
-### 4. Define Badges
-
-```json
-{
-  "badges": [
-    {
-      "id": "badge-basics",
-      "title": "Course Basics",
-      "description": "Completed the introduction module",
-      "requirements": {
-        "blocksCompleted": ["tb-001", "tb-002", "tb-003"]
-      }
-    }
-  ]
-}
-```
-
----
-
-## Full Schema Reference
-
-### Content Pack (Root)
-
-| Field          | Type   | Required | Description                               |
-| -------------- | ------ | -------- | ----------------------------------------- |
-| id             | string | Yes      | Unique identifier (e.g., `pack-linux-v1`) |
-| name           | string | Yes      | Display name                              |
-| version        | string | Yes      | Semantic version (e.g., `1.0.0`)          |
-| description    | string | Yes      | What this course teaches                  |
-| difficulty     | string | Yes      | `beginner`, `intermediate`, `advanced`    |
-| teachingBlocks | array  | Yes      | Array of teaching blocks                  |
-| badges         | array  | No       | Array of badge definitions                |
-| author         | string | No       | Who created this content                  |
-
-### Teaching Block
-
-| Field             | Type   | Required | Description                                          |
-| ----------------- | ------ | -------- | ---------------------------------------------------- |
-| id                | string | Yes      | Unique identifier (e.g., `tb-001`)                   |
-| concept           | string | Yes      | Topic/concept name                                   |
-| type              | string | No       | `lesson`, `challenge`, `quiz` (default: `challenge`) |
-| question          | string | Yes      | The question or prompt                               |
-| correctAnswer     | string | Yes      | Expected answer                                      |
-| hints             | array  | Yes      | Progressive hints (3 recommended)                    |
-| explanation       | string | Yes      | Why this is correct                                  |
-| level             | string | No       | Learning level (see below)                           |
-| timeBudgetSeconds | number | No       | Expected completion time                             |
-
-### Learning Levels
-
-| Level   | Code       | Description           | Example                              |
-| ------- | ---------- | --------------------- | ------------------------------------ |
-| Recall  | L1_RECALL  | Remember facts        | "What command lists files?"          |
-| Explain | L2_EXPLAIN | Understand why        | "Why does ls -la show hidden files?" |
-| Apply   | L3_APPLY   | Use in new situations | "List all .txt files modified today" |
-| Analyze | L4_ANALYZE | Break down problems   | "Debug why this script fails"        |
-| Expert  | L5_EXPERT  | Create & evaluate     | "Design a backup strategy"           |
-
-### Badge
-
-| Field        | Type   | Required | Description       |
-| ------------ | ------ | -------- | ----------------- |
-| id           | string | Yes      | Unique identifier |
-| title        | string | Yes      | Display name      |
-| description  | string | Yes      | How to earn it    |
-| requirements | object | Yes      | Earning criteria  |
-
-### Badge Requirements
-
-```json
-{
-  "requirements": {
-    "blocksCompleted": ["tb-001", "tb-002"], // Must complete these blocks
-    "minScore": 80, // Minimum percentage
-    "maxTime": 3600 // Maximum seconds (optional)
-  }
-}
-```
-
----
-
-## Best Practices
-
-### Hints
-
-Write hints that progress from subtle to obvious:
-
-```json
-{
-  "hints": [
-    "Think about what information you need to see", // Subtle
-    "You need to list the contents of the directory", // Direct
-    "The command starts with 'l' and ends with 's'" // Nearly gives it away
-  ]
-}
-```
-
-### Explanations
-
-Focus on **why**, not just **what**:
-
-```json
-{
-  "explanation": "The ls command lists directory contents. The -l flag provides 'long' format with permissions, owner, size, and date. The -a flag shows 'all' files including hidden ones (those starting with a dot). Together, ls -la gives you complete visibility into a directory."
-}
-```
-
-### Answer Validation
-
-Keep answers simple and normalized:
-
-- Lowercase preferred
-- No trailing whitespace
-- Commands without the $ prompt
-
-```json
-{
-  "correctAnswer": "ls -la"      // Good
-  "correctAnswer": "$ ls -la"    // Bad (includes prompt)
-  "correctAnswer": "LS -LA"      // Bad (uppercase)
-}
-```
-
----
-
-## Example: Complete Content Pack
-
-```json
-{
-  "id": "pack-linux-basics-v1",
-  "name": "Linux Basics",
-  "version": "1.0.0",
-  "description": "Essential Linux command line skills",
+  "description": "A compact example content pack.",
+  "tags": ["required", "example"],
+  "roleMappings": ["badge-example-role-v1"],
   "difficulty": "beginner",
-
+  "minDeviceProfile": {
+    "ramMb": 512,
+    "networkKbps": 128,
+    "requiresWebGL": false,
+    "requiresWebGPU": false,
+    "requiresWasm": false
+  },
   "teachingBlocks": [
     {
-      "id": "tb-linux-001",
-      "concept": "Listing Files",
-      "type": "challenge",
-      "question": "What command lists all files in a directory, including hidden files?",
-      "correctAnswer": "ls -a",
-      "hints": [
-        "The base command for listing is two letters",
-        "You need a flag to show hidden files",
-        "ls -a (the 'a' stands for 'all')"
+      "id": "tb-example-001",
+      "concept": "Example Concept",
+      "mode": "L0",
+      "canonicalSolution": "echo 'example'",
+      "explanation": "Explain why the example works.",
+      "surfaceVariants": [
+        {
+          "id": "variant-a",
+          "description": "Direct prompt",
+          "data": {
+            "prompt": "Run the example."
+          }
+        },
+        {
+          "id": "variant-b",
+          "description": "Rephrased prompt",
+          "data": {
+            "prompt": "Solve the same task with different wording."
+          }
+        }
       ],
-      "explanation": "The ls command lists directory contents. Adding -a shows ALL files, including hidden ones that start with a dot (like .bashrc).",
-      "level": "L1_RECALL",
-      "timeBudgetSeconds": 60
-    },
-    {
-      "id": "tb-linux-002",
-      "concept": "Changing Directories",
-      "type": "challenge",
-      "question": "What command takes you to your home directory from anywhere?",
-      "correctAnswer": "cd ~",
-      "hints": [
-        "The command to change location is two letters",
-        "There's a special character for 'home'",
-        "cd ~ (tilde represents your home directory)"
-      ],
-      "explanation": "The cd command changes your current directory. The tilde (~) is a shortcut that always points to your home directory, no matter where you are.",
-      "level": "L1_RECALL",
-      "timeBudgetSeconds": 60
+      "timeBudgetSeconds": 120,
+      "difficulty": "beginner",
+      "prerequisites": [],
+      "successCriteria": {
+        "minCorrectnessScore": 0.7,
+        "maxTimeSeconds": 240,
+        "maxRetries": 2,
+        "requiresExplanation": false
+      },
+      "hints": ["Start from the prompt.", "Use the canonical solution as the baseline."],
+      "commonErrors": []
     }
   ],
-
-  "badges": [
-    {
-      "id": "badge-linux-navigator",
-      "title": "Linux Navigator",
-      "description": "Master basic navigation commands",
-      "requirements": {
-        "blocksCompleted": ["tb-linux-001", "tb-linux-002"]
-      }
-    }
-  ],
-
-  "author": "TopShelf Teaching",
+  "author": "Top Shelf Teaching",
+  "createdAt": "2026-05-06T00:00:00.000Z",
+  "updatedAt": "2026-05-06T00:00:00.000Z",
+  "signature": "sig-v1-example",
+  "signingKeyId": "key-example-001",
   "schemaVersion": "1.0.0"
 }
 ```
 
----
-
 ## Validation
 
-Before using a content pack, validate it:
+Run the authoritative validator from the repo root:
 
 ```bash
-# Run the content pack validator
-pnpm run validate:content-packs
-
-# Or check a specific file
-node packages/content-authoring/validate.js content-packs/my_course_v1.json
+pnpm validate:content-packs
 ```
 
----
+Or run the package-local command directly:
 
-## Integration with Platform
-
-The platform loads content packs and displays them in the learning interface. Currently this is done via imports:
-
-```typescript
-// In a page file
-import contentPack from '@/content-packs/my_course_v1.json';
-
-// Access teaching blocks
-const blocks = contentPack.teachingBlocks;
-const firstQuestion = blocks[0].question;
+```bash
+pnpm --filter @topshelf/content-authoring run validate:packs
 ```
 
-Future versions will support dynamic loading from a database.
+The validator only treats top-level `content_pack_*.json` files as shipped manifests. Other JSON files under `content-packs/` are skipped on purpose.
 
----
+## Packaging
 
-## Need Help?
+The Uncle Julio's manifest is currently a demo-mode artifact.
 
-- Check existing content packs in `/content-packs/` for examples
-- Review the schema in `/packages/shared/schemas/`
-- Contact TopShelf Service LLC for support
+```bash
+pnpm checksum:uncle-julios
+pnpm package:uncle-julios
+```
+
+Both commands write outputs under `dist/content-packs/uncle-julios/`.
+
+Demo-mode behavior:
+
+- The manifest stays at `integrity.releaseMode: "demo"`.
+- The manifest checksum remains `null`.
+- Packaging writes the computed checksum beside the manifest and into release metadata, but does not backfill the manifest itself.
+- A release-mode pack would need an explicit manifest checksum before it should be treated as a release artifact.
+
+## What No Longer Applies
+
+These older patterns are not part of the current contract:
+
+- `question`
+- `correctAnswer`
+- `badges`
+- legacy mode names such as `L1_RECALL`, `L2_EXPLAIN`, and `L3_APPLY`
+- `node packages/content-authoring/validate.js`

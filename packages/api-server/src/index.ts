@@ -135,6 +135,10 @@ export function createApp(): Hono {
   // Metrics (public, no auth — for Prometheus scraping)
   api.route('/metrics', createMetricsRoutes());
 
+  // Health/ready mirrored under versioned base path (public)
+  api.get('/health', (c) => c.redirect('/health'));
+  api.get('/ready', (c) => c.redirect('/ready'));
+
   // Protected routes (auth required)
   const protectedApi = new Hono();
   protectedApi.use('*', authMiddleware({ requireEmailVerified: true }));

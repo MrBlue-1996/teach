@@ -1,0 +1,61 @@
+{
+  "id": "pack-fixture-response-cap-v1",
+  "name": "Fixture Response Cap Pack",
+  "version": "1.0.0",
+  "description": "A fixture that exceeds the declared response cap.",
+  "tags": ["fixtures"],
+  "roleMappings": [],
+  "difficulty": "beginner",
+  "minDeviceProfile": {
+    "ramMb": 512,
+    "networkKbps": 128,
+    "requiresWebGL": false,
+    "requiresWebGPU": false,
+    "requiresWasm": false
+  },
+  "teachingBlocks": [
+    {
+      "id": "tb-fixture-response-cap-001",
+      "concept": "Response Cap Guardrail",
+      "mode": "L0",
+      "canonicalSolution": "echo 'cap fixture'",
+      "explanation": "This explanation is intentionally longer than the configured character cap so the validator rejects it.",
+      "surfaceVariants": [
+        {
+          "id": "variant-a",
+          "description": "Variant A",
+          "data": {
+            "prompt": "Check response length."
+          }
+        },
+        {
+          "id": "variant-b",
+          "description": "Variant B",
+          "data": {
+            "prompt": "Repeat the same cap check."
+          }
+        }
+      ],
+      "timeBudgetSeconds": 120,
+      "difficulty": "beginner",
+      "prerequisites": [],
+      "successCriteria": {
+        "minCorrectnessScore": 0.7,
+        "maxTimeSeconds": 240,
+        "maxRetries": 2,
+        "requiresExplanation": false
+      },
+      "deviceConstraints": {
+        "maxResponseChars": 40
+      },
+      "hints": ["Look at the cap.", "Then compare it with the explanation length."],
+      "commonErrors": []
+    }
+  ],
+  "author": "Fixture Test Author",
+  "createdAt": "2026-05-06T00:00:00.000Z",
+  "updatedAt": "2026-05-06T00:00:00.000Z",
+  "signature": "sig-v1-ECDSA-P256-SHA256-responsecap",
+  "signingKeyId": "key-fixture-003",
+  "schemaVersion": "1.0.0"
+}

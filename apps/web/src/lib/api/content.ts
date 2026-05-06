@@ -127,7 +127,7 @@ export const contentApi = {
 
   /** @deprecated Use getPacks instead. Maps to GET /content/packs */
   getCourses: (params?: { category?: string; search?: string }) =>
-    api.get<PacksListResponse>('/content/packs', params as Record<string, string> | undefined),
+    api.get<PacksListResponse>('/content/packs', params),
 
   /** @deprecated Use getPack instead. Maps to GET /content/packs/:packId */
   getCourse: (courseId: string) => api.get<ContentPackDetail>(`/content/packs/${courseId}`),

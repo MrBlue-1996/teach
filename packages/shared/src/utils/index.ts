@@ -338,5 +338,5 @@ export function deepFreeze<T>(obj: T): Readonly<T> {
     }
   }
 
-  return obj as Readonly<T>;
+  return obj;
 }

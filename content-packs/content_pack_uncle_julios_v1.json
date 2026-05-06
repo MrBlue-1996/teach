@@ -22,9 +22,126 @@
     "requiresWebGPU": false,
     "requiresWasm": false
   },
+  "locale": "en-US",
+  "translationStatus": {
+    "es-US": "planned"
+  },
+  "assetCatalog": {
+    "fundamentals": [
+      {
+        "id": "FT5-audible-communication",
+        "title": "Audible Communication",
+        "sourceDataStatus": "demo"
+      },
+      {
+        "id": "FT5-color-barriers",
+        "title": "Color Barriers",
+        "sourceDataStatus": "demo"
+      },
+      {
+        "id": "FT5-station-discipline",
+        "title": "Station Discipline",
+        "sourceDataStatus": "demo"
+      },
+      {
+        "id": "FT5-clean-as-you-go",
+        "title": "Clean As You Go",
+        "sourceDataStatus": "demo"
+      }
+    ],
+    "downtimeDecisions": [
+      {
+        "id": "DT8-restock-reset-clean",
+        "title": "Restock, Reset, Clean",
+        "sourceDataStatus": "demo"
+      },
+      {
+        "id": "DT8-communicate-86s",
+        "title": "Communicate 86s Early",
+        "sourceDataStatus": "demo"
+      }
+    ],
+    "chaosEvents": [
+      {
+        "id": "CE9-ticket-spike",
+        "title": "Ticket Spike",
+        "sourceDataStatus": "demo"
+      },
+      {
+        "id": "CE9-short-product",
+        "title": "Short Product",
+        "sourceDataStatus": "demo"
+      },
+      {
+        "id": "CE9-equipment-disruption",
+        "title": "Equipment Disruption",
+        "sourceDataStatus": "demo"
+      }
+    ],
+    "assessments": [
+      {
+        "id": "AS7-orientation-safety-check",
+        "title": "Orientation Safety Check",
+        "sourceDataStatus": "demo"
+      },
+      {
+        "id": "AS7-color-barriers-check",
+        "title": "Color Barriers Check",
+        "sourceDataStatus": "demo"
+      },
+      {
+        "id": "AS7-station-setup-check",
+        "title": "Station Setup Check",
+        "sourceDataStatus": "demo"
+      },
+      {
+        "id": "AS7-line-readiness-check",
+        "title": "Line Readiness Check",
+        "sourceDataStatus": "demo"
+      },
+      {
+        "id": "AS7-ticket-flow-check",
+        "title": "Ticket Flow Check",
+        "sourceDataStatus": "demo"
+      },
+      {
+        "id": "AS7-downtime-priority-check",
+        "title": "Downtime Priority Check",
+        "sourceDataStatus": "demo"
+      },
+      {
+        "id": "AS7-clean-reset-check",
+        "title": "Clean Reset Check",
+        "sourceDataStatus": "demo"
+      },
+      {
+        "id": "AS7-final-pack-gate",
+        "title": "Final Pack Gate",
+        "sourceDataStatus": "demo"
+      }
+    ],
+    "ticketFlows": [
+      {
+        "id": "RC4-acknowledge-anchor-fire",
+        "title": "Acknowledge And Anchor The Fire",
+        "sourceDataStatus": "demo"
+      },
+      {
+        "id": "RC4-ticket-spike-recovery",
+        "title": "Ticket Spike Recovery",
+        "sourceDataStatus": "demo"
+      }
+    ]
+  },
+  "integrity": {
+    "releaseMode": "demo",
+    "checksum": null
+  },
   "teachingBlocks": [
     {
       "id": "tb-uj-orientation-safety",
+      "title": "Orientation and Safety",
+      "objective": "Use audible movement calls and basic line-safety habits before moving through a live station.",
       "concept": "Orientation and Safety",
       "mode": "L0",
       "canonicalSolution": "Prompt: You are walking from the dish pit back to your station carrying a hot sauté pan in your right hand and a knife in your left. Three coworkers are on the line. List exactly what you say, in order, between leaving the dish pit and arriving at your station.\n\nExpected response:\n1. 'Hot, sharp, behind' as you start moving\n2. 'Corner' at every blind corner you pass\n3. 'Behind' as you pass each coworker\n\nSuccess criteria:\n1. Cook calls hot, sharp, and behind before moving — not during or after.\n2. Cook calls corner at blind corners every time, not selectively.\n3. Cook does not lower their voice; calls are made to be heard.",
@@ -85,6 +202,26 @@
         "maxRetries": 3,
         "requiresExplanation": true
       },
+      "deviceConstraints": {
+        "maxResponseChars": 1300
+      },
+      "moduleLinks": {
+        "fundamentalsTaught": ["FT5-audible-communication"],
+        "downtimeDecisions": [],
+        "chaosEvents": [],
+        "externalAssessmentId": "AS7-orientation-safety-check",
+        "ticketFlows": [],
+        "triggerRules": [
+          {
+            "type": "help_requested",
+            "threshold": 1
+          },
+          {
+            "type": "repeated_errors",
+            "threshold": 2
+          }
+        ]
+      },
       "hints": [
         "Three things are dangerous on you at once: heat, blade, body. Each one has its own call.",
         "You call before you move, not as you move. The whole point is that nobody behind you has to react.",
@@ -115,6 +252,8 @@
     },
     {
       "id": "tb-uj-tools-color-barriers",
+      "title": "Tools and Color Barriers",
+      "objective": "Use industry-standard color barriers and dedicated tools to prevent cross-contact during prep and service.",
       "concept": "Tools and Color Barriers",
       "mode": "L0",
       "canonicalSolution": "Prompt: You are setting up to portion four items: raw chicken thighs, sliced tomato, cooked carnitas, and raw shrimp. Match each item to the correct cutting-board color using the industry-standard mapping. Then explain what you do if the yellow board is in the dish pit.\n\nExpected response:\n1. raw chicken thighs:yellow\n2. sliced tomato:green\n3. cooked carnitas:brown\n4. raw shrimp:blue\n5. fallback:wash-rinse-sanitize an alternate board, document the substitution, and replace the missing board to par before next service\n\nSuccess criteria:\n1. All four boards mapped correctly.\n2. Fallback procedure includes wash-rinse-sanitize and a notation step, not just substitution.\n3. Cook does not skip the documentation step; a missing board today is a missing board tomorrow.",
@@ -172,6 +311,26 @@
         "maxRetries": 3,
         "requiresExplanation": true
       },
+      "deviceConstraints": {
+        "maxResponseChars": 1300
+      },
+      "moduleLinks": {
+        "fundamentalsTaught": ["FT5-color-barriers", "FT5-station-discipline"],
+        "downtimeDecisions": ["DT8-communicate-86s"],
+        "chaosEvents": ["CE9-short-product"],
+        "externalAssessmentId": "AS7-color-barriers-check",
+        "ticketFlows": [],
+        "triggerRules": [
+          {
+            "type": "help_requested",
+            "threshold": 1
+          },
+          {
+            "type": "repeated_errors",
+            "threshold": 2
+          }
+        ]
+      },
       "hints": [
         "The mapping has a logic: blue is sea, yellow is bird, red is mammal, green grows.",
         "Cooked-or-ready-to-eat is brown — separate from anything raw, always.",
@@ -202,6 +361,8 @@
     },
     {
       "id": "tb-uj-station-setup",
+      "title": "Station Setup",
+      "objective": "Bring a cold station to ready in a repeatable order that protects sanitation, equipment readiness, and lead visibility.",
       "concept": "Station Setup",
       "mode": "L0",
       "canonicalSolution": "Prompt: Your station is cold. You have 12 minutes until first ticket. Put these eight steps in the correct order: stage tools, wipe and sanitize surfaces, mix sanitizer bucket, verify equipment temperature, confirm cutting board color matches assigned protein, stock rail to par in FIFO order, wash hands and check apron, tell the lead the station is up.\n\nExpected response:\n1. wash hands and check apron\n2. wipe and sanitize surfaces\n3. confirm cutting board color matches assigned protein\n4. verify equipment temperature\n5. mix sanitizer bucket\n6. stock rail to par in FIFO order\n7. stage tools\n8. tell the lead the station is up\n\nSuccess criteria:\n1. Hand-wash is first, every time.\n2. Surface sanitation comes before any food contact.\n3. Equipment temperature verified by thermometer, not by sight.\n4. Readiness call goes to the lead; the cook does not self-declare ready.",
@@ -270,6 +431,27 @@
         "maxRetries": 3,
         "requiresExplanation": true
       },
+      "deviceConstraints": {
+        "maxResponseChars": 1300
+      },
+      "moduleLinks": {
+        "fundamentalsTaught": ["FT5-station-discipline", "FT5-color-barriers"],
+        "downtimeDecisions": ["DT8-communicate-86s"],
+        "chaosEvents": ["CE9-equipment-disruption"],
+        "externalAssessmentId": "AS7-station-setup-check",
+        "ticketFlows": [],
+        "triggerRules": [
+          {
+            "type": "help_requested",
+            "threshold": 1
+          },
+          {
+            "type": "stuck_time",
+            "threshold": 300,
+            "unit": "seconds"
+          }
+        ]
+      },
       "hints": [
         "Hands first. Always. The dirtiest surface in the kitchen at the start of a shift is on you.",
         "Wipe surfaces before tools touch them, and tools before food touches them.",
@@ -300,6 +482,8 @@
     },
     {
       "id": "tb-uj-line-readiness",
+      "title": "Line Readiness",
+      "objective": "Turn an open station into a service-ready station by reading load signals, positioning stock, and escalating short-item risk early.",
       "concept": "Line Readiness",
       "mode": "L0",
       "canonicalSolution": "Prompt: Your station is open. Pre-shift huddle just ended. You learned: a 60-top is on the books at 7 PM, a regular VIP is in at 6:30, and the produce delivery is short on a key item. With 30 minutes until first ticket, name the three positioning moves you make right now to absorb the load.\n\nExpected response:\n1. Pre-portion or pre-fire the items the 60-top will hit hardest, in batches sized to your hold capacity\n2. Brief the expo and the lead on the short item so the menu call-out is consistent and substitutions are pre-decided\n3. Stage tools and pans for the highest-volume item with extras within reach so you are not rotating mid-rush\n\nSuccess criteria:\n1. Cook anticipates load instead of reacting to it.\n2. Cook synchronizes with expo and lead, not just within their own station.\n3. Cook positions tools for volume, not for tidiness.",
@@ -363,6 +547,27 @@
         "maxRetries": 3,
         "requiresExplanation": true
       },
+      "deviceConstraints": {
+        "maxResponseChars": 1300
+      },
+      "moduleLinks": {
+        "fundamentalsTaught": ["FT5-audible-communication", "FT5-station-discipline"],
+        "downtimeDecisions": ["DT8-communicate-86s"],
+        "chaosEvents": ["CE9-ticket-spike", "CE9-short-product"],
+        "externalAssessmentId": "AS7-line-readiness-check",
+        "ticketFlows": ["RC4-ticket-spike-recovery"],
+        "triggerRules": [
+          {
+            "type": "help_requested",
+            "threshold": 1
+          },
+          {
+            "type": "stuck_time",
+            "threshold": 300,
+            "unit": "seconds"
+          }
+        ]
+      },
       "hints": [
         "Open means the station is set. Ready means the station is positioned for what is coming next.",
         "Pre-fire only what you can hold without quality drop — usually a fraction of expected volume, not all of it.",
@@ -388,6 +593,8 @@
     },
     {
       "id": "tb-uj-ticket-flow-basics",
+      "title": "Ticket Flow Basics",
+      "objective": "Acknowledge fires audibly, identify the anchor item, and time shorter items backward so the plate lands together.",
       "concept": "Ticket Flow Basics",
       "mode": "L0",
       "canonicalSolution": "Prompt: Expo fires a ticket: one item that takes 12 minutes, two items that take 6 minutes, one item that takes 90 seconds. You have to call your acknowledgment, identify the anchor, and decide when each item starts so the plate goes up together. Walk through it.\n\nExpected response:\n1. Acknowledge the fire out loud, audibly enough that expo confirms\n2. Identify the 12-minute item as the anchor\n3. Start the anchor first\n4. Start the 6-minute items at the 6-minute mark of the anchor\n5. Start the 90-second item with about 90 seconds left on the anchor\n6. Plate together at the pass\n\nSuccess criteria:\n1. Acknowledgment is audible.\n2. Anchor is correctly identified as the longest-cook item.\n3. Other items are timed against the anchor, not started in parallel and held.",
@@ -455,6 +662,26 @@
         "maxRetries": 3,
         "requiresExplanation": true
       },
+      "deviceConstraints": {
+        "maxResponseChars": 1300
+      },
+      "moduleLinks": {
+        "fundamentalsTaught": ["FT5-audible-communication"],
+        "downtimeDecisions": [],
+        "chaosEvents": ["CE9-ticket-spike"],
+        "externalAssessmentId": "AS7-ticket-flow-check",
+        "ticketFlows": ["RC4-acknowledge-anchor-fire"],
+        "triggerRules": [
+          {
+            "type": "help_requested",
+            "threshold": 1
+          },
+          {
+            "type": "repeated_errors",
+            "threshold": 2
+          }
+        ]
+      },
       "hints": [
         "Anchor first. Other items start counting backward from when the anchor finishes.",
         "A held plate loses quality before a late plate does. The goal is together, not fast.",
@@ -485,6 +712,8 @@
     },
     {
       "id": "tb-uj-downtime-decisions",
+      "title": "Downtime Decisions",
+      "objective": "Prioritize restock, reset, and cleaning in the order that protects the next rush instead of the current appearance of the station.",
       "concept": "Downtime Decisions",
       "mode": "L0",
       "canonicalSolution": "Prompt: The rush is over. You have about 12 minutes before the next push. The rail is half-empty, the station is messy but functional, and a deep cleaning task on your sidework list is overdue. List your priority order and explain why.\n\nExpected response:\n1. Restock the rail to par first\n2. Reset and reorganize the station second\n3. Tackle the deep-cleaning task last, only if the remaining window allows\n\nSuccess criteria:\n1. Restock is named first.\n2. Cook articulates that an empty rail breaks faster than a messy station does.\n3. Deep cleaning is treated as a downtime bonus, not a downtime priority.",
@@ -545,6 +774,27 @@
         "maxRetries": 3,
         "requiresExplanation": true
       },
+      "deviceConstraints": {
+        "maxResponseChars": 1300
+      },
+      "moduleLinks": {
+        "fundamentalsTaught": ["FT5-station-discipline", "FT5-clean-as-you-go"],
+        "downtimeDecisions": ["DT8-restock-reset-clean"],
+        "chaosEvents": ["CE9-short-product"],
+        "externalAssessmentId": "AS7-downtime-priority-check",
+        "ticketFlows": [],
+        "triggerRules": [
+          {
+            "type": "help_requested",
+            "threshold": 1
+          },
+          {
+            "type": "stuck_time",
+            "threshold": 300,
+            "unit": "seconds"
+          }
+        ]
+      },
       "hints": [
         "The next rush kills you fastest if the rail is empty, not if the station is messy.",
         "Restocking is also FIFO — old product in front, new behind. Skipping that creates a different kind of problem 24 hours from now.",
@@ -575,6 +825,8 @@
     },
     {
       "id": "tb-uj-cleaning-reset",
+      "title": "Cleaning and Reset",
+      "objective": "Use micro-resets during service to remove hazards immediately without breaking ticket flow.",
       "concept": "Cleaning and Reset",
       "mode": "L0",
       "canonicalSolution": "Prompt: Mid-service. Tickets are still firing but slower. Your station has accumulated three sauté pans on the side, the cutting board has trim on it, and the sanitizer cloth on the counter is gray. In what order do you fix this without breaking ticket flow?\n\nExpected response:\n1. Refresh the sanitizer cloth first — a gray cloth is contaminating, not cleaning\n2. Clear the cutting board of trim and wipe it down\n3. Hand the spent sauté pans to the dish pit on your way back to the rail\n4. Continue answering tickets between each micro-step so flow is not broken\n\nSuccess criteria:\n1. Cook recognizes a gray sanitizer cloth as a hazard, not a cosmetic issue.\n2. Cook breaks reset into micro-steps that fit between tickets.\n3. Cook does not stop ticket flow to do a full reset.",
@@ -640,6 +892,27 @@
         "maxRetries": 3,
         "requiresExplanation": true
       },
+      "deviceConstraints": {
+        "maxResponseChars": 1300
+      },
+      "moduleLinks": {
+        "fundamentalsTaught": ["FT5-clean-as-you-go", "FT5-station-discipline"],
+        "downtimeDecisions": ["DT8-restock-reset-clean"],
+        "chaosEvents": ["CE9-equipment-disruption"],
+        "externalAssessmentId": "AS7-clean-reset-check",
+        "ticketFlows": [],
+        "triggerRules": [
+          {
+            "type": "help_requested",
+            "threshold": 1
+          },
+          {
+            "type": "stuck_time",
+            "threshold": 300,
+            "unit": "seconds"
+          }
+        ]
+      },
       "hints": [
         "A gray sanitizer cloth is not low-priority. It is moving contamination around.",
         "Reset in micro-steps, not in a single block. Tickets do not pause for a full reset.",
@@ -670,6 +943,8 @@
     },
     {
       "id": "tb-uj-assessment-gate",
+      "title": "Assessment Gate: Service-Ready Cook",
+      "objective": "Demonstrate full-service station control, chaos recovery, and downtime prioritization under live observation with no gating violations.",
       "concept": "Assessment Gate: Service-Ready Cook",
       "mode": "L0",
       "canonicalSolution": "Prompt: Live observation by a trainer or manager. The cook holds an assigned station through a service window that includes at least one ticket spike (chaos event), at least one downtime window, and at least one full ticket from fire to pass. The trainer signs off live, in person, on the AS7-final-pack-gate items.\n\nExpected response:\n1. Trainer sign-off on every item in AS7-final-pack-gate, with no gating violations on safe handling, color barriers, or audible communication.\n\nSuccess criteria:\n1. Cook acknowledges every fire audibly.\n2. Cook anchors multi-item tickets correctly.\n3. Cook recovers from at least one chaos event without manager intervention.\n4. Cook prioritizes restock-reset-clean correctly during the downtime window.\n5. No gating violations on safe handling or color barriers.",
@@ -721,6 +996,36 @@
         "maxTimeSeconds": 7200,
         "maxRetries": 3,
         "requiresExplanation": true
+      },
+      "deviceConstraints": {
+        "maxResponseChars": 1300
+      },
+      "moduleLinks": {
+        "fundamentalsTaught": [
+          "FT5-audible-communication",
+          "FT5-color-barriers",
+          "FT5-station-discipline",
+          "FT5-clean-as-you-go"
+        ],
+        "downtimeDecisions": ["DT8-restock-reset-clean", "DT8-communicate-86s"],
+        "chaosEvents": ["CE9-ticket-spike", "CE9-equipment-disruption"],
+        "externalAssessmentId": "AS7-final-pack-gate",
+        "ticketFlows": ["RC4-acknowledge-anchor-fire", "RC4-ticket-spike-recovery"],
+        "triggerRules": [
+          {
+            "type": "help_requested",
+            "threshold": 1
+          },
+          {
+            "type": "repeated_errors",
+            "threshold": 2
+          },
+          {
+            "type": "stuck_time",
+            "threshold": 300,
+            "unit": "seconds"
+          }
+        ]
       },
       "hints": [
         "This is a live observation. The trainer is reading you against the standard, not against the room.",

@@ -18,7 +18,6 @@ import {
   Thermometer,
   Gauge,
   Zap,
-  Eye,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -269,7 +268,18 @@ function MachineListItem({
   const status = statusConfig[machine.status];
 
   return (
-    <Card className="card-hover cursor-pointer" onClick={() => onSelect(machine)}>
+    <Card
+      className="card-hover cursor-pointer"
+      onClick={() => onSelect(machine)}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          onSelect(machine);
+        }
+      }}
+      role="button"
+      tabIndex={0}
+    >
       <CardContent className="flex items-center gap-4 p-4">
         <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-muted">
           <Cog className="h-5 w-5 text-muted-foreground" />
@@ -301,9 +311,6 @@ function MachineListItem({
             <p className="text-xs text-muted-foreground">Uptime</p>
           </div>
         </div>
-        <Button variant="ghost" size="icon">
-          <Eye className="h-4 w-4" />
-        </Button>
       </CardContent>
     </Card>
   );

@@ -372,9 +372,9 @@ export default function InstructorPage() {
                             <span>v{course.version}</span>
                           </div>
                         </div>
-                        <Button variant="outline" size="sm">
-                          Open
-                        </Button>
+                        <span className="text-sm font-medium text-muted-foreground">
+                          Open course
+                        </span>
                       </div>
                     </Link>
                   ))}

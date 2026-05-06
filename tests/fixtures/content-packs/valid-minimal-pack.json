@@ -1,0 +1,58 @@
+{
+  "id": "pack-fixture-valid-v1",
+  "name": "Fixture Valid Pack",
+  "version": "1.0.0",
+  "description": "A valid fixture-backed content pack.",
+  "tags": ["required", "fixtures"],
+  "roleMappings": ["badge-fixture-role-v1"],
+  "difficulty": "beginner",
+  "minDeviceProfile": {
+    "ramMb": 512,
+    "networkKbps": 128,
+    "requiresWebGL": false,
+    "requiresWebGPU": false,
+    "requiresWasm": false
+  },
+  "teachingBlocks": [
+    {
+      "id": "tb-fixture-intro-001",
+      "concept": "Fixture Intro",
+      "mode": "L0",
+      "canonicalSolution": "echo 'valid fixture'",
+      "explanation": "This fixture validates the real content-pack validator path.",
+      "surfaceVariants": [
+        {
+          "id": "variant-a",
+          "description": "Variant A",
+          "data": {
+            "prompt": "Run the valid fixture"
+          }
+        },
+        {
+          "id": "variant-b",
+          "description": "Variant B",
+          "data": {
+            "prompt": "Rephrase the valid fixture"
+          }
+        }
+      ],
+      "timeBudgetSeconds": 120,
+      "difficulty": "beginner",
+      "prerequisites": [],
+      "successCriteria": {
+        "minCorrectnessScore": 0.7,
+        "maxTimeSeconds": 240,
+        "maxRetries": 2,
+        "requiresExplanation": false
+      },
+      "hints": ["Read the prompt.", "Use the canonical solution as your baseline."],
+      "commonErrors": []
+    }
+  ],
+  "author": "Fixture Test Author",
+  "createdAt": "2026-05-06T00:00:00.000Z",
+  "updatedAt": "2026-05-06T00:00:00.000Z",
+  "signature": "sig-v1-ECDSA-P256-SHA256-fixturevalid",
+  "signingKeyId": "key-fixture-001",
+  "schemaVersion": "1.0.0"
+}

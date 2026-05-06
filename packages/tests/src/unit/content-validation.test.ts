@@ -110,7 +110,7 @@ describe('ContentPackValidator', () => {
       teachingBlocks: [
         {
           ...validPack.teachingBlocks[0]!,
-          prerequisites: ['tb-nonexistent' as `tb-${string}`], // Non-existent prerequisite
+          prerequisites: ['tb-nonexistent'], // Non-existent prerequisite
         },
       ],
     };
@@ -128,7 +128,7 @@ describe('ContentPackValidator', () => {
         .fill(null)
         .map((_, i) => ({
           ...validPack.teachingBlocks[0]!,
-          id: `tb-test-${i.toString().padStart(3, '0')}` as `tb-${string}`,
+          id: `tb-test-${i.toString().padStart(3, '0')}`,
           concept: `Concept ${i}`,
         })),
     };

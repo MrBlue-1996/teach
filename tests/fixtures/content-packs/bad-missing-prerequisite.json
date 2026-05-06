@@ -1,0 +1,61 @@
+{
+  "id": "pack-fixture-missing-prereq-v1",
+  "name": "Fixture Missing Prerequisite",
+  "version": "1.0.0",
+  "description": "A pack with a prerequisite that does not resolve.",
+  "tags": ["elective", "fixtures"],
+  "roleMappings": [],
+  "difficulty": "beginner",
+  "minDeviceProfile": {
+    "ramMb": 512,
+    "networkKbps": 128,
+    "requiresWebGL": false,
+    "requiresWebGPU": false,
+    "requiresWasm": false
+  },
+  "teachingBlocks": [
+    {
+      "id": "tb-fixture-prereq-001",
+      "concept": "Missing Prerequisite",
+      "mode": "L0",
+      "canonicalSolution": "echo 'missing prerequisite'",
+      "explanation": "This block points at a prerequisite that is not present in the pack.",
+      "surfaceVariants": [
+        {
+          "id": "variant-a",
+          "description": "Variant A",
+          "data": {
+            "prompt": "Missing prerequisite A"
+          }
+        },
+        {
+          "id": "variant-b",
+          "description": "Variant B",
+          "data": {
+            "prompt": "Missing prerequisite B"
+          }
+        }
+      ],
+      "timeBudgetSeconds": 120,
+      "difficulty": "beginner",
+      "prerequisites": ["tb-fixture-prereq-missing-999"],
+      "successCriteria": {
+        "minCorrectnessScore": 0.7,
+        "maxTimeSeconds": 240,
+        "maxRetries": 2,
+        "requiresExplanation": false
+      },
+      "hints": [
+        "The prerequisite does not exist.",
+        "The validator should reject unresolved prerequisites."
+      ],
+      "commonErrors": []
+    }
+  ],
+  "author": "Fixture Test Author",
+  "createdAt": "2026-05-06T00:00:00.000Z",
+  "updatedAt": "2026-05-06T00:00:00.000Z",
+  "signature": "sig-v1-ECDSA-P256-SHA256-fixtureprereq",
+  "signingKeyId": "key-fixture-001",
+  "schemaVersion": "1.0.0"
+}

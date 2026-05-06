@@ -17,7 +17,6 @@ import {
   Tag,
   Info,
   ExternalLink,
-  Plus,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getResourcePack, type ToolResource as Tool, type ToolStatus } from '@/lib/pack-resources';
@@ -92,10 +91,9 @@ export default function ToolsPage() {
         description={resourcePack.pages.tools.description}
         icon={Wrench}
         actions={
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            {resourcePack.pages.tools.action}
-          </Button>
+          <div className="rounded-md border bg-muted/50 px-3 py-2 text-sm text-muted-foreground">
+            Tool intake is not enabled in this build.
+          </div>
         }
       />
 
@@ -383,11 +381,15 @@ function ToolDetailDrawer({ tool, onClose }: { tool: Tool; onClose: () => void }
               </div>
             )}
 
-            <div className="flex gap-2 pt-4">
-              <Button className="flex-1" disabled={tool.status !== 'available'}>
-                {tool.status === 'available' ? 'Reserve Tool' : 'Not Available'}
-              </Button>
-              <Button variant="outline">Report Issue</Button>
+            <div className="grid gap-2 pt-4 sm:grid-cols-2">
+              <div className="rounded-lg border bg-muted/40 p-3 text-sm text-muted-foreground">
+                {tool.status === 'available'
+                  ? 'Reservation workflow is not enabled in this build.'
+                  : `${status.label} tools cannot be reserved in this build.`}
+              </div>
+              <div className="rounded-lg border bg-muted/40 p-3 text-sm text-muted-foreground">
+                Issue reporting stays in the maintenance workflow outside this demo UI.
+              </div>
             </div>
           </div>
         </div>

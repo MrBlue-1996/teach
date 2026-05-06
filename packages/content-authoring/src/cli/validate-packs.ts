@@ -9,12 +9,12 @@ import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { validateContentPack } from '../validation/content-validator.js';
+
 type ValidationIssue = {
   file: string;
   message: string;
 };
-
-type PackLike = Record<string, unknown>;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -23,12 +23,9 @@ const repoRoot = path.resolve(packageRoot, '../..');
 
 const REQUIRED_PACKAGE_FILES = [path.join(packageRoot, 'src', 'index.ts')];
 
-const CANDIDATE_DIRECTORIES = [
-  path.join(repoRoot, 'content-packs'),
-  path.join(repoRoot, 'content'),
-  path.join(packageRoot, 'content-packs'),
-  path.join(packageRoot, 'content'),
-];
+const CANDIDATE_DIRECTORIES = [path.join(repoRoot, 'content-packs')];
+
+const CONTENT_PACK_FILE_PREFIX = 'content_pack_';
 
 async function pathExists(targetPath: string): Promise<boolean> {
   try {
@@ -63,72 +60,14 @@ async function collectJsonFiles(rootDir: string): Promise<string[]> {
   return files.sort();
 }
 
-function isPlainObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
+function isContentPackManifestFile(absoluteFile: string): boolean {
+  const parentDir = path.dirname(absoluteFile);
+  const fileName = path.basename(absoluteFile);
 
-function inferPackIdentifier(data: PackLike, fallback: string): string {
-  const id = data.id;
-  const slug = data.slug;
-  const name = data.name;
-  const title = data.title;
-
-  for (const candidate of [id, slug, name, title]) {
-    if (typeof candidate === 'string' && candidate.trim().length > 0) {
-      return candidate.trim();
-    }
-  }
-
-  return fallback;
-}
-
-function isKitchenChallengeShape(data: PackLike): boolean {
   return (
-    typeof data.type === 'string' &&
-    typeof data.briefing === 'string' &&
-    typeof data.timeLimitSeconds === 'number' &&
-    typeof data.difficultyLevel === 'number' &&
-    isPlainObject(data.expertRecipe)
+    parentDir === path.join(repoRoot, 'content-packs') &&
+    fileName.startsWith(CONTENT_PACK_FILE_PREFIX)
   );
-}
-
-function validatePackShape(relativePath: string, data: PackLike): ValidationIssue[] {
-  const issues: ValidationIssue[] = [];
-
-  const hasIdentity = ['id', 'slug', 'name', 'title'].some((key) => {
-    const value = data[key];
-    return typeof value === 'string' && value.trim().length > 0;
-  });
-
-  const hasStructure = ['version', 'modules', 'lessons', 'units', 'content', 'items'].some(
-    (key) => key in data
-  );
-
-  const hasKitchenChallengeStructure = isKitchenChallengeShape(data);
-
-  if (!hasIdentity) {
-    issues.push({
-      file: relativePath,
-      message: 'Expected one identity field: id, slug, name, or title.',
-    });
-  }
-
-  if (!hasStructure && !hasKitchenChallengeStructure) {
-    issues.push({
-      file: relativePath,
-      message:
-        'Expected either a content-pack structure (version, modules, lessons, units, content, or items) or a kitchen challenge structure (type, briefing, timeLimitSeconds, difficultyLevel, expertRecipe).',
-    });
-  }
-
-  if ('version' in data && typeof data.version !== 'string' && typeof data.version !== 'number') {
-    issues.push({
-      file: relativePath,
-      message: 'Field "version" must be a string or number when present.',
-    });
-  }
-
-  return issues;
 }
 
 async function validateRequiredFiles(): Promise<ValidationIssue[]> {
@@ -148,11 +87,9 @@ async function validateRequiredFiles(): Promise<ValidationIssue[]> {
 
 async function main(): Promise<void> {
   const issues: ValidationIssue[] = [];
-  const seenIds = new Map<string, string>();
   const discoveredJsonFiles = new Set<string>();
-  // Tracks files that successfully passed shape validation AND claimed a unique ID.
-  // Any discovered file not in this set is an orphan.
-  const claimedFiles = new Set<string>();
+  const skippedFiles: string[] = [];
+  let validatedPackCount = 0;
 
   issues.push(...(await validateRequiredFiles()));
 
@@ -165,7 +102,7 @@ async function main(): Promise<void> {
 
   if (existingDirectories.length === 0) {
     console.warn(
-      '[validate:packs] No content directories found. Checked:',
+      '[validate:packs] No content-pack directories found. Checked:',
       CANDIDATE_DIRECTORIES.map((dir) => path.relative(repoRoot, dir)).join(', ')
     );
     process.exit(0);
@@ -186,32 +123,25 @@ async function main(): Promise<void> {
   for (const absoluteFile of Array.from(discoveredJsonFiles).sort()) {
     const relativeFile = path.relative(repoRoot, absoluteFile);
 
+    if (!isContentPackManifestFile(absoluteFile)) {
+      skippedFiles.push(relativeFile);
+      continue;
+    }
+
     try {
       const raw = await fs.readFile(absoluteFile, 'utf8');
       const parsed: unknown = JSON.parse(raw);
 
-      if (!isPlainObject(parsed)) {
-        issues.push({
-          file: relativeFile,
-          message: 'Expected the top-level JSON value to be an object.',
-        });
-        continue;
-      }
-
-      issues.push(...validatePackShape(relativeFile, parsed));
-
-      const inferredId = inferPackIdentifier(parsed, relativeFile);
-      const existingPath = seenIds.get(inferredId);
-
-      if (existingPath !== undefined) {
-        issues.push({
-          file: relativeFile,
-          message: `Duplicate content-pack identifier "${inferredId}" already seen in ${existingPath}.`,
-        });
+      const result = validateContentPack(parsed, { sourcePath: relativeFile });
+      if (!result.valid) {
+        for (const error of result.errors) {
+          issues.push({
+            file: relativeFile,
+            message: `${error.code} at ${error.path || '<root>'}: ${error.message}`,
+          });
+        }
       } else {
-        seenIds.set(inferredId, relativeFile);
-        // File has a unique identity and passed shape checks — it is claimed.
-        claimedFiles.add(absoluteFile);
+        validatedPackCount += 1;
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -222,21 +152,11 @@ async function main(): Promise<void> {
     }
   }
 
-  // Manifest registry parity check — flag any discovered file that was never claimed.
-  // A file is unclaimed if it failed shape validation, had a duplicate ID, or had invalid JSON.
-  for (const absoluteFile of discoveredJsonFiles) {
-    if (!claimedFiles.has(absoluteFile)) {
-      const relativeFile = path.relative(repoRoot, absoluteFile);
-      // Only flag as orphan if it didn't already produce a validation issue.
-      const alreadyFlagged = issues.some((issue) => issue.file === relativeFile);
-      if (!alreadyFlagged) {
-        issues.push({
-          file: relativeFile,
-          message:
-            'Orphaned file: exists in content directory but could not be claimed by any valid pack identifier.',
-        });
-      }
-    }
+  if (validatedPackCount === 0 && issues.length === 0) {
+    console.warn(
+      '[validate:packs] No content-pack manifest files matched the current validation convention. Expected top-level content_pack_*.json files under content-packs/.'
+    );
+    process.exit(0);
   }
 
   if (issues.length > 0) {
@@ -244,11 +164,22 @@ async function main(): Promise<void> {
     for (const issue of issues) {
       console.error(` - ${issue.file}: ${issue.message}`);
     }
+    if (skippedFiles.length > 0) {
+      console.error(
+        `[validate:packs] Skipped ${skippedFiles.length} non-manifest JSON file(s): ${skippedFiles.join(', ')}`
+      );
+    }
     process.exit(1);
   }
 
+  if (skippedFiles.length > 0) {
+    console.log(
+      `[validate:packs] Skipped ${skippedFiles.length} non-manifest JSON file(s): ${skippedFiles.join(', ')}`
+    );
+  }
+
   console.log(
-    `[validate:packs] OK. Validated ${claimedFiles.size}/${discoveredJsonFiles.size} JSON file(s) across ${existingDirectories.length} content directory(ies).`
+    `[validate:packs] OK. Validated ${validatedPackCount} content-pack manifest file(s) across ${existingDirectories.length} content-pack directory(ies).`
   );
 }
 

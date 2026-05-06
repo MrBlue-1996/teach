@@ -46,13 +46,94 @@ export const roleIdSchema = z.string().regex(/^role-[a-zA-Z0-9_-]+$/, 'Invalid r
 export const difficultyLevelSchema = z.enum(['beginner', 'intermediate', 'advanced', 'expert']);
 
 /** Content tag */
-export const contentTagSchema = z.enum([
-  'required',
-  'recommended',
-  'elective',
-  'capstone',
-  'retention',
+export const contentTagSchema = z.string().min(1).max(50);
+
+/** Supported source-data statuses for demo and authorized content */
+export const sourceDataStatusSchema = z.enum([
+  'demo',
+  'authorized',
+  'requires-client-source',
+  'deprecated',
 ]);
+
+/** Locale code */
+export const localeCodeSchema = z.string().regex(/^[a-z]{2}-[A-Z]{2}$/, 'Invalid locale code');
+
+/** Translation status */
+export const translationStatusSchema = z.enum(['planned', 'in-progress', 'complete']);
+
+/** Authored-by metadata */
+export const contentAuthorSchema = z
+  .object({
+    name: z.string().min(1).max(200),
+    email: z.string().email().optional(),
+  })
+  .strict();
+
+/** Device constraints for authored teaching responses */
+export const deviceConstraintsSchema = z
+  .object({
+    maxResponseChars: z.number().int().min(1).max(10000),
+  })
+  .strict();
+
+/** Trigger rule for adaptive support */
+export const triggerRuleSchema = z
+  .object({
+    type: z.enum(['repeated_errors', 'stuck_time', 'help_requested']),
+    threshold: z.number().int().min(1).optional(),
+    unit: z.enum(['seconds']).optional(),
+  })
+  .strict();
+
+/** Structured module links */
+export const moduleLinksSchema = z
+  .object({
+    fundamentalsTaught: z.array(z.string().min(1).max(100)).readonly(),
+    downtimeDecisions: z.array(z.string().min(1).max(100)).readonly(),
+    chaosEvents: z.array(z.string().min(1).max(100)).readonly(),
+    externalAssessmentId: z.string().min(1).max(100).nullable().optional(),
+    ticketFlows: z.array(z.string().min(1).max(100)).readonly(),
+    triggerRules: z.array(triggerRuleSchema).min(1).readonly(),
+  })
+  .strict();
+
+/** Asset catalog entry */
+export const assetCatalogEntrySchema = z
+  .object({
+    id: z.string().min(1).max(100),
+    title: z.string().min(1).max(200),
+    sourceDataStatus: sourceDataStatusSchema,
+    sourceReference: z.string().min(1).max(500).optional(),
+  })
+  .strict();
+
+/** Asset catalog used by structured module links */
+export const assetCatalogSchema = z
+  .object({
+    fundamentals: z.array(assetCatalogEntrySchema).readonly(),
+    downtimeDecisions: z.array(assetCatalogEntrySchema).readonly(),
+    chaosEvents: z.array(assetCatalogEntrySchema).readonly(),
+    assessments: z.array(assetCatalogEntrySchema).readonly(),
+    ticketFlows: z.array(assetCatalogEntrySchema).readonly(),
+  })
+  .strict();
+
+/** Pack integrity metadata */
+export const integrityMetadataSchema = z
+  .object({
+    releaseMode: z.enum(['demo', 'release']),
+    checksum: z.string().min(1).nullable().optional(),
+  })
+  .strict();
+
+/** Optional surfaced representation attached to a block */
+export const teachingSurfaceSchema = z
+  .object({
+    surfaceType: z.string().min(1).max(50),
+    content: z.string().min(1).max(10000),
+  })
+  .strict();
 
 /** Minimum device profile */
 export const minDeviceProfileSchema = z
@@ -99,15 +180,26 @@ export const commonErrorSchema = z
 export const teachingBlockSchema = z
   .object({
     id: teachingBlockIdSchema,
+    blockId: z.string().min(1).max(100).optional(),
+    title: z.string().min(1).max(200).optional(),
+    objective: z.string().min(1).max(500).optional(),
     concept: z.string().min(1).max(200),
+    type: z.string().min(1).max(50).optional(),
+    targetMode: z.string().min(1).max(50).optional(),
     mode: learningModeSchema,
+    content: z.string().min(1).max(10000).optional(),
     canonicalSolution: z.string().min(1).max(50000),
     explanation: z.string().min(1).max(10000),
+    hint: z.string().min(1).max(1000).optional(),
     surfaceVariants: z.array(surfaceVariantSchema).min(2).readonly(),
+    surfaces: z.array(teachingSurfaceSchema).readonly().optional(),
+    tags: z.array(z.string().min(1).max(50)).readonly().optional(),
     timeBudgetSeconds: z.number().int().min(30).max(7200),
     difficulty: difficultyLevelSchema,
     prerequisites: z.array(teachingBlockIdSchema).readonly(),
     successCriteria: successCriteriaSchema,
+    deviceConstraints: deviceConstraintsSchema.optional(),
+    moduleLinks: moduleLinksSchema.optional(),
     hints: z.array(z.string().min(1).max(1000)).readonly(),
     commonErrors: z.array(commonErrorSchema).readonly(),
   })
@@ -122,15 +214,27 @@ export const semanticVersionSchema = z
 export const contentPackManifestSchema = z
   .object({
     id: contentPackIdSchema,
+    slug: z.string().min(1).max(200).optional(),
     name: z.string().min(1).max(200),
+    title: z.string().min(1).max(200).optional(),
     version: semanticVersionSchema,
     description: z.string().min(1).max(2000),
+    domain: z.string().min(1).max(100).optional(),
+    certificationTarget: z.string().min(1).max(200).nullable().optional(),
     tags: z.array(contentTagSchema).min(1).readonly(),
     roleMappings: z.array(badgeIdSchema).readonly(),
     difficulty: difficultyLevelSchema,
+    chromebookCompatible: z.boolean().optional(),
+    targetDeviceProfile: z.string().min(1).max(100).optional(),
+    status: z.string().min(1).max(50).optional(),
+    locale: localeCodeSchema.optional(),
+    translationStatus: z.record(localeCodeSchema, translationStatusSchema).optional(),
     minDeviceProfile: minDeviceProfileSchema,
     teachingBlocks: z.array(teachingBlockSchema).min(1).readonly(),
-    author: z.string().min(1).max(200),
+    assetCatalog: assetCatalogSchema.optional(),
+    author: z.union([z.string().min(1).max(200), contentAuthorSchema]),
+    metadata: z.record(z.unknown()).optional(),
+    integrity: integrityMetadataSchema.optional(),
     createdAt: z.string().datetime(),
     updatedAt: z.string().datetime(),
     signature: z.string().min(1),

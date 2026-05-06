@@ -1,0 +1,95 @@
+{
+  "id": "pack-fixture-duplicate-block-v1",
+  "name": "Fixture Duplicate Block ID",
+  "version": "1.0.0",
+  "description": "A pack with duplicate teaching block identifiers.",
+  "tags": ["elective", "fixtures"],
+  "roleMappings": [],
+  "difficulty": "beginner",
+  "minDeviceProfile": {
+    "ramMb": 512,
+    "networkKbps": 128,
+    "requiresWebGL": false,
+    "requiresWebGPU": false,
+    "requiresWasm": false
+  },
+  "teachingBlocks": [
+    {
+      "id": "tb-fixture-duplicate-001",
+      "concept": "Duplicate Block A",
+      "mode": "L0",
+      "canonicalSolution": "echo 'duplicate a'",
+      "explanation": "First duplicate block.",
+      "surfaceVariants": [
+        {
+          "id": "variant-a",
+          "description": "Variant A",
+          "data": {
+            "prompt": "Duplicate block A"
+          }
+        },
+        {
+          "id": "variant-b",
+          "description": "Variant B",
+          "data": {
+            "prompt": "Duplicate block A again"
+          }
+        }
+      ],
+      "timeBudgetSeconds": 120,
+      "difficulty": "beginner",
+      "prerequisites": [],
+      "successCriteria": {
+        "minCorrectnessScore": 0.7,
+        "maxTimeSeconds": 240,
+        "maxRetries": 2,
+        "requiresExplanation": false
+      },
+      "hints": [
+        "This block collides with the next block.",
+        "The validator should reject duplicate IDs."
+      ],
+      "commonErrors": []
+    },
+    {
+      "id": "tb-fixture-duplicate-001",
+      "concept": "Duplicate Block B",
+      "mode": "L0",
+      "canonicalSolution": "echo 'duplicate b'",
+      "explanation": "Second duplicate block.",
+      "surfaceVariants": [
+        {
+          "id": "variant-c",
+          "description": "Variant C",
+          "data": {
+            "prompt": "Duplicate block B"
+          }
+        },
+        {
+          "id": "variant-d",
+          "description": "Variant D",
+          "data": {
+            "prompt": "Duplicate block B again"
+          }
+        }
+      ],
+      "timeBudgetSeconds": 120,
+      "difficulty": "beginner",
+      "prerequisites": [],
+      "successCriteria": {
+        "minCorrectnessScore": 0.7,
+        "maxTimeSeconds": 240,
+        "maxRetries": 2,
+        "requiresExplanation": false
+      },
+      "hints": ["This block duplicates the first block ID.", "The validator should catch it."],
+      "commonErrors": []
+    }
+  ],
+  "author": "Fixture Test Author",
+  "createdAt": "2026-05-06T00:00:00.000Z",
+  "updatedAt": "2026-05-06T00:00:00.000Z",
+  "signature": "sig-v1-ECDSA-P256-SHA256-fixtureduplicate",
+  "signingKeyId": "key-fixture-001",
+  "schemaVersion": "1.0.0"
+}

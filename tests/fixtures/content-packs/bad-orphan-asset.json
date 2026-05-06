@@ -1,0 +1,120 @@
+{
+  "id": "pack-structured-fixture-v1",
+  "name": "Structured Fixture Pack",
+  "version": "1.0.0",
+  "description": "A structured fixture that leaves one catalog asset orphaned.",
+  "tags": ["fixtures"],
+  "roleMappings": [],
+  "difficulty": "beginner",
+  "locale": "en-US",
+  "minDeviceProfile": {
+    "ramMb": 512,
+    "networkKbps": 128,
+    "requiresWebGL": false,
+    "requiresWebGPU": false,
+    "requiresWasm": false
+  },
+  "teachingBlocks": [
+    {
+      "id": "tb-structured-fixture-001",
+      "title": "Structured Fixture Module",
+      "objective": "Verify structured asset references and orphan detection.",
+      "concept": "Structured Asset Guardrail",
+      "mode": "L0",
+      "canonicalSolution": "Use only referenced structured assets.",
+      "explanation": "This structured fixture should fail only because one catalog asset is left orphaned.",
+      "surfaceVariants": [
+        {
+          "id": "variant-a",
+          "description": "Variant A",
+          "data": {
+            "prompt": "Use the referenced assets.",
+            "assessmentId": "assess-001"
+          }
+        },
+        {
+          "id": "variant-b",
+          "description": "Variant B",
+          "data": {
+            "prompt": "Repeat the structured asset exercise."
+          }
+        }
+      ],
+      "timeBudgetSeconds": 120,
+      "difficulty": "beginner",
+      "prerequisites": [],
+      "successCriteria": {
+        "minCorrectnessScore": 0.7,
+        "maxTimeSeconds": 240,
+        "maxRetries": 2,
+        "requiresExplanation": false
+      },
+      "deviceConstraints": {
+        "maxResponseChars": 500
+      },
+      "moduleLinks": {
+        "fundamentalsTaught": ["fund-001"],
+        "downtimeDecisions": ["down-001"],
+        "chaosEvents": ["chaos-001"],
+        "externalAssessmentId": "assess-001",
+        "ticketFlows": ["ticket-001"],
+        "triggerRules": [
+          {
+            "type": "help_requested",
+            "threshold": 1
+          }
+        ]
+      },
+      "hints": ["Check the linked asset IDs.", "One catalog item should remain unused."],
+      "commonErrors": []
+    }
+  ],
+  "assetCatalog": {
+    "fundamentals": [
+      {
+        "id": "fund-001",
+        "title": "Referenced fundamental",
+        "sourceDataStatus": "demo"
+      },
+      {
+        "id": "fund-orphan",
+        "title": "Orphaned fundamental",
+        "sourceDataStatus": "demo"
+      }
+    ],
+    "downtimeDecisions": [
+      {
+        "id": "down-001",
+        "title": "Referenced downtime decision",
+        "sourceDataStatus": "demo"
+      }
+    ],
+    "chaosEvents": [
+      {
+        "id": "chaos-001",
+        "title": "Referenced chaos event",
+        "sourceDataStatus": "demo"
+      }
+    ],
+    "assessments": [
+      {
+        "id": "assess-001",
+        "title": "Referenced assessment",
+        "sourceDataStatus": "demo"
+      }
+    ],
+    "ticketFlows": [
+      {
+        "id": "ticket-001",
+        "title": "Referenced ticket flow",
+        "sourceDataStatus": "demo"
+      }
+    ]
+  },
+  "author": "Fixture Test Author",
+  "createdAt": "2026-05-06T00:00:00.000Z",
+  "updatedAt": "2026-05-06T00:00:00.000Z",
+  "signature": "sig-v1-ECDSA-P256-SHA256-orphanasset",
+  "signingKeyId": "key-fixture-004",
+  "schemaVersion": "1.0.0"
+}

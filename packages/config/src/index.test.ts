@@ -13,6 +13,59 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 describe('ConfigurationManager', () => {
   let originalEnv: NodeJS.ProcessEnv;
 
+  const optionalEnvOverrideKeys = [
+    'DB_HOST',
+    'DB_PORT',
+    'DB_SSL',
+    'DB_POOL_MIN',
+    'DB_POOL_MAX',
+    'DB_CONNECTION_TIMEOUT',
+    'REDIS_HOST',
+    'REDIS_PORT',
+    'REDIS_PASSWORD',
+    'REDIS_DB',
+    'REDIS_TLS',
+    'REDIS_KEY_PREFIX',
+    'EMAIL_PROVIDER',
+    'SENDGRID_API_KEY',
+    'SMTP_HOST',
+    'SMTP_PORT',
+    'SMTP_USER',
+    'SMTP_PASS',
+    'EMAIL_FROM_ADDRESS',
+    'JWT_EXPIRES_IN',
+    'REFRESH_TOKEN_EXPIRES_IN',
+    'BCRYPT_ROUNDS',
+    'ALLOWED_ORIGINS',
+    'API_HOST',
+    'API_PORT',
+    'PORT',
+    'API_BASE_PATH',
+    'TRUST_PROXY',
+    'CORS_ENABLED',
+    'RATE_LIMIT_WINDOW_MS',
+    'RATE_LIMIT_MAX',
+    'BODY_LIMIT',
+    'FEATURE_OFFLINE_MODE',
+    'FEATURE_BADGE_GENERATION',
+    'FEATURE_PROCTORING',
+    'FEATURE_MULTI_TENANCY',
+    'FEATURE_ADVANCED_ANALYTICS',
+    'FEATURE_LLM_TUTORING',
+    'FEATURE_CONTENT_SIGNING',
+    'MAX_CONCURRENT_SESSIONS',
+    'MAINTENANCE_MODE',
+    'LLM_PROVIDER',
+    'ANTHROPIC_API_KEY',
+    'ANTHROPIC_MODEL',
+    'ANTHROPIC_MAX_TOKENS',
+    'OPENAI_API_KEY',
+    'OPENAI_MODEL',
+    'OPENAI_MAX_TOKENS',
+    'LLM_FALLBACK_TO_LOCAL',
+    'LLM_TIMEOUT',
+  ] as const;
+
   beforeEach(() => {
     originalEnv = { ...process.env };
     // Reset module registry to get fresh ConfigurationManager instances
@@ -26,7 +79,15 @@ describe('ConfigurationManager', () => {
   /**
    * Helper to set minimum required env vars for a valid config
    */
-  function setMinimalEnv() {
+  function clearOptionalEnvOverrides(): void {
+    for (const envKey of optionalEnvOverrideKeys) {
+      Reflect.deleteProperty(process.env, envKey);
+    }
+  }
+
+  function setMinimalEnv(): void {
+    clearOptionalEnvOverrides();
+
     process.env.DB_NAME = 'topshelf_test';
     process.env.DB_USER = 'testuser';
     process.env.DB_PASSWORD = 'testpassword';
@@ -38,7 +99,7 @@ describe('ConfigurationManager', () => {
     process.env.STORAGE_PROVIDER = 'local';
   }
 
-  async function loadFreshConfig() {
+  async function loadFreshConfig(): Promise<typeof import('./index.js')> {
     const mod = await import('./index.js');
     // Reset the singleton so we get a fresh load
     mod.configManager.reset();
@@ -61,6 +122,7 @@ describe('ConfigurationManager', () => {
     it('should apply default values when optional env vars are missing', async () => {
       setMinimalEnv();
       const { loadConfig } = await loadFreshConfig();
+      clearOptionalEnvOverrides();
 
       const config = loadConfig();
 
@@ -305,6 +367,7 @@ describe('ConfigurationManager', () => {
     it('should preserve non-sensitive values', async () => {
       setMinimalEnv();
       const { configManager } = await loadFreshConfig();
+      clearOptionalEnvOverrides();
 
       configManager.load();
       const safe = configManager.getSafeForLogging();

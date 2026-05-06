@@ -9,17 +9,7 @@ import { PageHeader } from '@/components/ui/page-header';
 import { DataTableShell } from '@/components/ui/data-table-shell';
 import { EmptyState } from '@/components/ui/empty-state';
 import { StatCard } from '@/components/ui/stat-card';
-import {
-  FlaskConical,
-  Package,
-  AlertTriangle,
-  TrendingDown,
-  Plus,
-  ShoppingCart,
-  Edit,
-  BarChart3,
-  Timer,
-} from 'lucide-react';
+import { FlaskConical, Package, AlertTriangle, TrendingDown, BarChart3, Timer } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   getResourcePack,
@@ -95,15 +85,8 @@ export default function IngredientsPage() {
         description={resourcePack.pages.ingredients.description}
         icon={FlaskConical}
         actions={
-          <div className="flex gap-2">
-            <Button variant="outline">
-              <ShoppingCart className="mr-2 h-4 w-4" />
-              Order Report
-            </Button>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              {resourcePack.pages.ingredients.action}
-            </Button>
+          <div className="rounded-md border bg-muted/50 px-3 py-2 text-sm text-muted-foreground">
+            Inventory edits and order reports are not enabled in this build.
           </div>
         }
       />
@@ -212,7 +195,7 @@ export default function IngredientsPage() {
                   <th className="pb-2 pr-4">Status</th>
                   <th className="pb-2 pr-4">Location</th>
                   <th className="pb-2 pr-4">Cost/Unit</th>
-                  <th className="pb-2">Actions</th>
+                  <th className="pb-2">Build Status</th>
                 </tr>
               </thead>
               <tbody>
@@ -329,16 +312,7 @@ function IngredientRow({ item }: { item: Ingredient }) {
       </td>
       <td className="py-3 pr-4 text-muted-foreground">{item.location}</td>
       <td className="py-3 pr-4">${item.costPerUnit.toFixed(2)}</td>
-      <td className="py-3">
-        <div className="flex gap-1">
-          <Button variant="ghost" size="icon" className="h-7 w-7">
-            <Edit className="h-3 w-3" />
-          </Button>
-          <Button variant="ghost" size="icon" className="h-7 w-7">
-            <ShoppingCart className="h-3 w-3" />
-          </Button>
-        </div>
-      </td>
+      <td className="py-3 text-xs text-muted-foreground">Read-only inventory view</td>
     </tr>
   );
 }

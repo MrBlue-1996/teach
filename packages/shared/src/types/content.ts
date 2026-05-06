@@ -23,7 +23,13 @@ export type RoleId = `role-${string}`;
 export type DifficultyLevel = 'beginner' | 'intermediate' | 'advanced' | 'expert';
 
 /** Content tag for filtering and routing */
-export type ContentTag = 'required' | 'recommended' | 'elective' | 'capstone' | 'retention';
+export type ContentTag = string;
+
+/** Supported source-data status */
+export type SourceDataStatus = 'demo' | 'authorized' | 'requires-client-source' | 'deprecated';
+
+/** Translation status */
+export type TranslationStatus = 'planned' | 'in-progress' | 'complete';
 
 /** Minimum device requirements for content */
 export interface MinDeviceProfile {
@@ -49,20 +55,120 @@ export interface SurfaceVariant {
   readonly data: Record<string, unknown>;
 }
 
+/** Optional authored surface attached to a block */
+export interface TeachingSurface {
+  /** Surface type identifier */
+  readonly surfaceType: string;
+  /** Human-readable content for this surface */
+  readonly content: string;
+}
+
+/** Author metadata */
+export interface ContentAuthor {
+  /** Author display name */
+  readonly name: string;
+  /** Optional contact email */
+  readonly email?: string;
+}
+
+/** Device constraints for authored teaching responses */
+export interface DeviceConstraints {
+  /** Maximum characters allowed in explanation and hint responses */
+  readonly maxResponseChars: number;
+}
+
+/** Trigger rule for adaptive support */
+export interface TriggerRule {
+  /** Trigger type */
+  readonly type: 'repeated_errors' | 'stuck_time' | 'help_requested';
+  /** Numeric threshold where required */
+  readonly threshold?: number;
+  /** Unit for time-based triggers */
+  readonly unit?: 'seconds';
+}
+
+/** Structured module links for semantic pack validation */
+export interface ModuleLinks {
+  /** Referenced fundamentals */
+  readonly fundamentalsTaught: readonly string[];
+  /** Referenced downtime decisions */
+  readonly downtimeDecisions: readonly string[];
+  /** Referenced chaos events */
+  readonly chaosEvents: readonly string[];
+  /** External assessment identifier if the block relies on a cataloged assessment */
+  readonly externalAssessmentId?: string | null;
+  /** Referenced ticket flows */
+  readonly ticketFlows: readonly string[];
+  /** Adaptive trigger rules */
+  readonly triggerRules: readonly TriggerRule[];
+}
+
+/** Asset catalog entry */
+export interface AssetCatalogEntry {
+  /** Unique asset identifier */
+  readonly id: string;
+  /** Human-readable title */
+  readonly title: string;
+  /** Source-data status */
+  readonly sourceDataStatus: SourceDataStatus;
+  /** Optional source reference for authorized content */
+  readonly sourceReference?: string;
+}
+
+/** Asset catalog used by structured module links */
+export interface AssetCatalog {
+  /** Fundamentals catalog */
+  readonly fundamentals: readonly AssetCatalogEntry[];
+  /** Downtime decisions catalog */
+  readonly downtimeDecisions: readonly AssetCatalogEntry[];
+  /** Chaos events catalog */
+  readonly chaosEvents: readonly AssetCatalogEntry[];
+  /** Assessments catalog */
+  readonly assessments: readonly AssetCatalogEntry[];
+  /** Ticket flows catalog */
+  readonly ticketFlows: readonly AssetCatalogEntry[];
+}
+
+/** Integrity metadata for packaged packs */
+export interface IntegrityMetadata {
+  /** Release mode */
+  readonly releaseMode: 'demo' | 'release';
+  /** Deterministic checksum for release artifacts */
+  readonly checksum?: string | null;
+}
+
 /** Teaching block - atomic unit of instruction (TS-CONTENT-004) */
 export interface TeachingBlock {
   /** Unique block identifier */
   readonly id: TeachingBlockId;
+  /** Optional secondary block identifier used by legacy manifests */
+  readonly blockId?: string;
+  /** Optional display title */
+  readonly title?: string;
+  /** Optional objective */
+  readonly objective?: string;
   /** Concept being taught */
   readonly concept: string;
+  /** Optional block type label */
+  readonly type?: string;
+  /** Optional richer engine-facing target mode */
+  readonly targetMode?: string;
   /** Learning mode this block is designed for */
   readonly mode: LearningMode;
+  /** Optional narrative content body */
+  readonly content?: string;
   /** Canonical solution shown first (Solve-First pedagogy) */
   readonly canonicalSolution: string;
   /** Explanation of the canonical solution */
   readonly explanation: string;
+  /** Optional singular hint carried by legacy manifests */
+  readonly hint?: string;
   /** Surface variants for transfer testing */
   readonly surfaceVariants: readonly SurfaceVariant[];
+  /** Optional authored surfaces */
+  readonly surfaces?: readonly TeachingSurface[];
+  /** Optional topical tags */
+  readonly tags?: readonly string[];
   /** Time budget in seconds */
   readonly timeBudgetSeconds: number;
   /** Difficulty level */
@@ -71,6 +177,10 @@ export interface TeachingBlock {
   readonly prerequisites: readonly TeachingBlockId[];
   /** Success criteria for completion */
   readonly successCriteria: SuccessCriteria;
+  /** Optional device constraints */
+  readonly deviceConstraints?: DeviceConstraints;
+  /** Optional structured module links */
+  readonly moduleLinks?: ModuleLinks;
   /** Hints available (progressively revealed) */
   readonly hints: readonly string[];
   /** Common errors and their remediation */
@@ -107,24 +217,48 @@ export interface CommonError {
 export interface ContentPackManifest {
   /** Unique pack identifier */
   readonly id: ContentPackId;
+  /** Optional slug */
+  readonly slug?: string;
   /** Human-readable name */
   readonly name: string;
+  /** Optional title */
+  readonly title?: string;
   /** Semantic version */
   readonly version: string;
   /** Description */
   readonly description: string;
+  /** Optional domain label */
+  readonly domain?: string;
+  /** Optional certification target */
+  readonly certificationTarget?: string | null;
   /** Content tags */
   readonly tags: readonly ContentTag[];
   /** Role mappings (which badges this pack contributes to) */
   readonly roleMappings: readonly BadgeId[];
   /** Overall difficulty */
   readonly difficulty: DifficultyLevel;
+  /** Optional Chromebook compatibility flag */
+  readonly chromebookCompatible?: boolean;
+  /** Optional target device profile name */
+  readonly targetDeviceProfile?: string;
+  /** Optional publication status */
+  readonly status?: string;
+  /** Optional locale */
+  readonly locale?: string;
+  /** Optional translation status by locale */
+  readonly translationStatus?: Readonly<Record<string, TranslationStatus>>;
   /** Minimum device profile required */
   readonly minDeviceProfile: MinDeviceProfile;
   /** Teaching blocks in this pack */
   readonly teachingBlocks: readonly TeachingBlock[];
+  /** Optional structured asset catalog */
+  readonly assetCatalog?: AssetCatalog;
   /** Pack author */
-  readonly author: string;
+  readonly author: string | ContentAuthor;
+  /** Optional extra metadata */
+  readonly metadata?: Record<string, unknown>;
+  /** Optional integrity metadata */
+  readonly integrity?: IntegrityMetadata;
   /** ISO 8601 creation timestamp */
   readonly createdAt: string;
   /** ISO 8601 last update timestamp */

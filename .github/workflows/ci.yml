@@ -185,5 +185,8 @@ jobs:
       - name: Validate content packs
         run: pnpm run validate:content-packs
 
+      - name: Package Uncle Julio's demo content pack
+        run: pnpm run package:uncle-julios
+
       - name: Validate policies
         run: pnpm run validate:policies
