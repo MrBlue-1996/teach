@@ -1,13 +1,15 @@
 #!/usr/bin/env tsx
+/// <reference types="node" />
 /**
  * TopShelf Service LLC
  * PROPRIETARY AND CONFIDENTIAL
  * Copyright (c) 2026 TopShelf Service LLC. All Rights Reserved.
  */
 
-import { promises as fs } from 'node:fs';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import fs from 'fs/promises';
+import path from 'path';
+import process from 'process';
+import { fileURLToPath } from 'url';
 
 import { validateContentPack } from '../validation/content-validator.js';
 
@@ -40,6 +42,8 @@ async function collectJsonFiles(rootDir: string): Promise<string[]> {
   const files: string[] = [];
 
   async function walk(currentDir: string): Promise<void> {
+    // CLI intentionally walks a validated local repository path.
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
     const entries = await fs.readdir(currentDir, { withFileTypes: true });
 
     for (const entry of entries) {
@@ -129,6 +133,8 @@ async function main(): Promise<void> {
     }
 
     try {
+      // CLI intentionally reads discovered files from a validated local repository path.
+      // eslint-disable-next-line security/detect-non-literal-fs-filename
       const raw = await fs.readFile(absoluteFile, 'utf8');
       const parsed: unknown = JSON.parse(raw);
 
@@ -173,12 +179,12 @@ async function main(): Promise<void> {
   }
 
   if (skippedFiles.length > 0) {
-    console.log(
+    console.info(
       `[validate:packs] Skipped ${skippedFiles.length} non-manifest JSON file(s): ${skippedFiles.join(', ')}`
     );
   }
 
-  console.log(
+  console.info(
     `[validate:packs] OK. Validated ${validatedPackCount} content-pack manifest file(s) across ${existingDirectories.length} content-pack directory(ies).`
   );
 }

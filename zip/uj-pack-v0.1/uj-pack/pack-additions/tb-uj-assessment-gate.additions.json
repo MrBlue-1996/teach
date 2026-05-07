@@ -4,11 +4,7 @@
   "contentLinks": {
     "sourceModuleId": "MD6-assessment-gate",
     "fundamentalsTaught": [],
-    "fundamentalsReinforced": [
-      "FT5-safety-first",
-      "FT5-communication",
-      "FT5-clean-as-you-go"
-    ],
+    "fundamentalsReinforced": ["FT5-safety-first", "FT5-communication", "FT5-clean-as-you-go"],
     "downtimeDecisions": ["DT8-restock-reset-clean"],
     "chaosEvents": ["CE9-rush-ticket", "CE9-missing-tool", "CE9-quality-check"],
     "externalAssessmentId": "AS7-final-pack-gate",

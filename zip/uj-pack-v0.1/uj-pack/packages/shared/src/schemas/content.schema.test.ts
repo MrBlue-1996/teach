@@ -92,27 +92,25 @@ describe('retentionSchema', () => {
 
 describe('triggerRuleSchema (discriminated union)', () => {
   it('accepts stuck_time variant', () => {
-    expect(
-      triggerRuleSchema.safeParse({ type: 'stuck_time', thresholdSeconds: 30 }).success,
-    ).toBe(true);
+    expect(triggerRuleSchema.safeParse({ type: 'stuck_time', thresholdSeconds: 30 }).success).toBe(
+      true
+    );
   });
 
   it('accepts repeated_errors variant', () => {
-    expect(
-      triggerRuleSchema.safeParse({ type: 'repeated_errors', threshold: 1 }).success,
-    ).toBe(true);
+    expect(triggerRuleSchema.safeParse({ type: 'repeated_errors', threshold: 1 }).success).toBe(
+      true
+    );
   });
 
   it('accepts help_requested variant', () => {
-    expect(
-      triggerRuleSchema.safeParse({ type: 'help_requested', enabled: true }).success,
-    ).toBe(true);
+    expect(triggerRuleSchema.safeParse({ type: 'help_requested', enabled: true }).success).toBe(
+      true
+    );
   });
 
   it('accepts idle_drop variant', () => {
-    expect(
-      triggerRuleSchema.safeParse({ type: 'idle_drop', thresholdDays: 7 }).success,
-    ).toBe(true);
+    expect(triggerRuleSchema.safeParse({ type: 'idle_drop', thresholdDays: 7 }).success).toBe(true);
   });
 
   it('accepts frequency_decline variant', () => {
@@ -121,25 +119,25 @@ describe('triggerRuleSchema (discriminated union)', () => {
         type: 'frequency_decline',
         baselineDays: 14,
         declineRatio: 0.5,
-      }).success,
+      }).success
     ).toBe(true);
   });
 
   it('rejects help_requested with cross-variant field "threshold"', () => {
-    expect(
-      triggerRuleSchema.safeParse({ type: 'help_requested', threshold: 5 }).success,
-    ).toBe(false);
+    expect(triggerRuleSchema.safeParse({ type: 'help_requested', threshold: 5 }).success).toBe(
+      false
+    );
   });
 
   it('rejects stuck_time with thresholdSeconds below 15', () => {
-    expect(
-      triggerRuleSchema.safeParse({ type: 'stuck_time', thresholdSeconds: 5 }).success,
-    ).toBe(false);
+    expect(triggerRuleSchema.safeParse({ type: 'stuck_time', thresholdSeconds: 5 }).success).toBe(
+      false
+    );
   });
 
   it('rejects stuck_time with thresholdSeconds above 600', () => {
     expect(
-      triggerRuleSchema.safeParse({ type: 'stuck_time', thresholdSeconds: 1000 }).success,
+      triggerRuleSchema.safeParse({ type: 'stuck_time', thresholdSeconds: 1000 }).success
     ).toBe(false);
   });
 });

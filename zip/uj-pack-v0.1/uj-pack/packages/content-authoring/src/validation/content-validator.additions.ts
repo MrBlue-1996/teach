@@ -14,10 +14,7 @@
  *   keep the codes verbatim unless you also update the fixture assertions.
  */
 
-import type {
-  ContentLinks,
-  TriggerRule,
-} from '@topshelf/shared'; // adjust import path to match your monorepo
+import type { ContentLinks, TriggerRule } from '@topshelf/shared'; // adjust import path to match your monorepo
 
 // Adapt this shape to whatever your validator already uses.
 interface ValidationIssue {
@@ -132,11 +129,7 @@ const UNCLE_JULIOS_REQUIRED_IDS = {
   fundamentals: ['FT5-clean-as-you-go', 'FT5-communication', 'FT5-safety-first'],
   downtimeDecisions: ['DT8-restock-reset-clean'],
   chaosEvents: ['CE9-rush-ticket', 'CE9-missing-tool', 'CE9-quality-check'],
-  assessments: [
-    'AS7-orientation-check',
-    'AS7-station-readiness-check',
-    'AS7-final-pack-gate',
-  ],
+  assessments: ['AS7-orientation-check', 'AS7-station-readiness-check', 'AS7-final-pack-gate'],
   ticketFlows: ['RC4-demo-ticket-flow'],
 } as const;
 
@@ -214,10 +207,7 @@ export function validateSafetyTriggers(pack: MinimalPack): ValidationIssue[] {
 
 const PROPRIETARY_CLAIM_REGEX = /official\s+uncle\s+julio'?s/i;
 
-function isAuthorizedVariant(
-  block: MinimalBlock,
-  variantIndex: number | null,
-): boolean {
+function isAuthorizedVariant(block: MinimalBlock, variantIndex: number | null): boolean {
   if (variantIndex === null) return false; // block-level text
   const v = block.surfaceVariants?.[variantIndex];
   return v?.data?.sourceDataStatus === 'authorized';
@@ -248,19 +238,29 @@ export function validateProprietaryClaims(pack: MinimalPack): ValidationIssue[] 
     check(block.canonicalSolution, `teachingBlocks.${block.id}.canonicalSolution`, blockAuth);
     check(block.explanation, `teachingBlocks.${block.id}.explanation`, blockAuth);
     if (block.hints) {
-      block.hints.forEach((h, i) =>
-        check(h, `teachingBlocks.${block.id}.hints[${i}]`, blockAuth),
-      );
+      block.hints.forEach((h, i) => check(h, `teachingBlocks.${block.id}.hints[${i}]`, blockAuth));
     }
     if (block.commonErrors) {
       block.commonErrors.forEach((e, i) => {
-        check(e.description, `teachingBlocks.${block.id}.commonErrors[${i}].description`, blockAuth);
-        check(e.remediation, `teachingBlocks.${block.id}.commonErrors[${i}].remediation`, blockAuth);
-        check(e.recoveryPlay, `teachingBlocks.${block.id}.commonErrors[${i}].recoveryPlay`, blockAuth);
+        check(
+          e.description,
+          `teachingBlocks.${block.id}.commonErrors[${i}].description`,
+          blockAuth
+        );
+        check(
+          e.remediation,
+          `teachingBlocks.${block.id}.commonErrors[${i}].remediation`,
+          blockAuth
+        );
+        check(
+          e.recoveryPlay,
+          `teachingBlocks.${block.id}.commonErrors[${i}].recoveryPlay`,
+          blockAuth
+        );
         check(
           e.realWorldImpact,
           `teachingBlocks.${block.id}.commonErrors[${i}].realWorldImpact`,
-          blockAuth,
+          blockAuth
         );
       });
     }

@@ -21,6 +21,7 @@ Filename → ID convention: `content_pack_uncle_julios_v1.json` ↔ `pack-uncle-
 ## Manifest field reference (camelCase, `.strict()`)
 
 Top-level fields on `contentPackManifestSchema`:
+
 - `id` (string, required) — `pack-<brand>-v<n>` format
 - `schemaVersion` (string, required) — `content-pack.v1`
 - `name` (string, required) — human-readable
@@ -40,6 +41,7 @@ Existing required fields: `id` (`tb-<brand>-<concept>`), `title`, `mode`, `conce
 New optional v0.1 fields (every block should have all five for full validator coverage):
 
 ### `contentLinks`
+
 ```json
 {
   "sourceModuleId": "MD6-<concept>",
@@ -55,14 +57,17 @@ New optional v0.1 fields (every block should have all five for full validator co
 ID prefixes are enforced by regex in the schema. `MD6` (modules), `FT5` (fundamentals), `DT8` (downtime decisions), `CE9` (chaos events), `AS7` (assessments), `RC4` (recipes/ticket flows).
 
 ### `deviceConstraints`
+
 ```json
 { "maxResponseChars": 2000 }
 ```
+
 Use 2000 as the default. The validator rule `TEXT_OVER_DEVICE_CAP` checks `explanation.length` and every `hints[i].length` against this cap. 200–50000 is the schema range.
 
 ### `triggerRules` (discriminated union, by `type`)
 
 Five variants:
+
 - `{ type: "stuck_time", thresholdSeconds: 15..600 }`
 - `{ type: "repeated_errors", threshold: 1..10 }`
 - `{ type: "help_requested", enabled: boolean }`
@@ -70,17 +75,21 @@ Five variants:
 - `{ type: "frequency_decline", baselineDays: 7..90, declineRatio: 0.1..0.9 }`
 
 **Tier the thresholds by block:**
+
 - **Safety-critical** (`tb-<brand>-orientation-safety`, `tb-<brand>-tools-color-barriers`, anything with `safety`/`safe-handling` in concept): `stuck_time` ≤ 45s, `repeated_errors` threshold === 1. The validator enforces this.
 - **Operational** (station-setup, line-readiness, ticket-flow, downtime, cleaning): `stuck_time` 60–90s, `repeated_errors` threshold 2.
 - **Assessment gate**: empty `triggerRules: []` — the manager IS the trigger.
 
 ### `retention`
+
 ```json
 { "reassessAfterDays": 30, "decayHalfLifeDays": 21 }
 ```
+
 Sanitation + safety blocks: 30/21 (decay fast on a busy line). Procedural blocks (station setup, line readiness): 60/45. Daily-reinforced blocks (ticket flow): 45/30. Habit blocks (downtime): 90/60. Capstone gate: 180/120.
 
 ### `trainerNotes`
+
 String, 1–4000 chars. Voice-of-experience, NOT duplicated explanation. Format that works: answer 3 prompts per block — what good looks like / when to demo instead / what kills the habit. Authored by someone with line experience; do not write these from generic training-doc voice.
 
 ## CommonError extensions
@@ -95,6 +104,7 @@ For each block, add these to the 3 highest-impact common errors. 24 total per pa
 ## Surface variant `data` field conventions
 
 Inside each `surfaceVariant.data`:
+
 - `sourceModuleId` (string) — must match `block.contentLinks.sourceModuleId` if both present (validator enforces)
 - `sourceDataStatus` (enum) — `demo` | `authorized` | `requires-client-source` | `deprecated`. `authorized` requires populated `sourceDataNotes`.
 - `stationRelevance` (string array) — `ST3-...` IDs
@@ -149,6 +159,7 @@ This will be externalized to the manifest in v0.2. For v0.1, the hardcode is int
 ## Reference: Uncle Julio's pack as canonical example
 
 The Uncle Julio's pack v0.1 (`content-packs/content_pack_uncle_julios_v1.json`) is the reference implementation. When in doubt, mirror its shape:
+
 - 8 teaching blocks in the established sequence
 - All five v0.1 extension fields populated on every block
 - 3 highest-impact `commonErrors` per block carry `recoveryPlay` + `realWorldImpact`

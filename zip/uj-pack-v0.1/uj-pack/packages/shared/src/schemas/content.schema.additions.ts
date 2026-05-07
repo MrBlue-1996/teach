@@ -47,7 +47,10 @@ export const contentLinksSchema = z
     fundamentalsReinforced: z.array(z.string().regex(/^FT5-[a-zA-Z0-9_-]+$/)).readonly(),
     downtimeDecisions: z.array(z.string().regex(/^DT8-[a-zA-Z0-9_-]+$/)).readonly(),
     chaosEvents: z.array(z.string().regex(/^CE9-[a-zA-Z0-9_-]+$/)).readonly(),
-    externalAssessmentId: z.string().regex(/^AS7-[a-zA-Z0-9_-]+$/).nullable(),
+    externalAssessmentId: z
+      .string()
+      .regex(/^AS7-[a-zA-Z0-9_-]+$/)
+      .nullable(),
     ticketFlows: z.array(z.string().regex(/^RC4-[a-zA-Z0-9_-]+$/)).readonly(),
   })
   .strict();

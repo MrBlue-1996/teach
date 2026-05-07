@@ -4,6 +4,7 @@
 **Verify clean tree:** `git status` should be empty before you start.
 
 This ZIP does NOT overwrite your repo wholesale. It contains:
+
 - **New files** — drop-in safe (test fixtures, new test files, SKILL.md)
 - **Addition files** — TypeScript/JSON snippets you splice into existing files between marked sections
 
@@ -43,6 +44,7 @@ Splice in the six new rules from `packages/content-authoring/src/validation/cont
 Open `packages/content-authoring/src/cli/validate-packs.ts`.
 
 Apply the four changes from `packages/content-authoring/src/cli/validate-packs.changes.md` (this ZIP):
+
 - T2.B1: Accept argv args
 - T2.B2: Wire up validateContentPack
 - T2.B3: Filename↔ID match function
@@ -57,6 +59,7 @@ Drop the entire `packages/content-authoring/src/fixtures/content-packs/` tree fr
 ### 5. Test files
 
 Drop these new test files into your repo at the paths shown:
+
 - `packages/content-authoring/src/cli/validate-packs.test.ts`
 - `packages/shared/src/schemas/content.schema.test.ts`
 

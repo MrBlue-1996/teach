@@ -22,11 +22,7 @@
       "contentLinks": {
         "sourceModuleId": "MD6-aggregate",
         "fundamentalsTaught": [],
-        "fundamentalsReinforced": [
-          "FT5-clean-as-you-go",
-          "FT5-communication",
-          "FT5-safety-first"
-        ],
+        "fundamentalsReinforced": ["FT5-clean-as-you-go", "FT5-communication", "FT5-safety-first"],
         "downtimeDecisions": ["DT8-restock-reset-clean"],
         "chaosEvents": ["CE9-missing-tool", "CE9-quality-check"],
         "externalAssessmentId": "AS7-orientation-check",

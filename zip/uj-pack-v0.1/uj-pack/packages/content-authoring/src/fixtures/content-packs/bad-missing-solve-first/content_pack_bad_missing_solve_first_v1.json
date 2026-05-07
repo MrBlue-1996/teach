@@ -16,9 +16,7 @@
       "explanation": "Trigger schema rejection.",
       "hints": [],
       "commonErrors": [],
-      "surfaceVariants": [
-        { "id": "sv-x", "kind": "not_a_real_kind", "data": {} }
-      ],
+      "surfaceVariants": [{ "id": "sv-x", "kind": "not_a_real_kind", "data": {} }],
       "assessment": [],
       "prerequisites": []
     }

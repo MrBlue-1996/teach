@@ -31,6 +31,7 @@ export type {
 If your `index.ts` uses a single grouped re-export pattern (e.g. `export * from './content.schema.js'`), the new schemas are already covered transitively — but the explicit named exports above are recommended for clarity and grep-ability.
 
 After saving, verify:
+
 ```
 pnpm --filter @topshelf/shared typecheck
 pnpm --filter @topshelf/shared build

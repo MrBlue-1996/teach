@@ -15,7 +15,7 @@ Sketch:
 
 ```typescript
 export async function validateContentPackArtifacts(
-  inputPaths: string[],
+  inputPaths: string[]
 ): Promise<ValidationIssue[]> {
   const files = await resolveJsonFiles(inputPaths); // expand dirs, filter to *.json
   const issues: ValidationIssue[] = [];
@@ -35,8 +35,7 @@ export async function validateContentPackArtifacts(
 
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
-  const inputs =
-    args.length > 0 ? args : CANDIDATE_DIRECTORIES; // preserve existing default
+  const inputs = args.length > 0 ? args : CANDIDATE_DIRECTORIES; // preserve existing default
   const issues = await validateContentPackArtifacts(inputs);
   if (issues.length === 0) {
     console.log('[validate:packs] OK.');
@@ -110,6 +109,7 @@ function validateFilenameIdMatch(file: string, parsed: unknown): ValidationIssue
 ```
 
 Examples this passes:
+
 - `content_pack_uncle_julios_v1.json` ↔ `pack-uncle-julios-v1` ✓
 - `content_pack_linux_fundamentals_v1.json` ↔ `pack-linux-fundamentals-v1` ✓
 
