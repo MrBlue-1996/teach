@@ -14,8 +14,10 @@ test.describe('Kitchen golden path', () => {
     await expect(page.getByRole('link', { name: /UJ: Fajita Rush/i })).toBeVisible();
     await expect(page.getByText(/Rush Hour Simulator/i)).toHaveCount(0);
 
-    await page.getByRole('link', { name: /Quick Challenge/i }).click();
-    await expect(page).toHaveURL(/\/kitchen\/challenges\/uj-fajita-rush/);
+    await Promise.all([
+      page.waitForURL(/\/kitchen\/challenges\/uj-fajita-rush/, { timeout: 15_000 }),
+      page.getByRole('link', { name: /Quick Challenge/i }).click(),
+    ]);
     await expect(
       page.getByRole('heading', { level: 1, name: "Uncle Julio's: Fajita Rush" })
     ).toBeVisible();

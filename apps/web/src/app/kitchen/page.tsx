@@ -232,8 +232,11 @@ export default function KitchenDashboardPage() {
               </span>
             </div>
           </div>
-          <Link href={`/kitchen/challenges/${spec.quickChallengeSlug}`}>
-            <button className="btn-action btn-caution whitespace-nowrap">Quick Challenge</button>
+          <Link
+            href={`/kitchen/challenges/${spec.quickChallengeSlug}`}
+            className="btn-action btn-caution whitespace-nowrap"
+          >
+            Quick Challenge
           </Link>
         </div>
       </section>
