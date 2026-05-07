@@ -1,0 +1,81 @@
+{
+  "_comment": "Triggers UNCLE_JULIOS_ORPHAN_CONTENT_LINK. pack.id is pack-uncle-julios-v1 (so the rule applies) but CE9-rush-ticket is missing from every block's contentLinks.chaosEvents. The other required IDs ARE present.",
+  "id": "pack-uncle-julios-v1",
+  "schemaVersion": "content-pack.v1",
+  "name": "Bad Orphan Link",
+  "version": "0.1.0",
+  "description": "Fixture for bad-orphan-link.",
+  "updatedAt": "2026-05-06",
+  "teachingBlocks": [
+    {
+      "id": "tb-uj-fixture-aggregate",
+      "title": "Aggregator Block",
+      "mode": "L1",
+      "concept": "Single block aggregating all required IDs except CE9-rush-ticket.",
+      "canonicalSolution": "Validator should fire orphan rule for the missing chaos event.",
+      "explanation": "Test fixture.",
+      "hints": [],
+      "commonErrors": [],
+      "surfaceVariants": [],
+      "assessment": [],
+      "prerequisites": [],
+      "contentLinks": {
+        "sourceModuleId": "MD6-aggregate",
+        "fundamentalsTaught": [],
+        "fundamentalsReinforced": [
+          "FT5-clean-as-you-go",
+          "FT5-communication",
+          "FT5-safety-first"
+        ],
+        "downtimeDecisions": ["DT8-restock-reset-clean"],
+        "chaosEvents": ["CE9-missing-tool", "CE9-quality-check"],
+        "externalAssessmentId": "AS7-orientation-check",
+        "ticketFlows": ["RC4-demo-ticket-flow"]
+      }
+    },
+    {
+      "id": "tb-uj-fixture-second",
+      "title": "Second Block (for assessments)",
+      "mode": "L1",
+      "concept": "Hold the other two AS7 ids.",
+      "canonicalSolution": "n/a",
+      "explanation": "Test fixture.",
+      "hints": [],
+      "commonErrors": [],
+      "surfaceVariants": [],
+      "assessment": [],
+      "prerequisites": [],
+      "contentLinks": {
+        "sourceModuleId": "MD6-second",
+        "fundamentalsTaught": [],
+        "fundamentalsReinforced": [],
+        "downtimeDecisions": [],
+        "chaosEvents": [],
+        "externalAssessmentId": "AS7-station-readiness-check",
+        "ticketFlows": []
+      }
+    },
+    {
+      "id": "tb-uj-fixture-third",
+      "title": "Third Block (for final gate AS7)",
+      "mode": "L1",
+      "concept": "Hold final-pack-gate AS7.",
+      "canonicalSolution": "n/a",
+      "explanation": "Test fixture.",
+      "hints": [],
+      "commonErrors": [],
+      "surfaceVariants": [],
+      "assessment": [],
+      "prerequisites": [],
+      "contentLinks": {
+        "sourceModuleId": "MD6-third",
+        "fundamentalsTaught": [],
+        "fundamentalsReinforced": [],
+        "downtimeDecisions": [],
+        "chaosEvents": [],
+        "externalAssessmentId": "AS7-final-pack-gate",
+        "ticketFlows": []
+      }
+    }
+  ]
+}

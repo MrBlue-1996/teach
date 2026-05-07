@@ -1,0 +1,39 @@
+{
+  "_comment": "Merge these fields into the existing tb-uj-orientation-safety block in content-packs/content_pack_uncle_julios_v1.json. The commonErrors entries below should be matched to your existing commonErrors by description and have the recoveryPlay + realWorldImpact fields added. Do not replace existing fields like concept, hints, surfaceVariants, etc.",
+  "id": "tb-uj-orientation-safety",
+  "contentLinks": {
+    "sourceModuleId": "MD6-orientation-safety",
+    "fundamentalsTaught": ["FT5-safety-first"],
+    "fundamentalsReinforced": ["FT5-communication"],
+    "downtimeDecisions": [],
+    "chaosEvents": ["CE9-quality-check"],
+    "externalAssessmentId": "AS7-orientation-check",
+    "ticketFlows": []
+  },
+  "deviceConstraints": { "maxResponseChars": 2000 },
+  "triggerRules": [
+    { "type": "stuck_time", "thresholdSeconds": 30 },
+    { "type": "repeated_errors", "threshold": 1 },
+    { "type": "help_requested", "enabled": true },
+    { "type": "idle_drop", "thresholdDays": 3 }
+  ],
+  "retention": { "reassessAfterDays": 30, "decayHalfLifeDays": 21 },
+  "trainerNotes": "What does a cook who nailed safety calls look like at the end of week 1?\n\nBy the end of week 1, they're not guessing and they're not waiting to be told. They call \"behind,\" \"sharp,\" \"hot,\" \"corner,\" \"low,\" and \"coming through\" before the danger is already on top of somebody.\n\nThe big tell is timing. A new cook who gets it calls early enough for people to react. They don't mumble it into their chest. They say it loud, clean, and without sounding embarrassed. They also start adjusting their body — knife down and pointed safe, pan held tight, towel dry, eyes up when moving through the line.\n\nIf I hear them make calls even when the kitchen is quiet, I know the habit is setting. Safety calls are not for show during a rush. They're muscle memory.\n\nWhen do you stop the app and demo it yourself instead of letting them try again?\n\nI stop the app when the mistake could hurt someone or when they clearly don't understand the why.\n\nIf they miss a safety call once, I let them reset and try again. If they keep walking with a knife, hot pan, or full hotel pan like they're alone in the kitchen, I stop it. No shame, no lecture. I say, \"Pause. Watch me do it once.\"\n\nThen I demo the exact movement: where my eyes go, where my hands are, what I call, when I call it, and how I move through the space.\n\nThe app is good for reps. But if the body mechanics are wrong, they need to see a real cook do it.\n\nWhat's the one thing that kills this habit by week 3?\n\nLetting \"quiet kitchen\" mean \"no calls.\"\n\nThat's what kills it. Week 1 they're loud because they know they're being watched. By week 3, they get comfortable and start thinking, \"It's not busy, I don't need to call behind.\"\n\nWrong.\n\nThe habit dies when leads stop correcting the small misses. If we let one silent walk-behind slide, now the standard is optional. Safety calls only stick if everybody uses them every time, not just when management is watching or when the rail is full.",
+  "commonErrors": [
+    {
+      "_match_existing_by_description": "Catching a falling knife instead of stepping back",
+      "recoveryPlay": "Don't grab it. Step back, call 'knife down,' let it hit, then pick it up safe. I'd stop them right there and demo it once.",
+      "realWorldImpact": "A dropped knife is annoying; a grabbed knife can turn into stitches."
+    },
+    {
+      "_match_existing_by_description": "Saying the calls quietly, as if professionalism means silence",
+      "recoveryPlay": "Make them say it again, louder. 'Behind' needs to reach the person it's protecting, not just their own shirt collar. Run the pass again with a real voice.",
+      "realWorldImpact": "Quiet calls don't prevent burns, bumps, or collisions."
+    },
+    {
+      "_match_existing_by_description": "Holding a hot pan handle without flagging it the moment it leaves the burner",
+      "recoveryPlay": "Call 'hot handle' right away. Mark it with a dry towel or handle cover, and tell the next person before they reach for it.",
+      "realWorldImpact": "One unmarked hot handle can burn the next cook who grabs it on autopilot."
+    }
+  ]
+}

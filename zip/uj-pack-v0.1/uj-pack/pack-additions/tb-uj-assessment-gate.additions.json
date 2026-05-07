@@ -1,0 +1,38 @@
+{
+  "_comment": "Merge into existing tb-uj-assessment-gate block. triggerRules array is intentionally empty — manager observation IS the trigger.",
+  "id": "tb-uj-assessment-gate",
+  "contentLinks": {
+    "sourceModuleId": "MD6-assessment-gate",
+    "fundamentalsTaught": [],
+    "fundamentalsReinforced": [
+      "FT5-safety-first",
+      "FT5-communication",
+      "FT5-clean-as-you-go"
+    ],
+    "downtimeDecisions": ["DT8-restock-reset-clean"],
+    "chaosEvents": ["CE9-rush-ticket", "CE9-missing-tool", "CE9-quality-check"],
+    "externalAssessmentId": "AS7-final-pack-gate",
+    "ticketFlows": ["RC4-demo-ticket-flow"]
+  },
+  "deviceConstraints": { "maxResponseChars": 2000 },
+  "triggerRules": [],
+  "retention": { "reassessAfterDays": 180, "decayHalfLifeDays": 120 },
+  "trainerNotes": "What's the one thing you're watching for in the chaos drill that decides pass or fail?\n\nI'm watching whether they communicate before they disappear into panic.\n\nThe chaos drill is not about being perfect. It's about whether they stay safe, keep priorities straight, and call out what's happening.\n\nIf they're behind, do they say it? If they missed a modifier, do they call it? If they're low on product, do they speak before they're empty? If something is unsafe, do they stop and fix it?\n\nA cook can make a small mistake and still pass if they catch it and communicate. But if they go silent and start guessing, that's a fail for me.\n\nWhen a cook goes silent under pressure during the gate, do you let it ride or call it?\n\nI call it.\n\nNot aggressively, but immediately. Silence on the line is where problems hide.\n\nI'll say, \"Talk to me. What are you working? What are you waiting on?\" If they can recover and start communicating, good — now I know they can be coached under pressure. If they stay locked up, they're not ready for the gate.\n\nPressure is part of the job. I don't need them loud for no reason, but I do need them present and communicating.\n\nWhat's the difference between \"passed the gate\" and \"service-ready\" in your gut?\n\n\"Passed the gate\" means they can demonstrate the standard in a controlled test.\n\n\"Service-ready\" means I trust them when the printer won't stop, the lead is busy, the station next to them is sinking, and nobody has time to babysit.\n\nA cook can pass the gate and still need shadowing. That's normal. Service-ready is more than knowing the moves. It's judgment, pace, communication, and recovery.\n\nIn my gut, service-ready means if I turn my back for five minutes, they won't do something unsafe, hide a mistake, or let the station fall apart without calling for help.",
+  "commonErrors": [
+    {
+      "_match_existing_by_description": "Going silent under pressure — quiet is not pro on a working line",
+      "recoveryPlay": "Prompt them once: 'Talk to me. What are you working?' They need to call fires, holds, missing items, and help needs. If they stay silent, stop the gate.",
+      "realWorldImpact": "Silence hides mistakes until they turn into late food, unsafe food, or a full station crash."
+    },
+    {
+      "_match_existing_by_description": "Treating the gate as a written test instead of a live observation",
+      "recoveryPlay": "Put them back in motion. Don't let them explain the job from the sideline; make them show it on station with timing, calls, and corrections.",
+      "realWorldImpact": "Knowing the answer isn't the same as doing the work when the printer starts talking."
+    },
+    {
+      "_match_existing_by_description": "Self-declaring readiness instead of getting the trainer's call",
+      "recoveryPlay": "Stop the self-clear. Have them walk the trainer through the station: food, tools, backups, sanitation, timing, and safety. Trainer makes the call.",
+      "realWorldImpact": "Confidence is good, but readiness still has to be checked."
+    }
+  ]
+}

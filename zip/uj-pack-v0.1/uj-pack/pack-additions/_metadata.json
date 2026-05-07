@@ -1,0 +1,6 @@
+{
+  "_comment": "Apply these top-level field changes to content-packs/content_pack_uncle_julios_v1.json. Do NOT replace the entire file — just update these fields. Leave signature/signingKeyId/roleMappings/etc. untouched.",
+  "version": "0.1.0",
+  "description": "Uncle Julio's training pack v0.1 — high-turnover BoH operations. Distributed assessment with manager opportunistic sign-off, micro-credentialing per block, spaced reinforcement via decay-based reassessment, and recovery-first failure handling. Demo content; brand-specific fields require authorized source before reclassification from sourceDataStatus: demo to authorized.",
+  "updatedAt": "2026-05-06"
+}

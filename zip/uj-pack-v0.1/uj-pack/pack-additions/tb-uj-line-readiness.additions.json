@@ -1,0 +1,38 @@
+{
+  "_comment": "Merge into existing tb-uj-line-readiness block.",
+  "id": "tb-uj-line-readiness",
+  "contentLinks": {
+    "sourceModuleId": "MD6-line-readiness",
+    "fundamentalsTaught": ["FT5-communication"],
+    "fundamentalsReinforced": ["FT5-safety-first"],
+    "downtimeDecisions": ["DT8-restock-reset-clean"],
+    "chaosEvents": ["CE9-rush-ticket"],
+    "externalAssessmentId": null,
+    "ticketFlows": []
+  },
+  "deviceConstraints": { "maxResponseChars": 2000 },
+  "triggerRules": [
+    { "type": "stuck_time", "thresholdSeconds": 75 },
+    { "type": "repeated_errors", "threshold": 2 },
+    { "type": "help_requested", "enabled": true }
+  ],
+  "retention": { "reassessAfterDays": 60, "decayHalfLifeDays": 45 },
+  "trainerNotes": "How do you know a cook read the board vs. just opened the station?\n\nA cook who read the board sets up for what's actually coming.\n\nIf there's a feature, they have the feature mise pulled and checked. If there's an 86, they know what not to fire. If there's a large party, they prep for volume. If there's a modification trend, they adjust their mental flow.\n\nA cook who only opened the station has the normal setup and no answers. Ask, \"What's different today?\" If they can't tell you the feature, 86s, big reservations, or prep concerns, they didn't read the board. They just stocked pans.\n\nWhat signals from a pre-shift huddle does a ready cook actually act on?\n\nThey act on anything that changes service.\n\nIf chef says the special is moving fast, they stage more of that mise. If FOH says there are allergies noted on reservations, they tighten up their tools and surfaces. If the lead says we're short on one item, they pace it and communicate before it's gone. If there's a big top at 7:15, they don't get surprised at 7:14.\n\nA ready cook doesn't just nod in pre-shift. They change the station based on what they heard.\n\nWhen do you let them figure it out vs. step in and reposition tools for them?\n\nI let them figure it out if the mistake is slowing them down but not risking safety, quality, or the whole line.\n\nIf their tongs are a little far away and they're losing a few seconds, I may let them feel that and learn. But if they're crossing raw over ready-to-eat, reaching across burners, blocking another station, or creating a ticket jam, I step in.\n\nMy rule: discomfort teaches, danger doesn't. If the lesson costs a few seconds, let them learn. If it costs food safety, guest experience, or another cook's rhythm, fix it immediately.",
+  "commonErrors": [
+    {
+      "_match_existing_by_description": "Treating 'open' as 'ready' and then getting buried by ticket two",
+      "recoveryPlay": "Ask them, 'What's different today?' Make them check the board, specials, 86s, backups, and anything coming from pre-shift. Then adjust the station.",
+      "realWorldImpact": "A station can look open and still not survive the first real push."
+    },
+    {
+      "_match_existing_by_description": "Hoarding information from expo about a short item until the first ticket asks for it",
+      "recoveryPlay": "Call it now. Tell the lead and expo what's short, how many are left, and whether we're subbing or 86ing it. Don't wait for the ticket to expose it.",
+      "realWorldImpact": "Late info turns into refires, awkward table visits, and guests waiting for food we already knew we couldn't sell."
+    },
+    {
+      "_match_existing_by_description": "Pre-portioning so much that hold quality drops before the rush hits",
+      "recoveryPlay": "Slow down. Portion for the next wave, not the whole night. Anything already losing quality gets rotated, refreshed, or tossed if it's past saving.",
+      "realWorldImpact": "Over-prep can save a few seconds but cost you freshness, texture, and plate quality."
+    }
+  ]
+}

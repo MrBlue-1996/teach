@@ -1,0 +1,60 @@
+{
+  "_comment": "VALID FIXTURE for UJ-PACK-V0.1 validator tests. Exercises all v0.1 schema additions without triggering any new rule. pack.id != pack-uncle-julios-v1 so the per-pack orphan rule does not apply. fundamentalsTaught is empty across all blocks so the reinforcement rule does not trigger. If your repo's contentPackManifestSchema requires fields not present here, add them — the goal is for this to validate cleanly.",
+  "id": "pack-valid-fixture-v1",
+  "schemaVersion": "content-pack.v1",
+  "name": "Valid Fixture",
+  "version": "0.1.0",
+  "description": "Minimal valid pack used to assert validateContentPackArtifacts returns zero issues against a clean v0.1 manifest.",
+  "updatedAt": "2026-05-06",
+  "teachingBlocks": [
+    {
+      "id": "tb-fixture-block-one",
+      "title": "Fixture Block One",
+      "mode": "L1",
+      "concept": "Demonstrate that the validator accepts a clean v0.1 block.",
+      "canonicalSolution": "Validator returns zero issues.",
+      "explanation": "This block is intentionally short. The validator should accept it without triggering any of the six new semantic rules.",
+      "hints": ["First hint.", "Second hint."],
+      "commonErrors": [
+        {
+          "description": "Treating this fixture as authoring guidance.",
+          "remediation": "Use the real Uncle Julio's pack for content reference.",
+          "recoveryPlay": "Open the real pack at content-packs/content_pack_uncle_julios_v1.json.",
+          "realWorldImpact": "Fixture content has no operational meaning."
+        }
+      ],
+      "surfaceVariants": [
+        {
+          "id": "sv-fixture-one",
+          "kind": "solve_first",
+          "data": {
+            "sourceModuleId": "MD6-fixture-block-one",
+            "sourceDataStatus": "demo",
+            "stationRelevance": ["ST3-generic-line-station"],
+            "roleTarget": ["new_cook"],
+            "inputType": "short_answer",
+            "expectedResponse": "any non-empty string"
+          }
+        }
+      ],
+      "assessment": [],
+      "prerequisites": [],
+      "contentLinks": {
+        "sourceModuleId": "MD6-fixture-block-one",
+        "fundamentalsTaught": [],
+        "fundamentalsReinforced": [],
+        "downtimeDecisions": [],
+        "chaosEvents": [],
+        "externalAssessmentId": null,
+        "ticketFlows": []
+      },
+      "deviceConstraints": { "maxResponseChars": 2000 },
+      "triggerRules": [
+        { "type": "stuck_time", "thresholdSeconds": 60 },
+        { "type": "help_requested", "enabled": true }
+      ],
+      "retention": { "reassessAfterDays": 60, "decayHalfLifeDays": 45 },
+      "trainerNotes": "Fixture block. No real operational guidance."
+    }
+  ]
+}

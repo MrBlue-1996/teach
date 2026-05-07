@@ -1,0 +1,26 @@
+{
+  "_comment": "Triggers a SCHEMA-LEVEL error: surfaceVariant.kind is not a valid enum value. Test only asserts >=1 issue exists. If your repo's surfaceVariant kind enum allows 'not_a_real_kind' for some reason, change this to a different shape violation.",
+  "id": "pack-bad-missing-solve-first-v1",
+  "schemaVersion": "content-pack.v1",
+  "name": "Bad Missing Solve First",
+  "version": "0.1.0",
+  "description": "Fixture for bad-missing-solve-first.",
+  "updatedAt": "2026-05-06",
+  "teachingBlocks": [
+    {
+      "id": "tb-bad-missing",
+      "title": "Bad Missing",
+      "mode": "L1",
+      "concept": "Schema-level shape violation in surfaceVariants.",
+      "canonicalSolution": "n/a",
+      "explanation": "Trigger schema rejection.",
+      "hints": [],
+      "commonErrors": [],
+      "surfaceVariants": [
+        { "id": "sv-x", "kind": "not_a_real_kind", "data": {} }
+      ],
+      "assessment": [],
+      "prerequisites": []
+    }
+  ]
+}

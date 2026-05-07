@@ -1,0 +1,37 @@
+{
+  "_comment": "Merge into existing tb-uj-downtime-decisions block.",
+  "id": "tb-uj-downtime-decisions",
+  "contentLinks": {
+    "sourceModuleId": "MD6-downtime-decisions",
+    "fundamentalsTaught": [],
+    "fundamentalsReinforced": ["FT5-clean-as-you-go", "FT5-communication"],
+    "downtimeDecisions": ["DT8-restock-reset-clean"],
+    "chaosEvents": [],
+    "externalAssessmentId": null,
+    "ticketFlows": []
+  },
+  "deviceConstraints": { "maxResponseChars": 2000 },
+  "triggerRules": [
+    { "type": "stuck_time", "thresholdSeconds": 90 },
+    { "type": "help_requested", "enabled": true }
+  ],
+  "retention": { "reassessAfterDays": 90, "decayHalfLifeDays": 60 },
+  "trainerNotes": "After a rush, what's the first thing a cook with the right priorities does?\n\nThey assess what service needs next.\n\nNot clean first. Not drink water first, unless they truly need it. Not talk first.\n\nThey look at the station and ask: What am I low on? What's dirty that affects food safety? What backups need to come up? What tool do I need reset before the next hit?\n\nThe first move after a rush should usually be restock the critical items, reset the working area, then clean deeper if time allows. A good cook knows the next rush is already on its way.\n\nWhen social pressure pushes them to clean before restocking, how do you redirect?\n\nI make it about service, not opinion.\n\nI'll say, \"Wipe what's unsafe, then stock what we need to sell. Detail clean after you're loaded.\"\n\nIf another cook is pressuring them, I'll back the trainee up: \"They're right to stock first. We need product before polish.\"\n\nNew cooks want to look busy, and cleaning looks productive. But if the station is clean and empty, you're not ready. Reset means ready to cook, not just shiny.\n\nWhat does a cook who's resting vs. resetting look like, from across the line?\n\nA cook who's resting is standing still, wiping the same spot, sipping water too long, chatting, or staring at the rail like the station will fix itself.\n\nA cook who's resetting has a pattern. They check pans, pull backups, consolidate, change spoons, refresh towels, wipe hazards, check temps, and look at the board. They move with purpose.\n\nFrom across the line, you can tell. Resting has no sequence. Resetting has a plan.",
+  "commonErrors": [
+    {
+      "_match_existing_by_description": "Cleaning first because the station looks bad and feels embarrassing",
+      "recoveryPlay": "Tell them, 'Wipe the hazard, then stock.' Get the station able to sell food first. Detail clean comes after you're loaded.",
+      "realWorldImpact": "A pretty station that's out of product is still not ready."
+    },
+    {
+      "_match_existing_by_description": "Restocking lazily — putting new product on top of old, breaking FIFO",
+      "recoveryPlay": "Stop the pan. Pull it, rotate old product forward, new product behind it, and fix the label if needed. Make them do the rotation, not just watch it.",
+      "realWorldImpact": "Bad FIFO leads to waste, old product, and quality problems that sneak up later."
+    },
+    {
+      "_match_existing_by_description": "Skipping the reset and going straight from restock to break",
+      "recoveryPlay": "Bring them back. Check product, tools, towels, sani, trash, hazards, and the rail. Break starts after the station is actually reset.",
+      "realWorldImpact": "Skipping reset means the next cook, or future you, gets buried."
+    }
+  ]
+}

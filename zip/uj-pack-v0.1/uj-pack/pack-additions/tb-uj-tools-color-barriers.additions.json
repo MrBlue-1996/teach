@@ -1,0 +1,39 @@
+{
+  "_comment": "Merge into existing tb-uj-tools-color-barriers block.",
+  "id": "tb-uj-tools-color-barriers",
+  "contentLinks": {
+    "sourceModuleId": "MD6-tools-color-barriers",
+    "fundamentalsTaught": [],
+    "fundamentalsReinforced": ["FT5-safety-first", "FT5-clean-as-you-go"],
+    "downtimeDecisions": [],
+    "chaosEvents": ["CE9-missing-tool"],
+    "externalAssessmentId": null,
+    "ticketFlows": []
+  },
+  "deviceConstraints": { "maxResponseChars": 2000 },
+  "triggerRules": [
+    { "type": "stuck_time", "thresholdSeconds": 45 },
+    { "type": "repeated_errors", "threshold": 1 },
+    { "type": "help_requested", "enabled": true },
+    { "type": "idle_drop", "thresholdDays": 7 }
+  ],
+  "retention": { "reassessAfterDays": 30, "decayHalfLifeDays": 21 },
+  "trainerNotes": "How can you tell at a glance whether a cook actually understands the color system vs. memorized it?\n\nA cook who memorized it can tell you, \"Red is raw meat, green is produce,\" but they hesitate once the station gets messy.\n\nA cook who understands it protects the barrier automatically. They don't set the wrong tongs on the wrong board. They don't drag a towel across two zones. They don't put a clean knife down on a dirty surface just because they're in a hurry.\n\nAt a glance, I'm watching their hands. Do they pause before switching tasks? Do they change gloves when the job changes? Do they keep tools married to the right product? Understanding shows up in movement, not in a quiz answer.\n\nWhen the right color board is missing, what do you watch for that tells you they get the substitution rule?\n\nI watch whether they stop and make a clean decision instead of grabbing whatever is closest.\n\nA cook who gets it will look for the right board first, then use an approved clean substitute, keep it isolated, and communicate it. Something like, \"Green board's missing, I'm using a clean white board for veg only.\"\n\nThat tells me they understand the rule is not about the color itself. The rule is about preventing cross-contact and keeping the use clear. If they just grab any board and say, \"It's fine, I'll be quick,\" they don't have it yet.\n\nWhat slip-up means \"go back to module 2\" rather than \"they're just tired\"?\n\nUsing the same tool or surface across raw and ready-to-eat food without catching themselves.\n\nThat's not just being tired. That's a foundation problem.\n\nIf they use raw chicken tongs on cooked product, cut produce on a board that had raw protein, or wipe a ready-to-eat area with a towel from the raw side, I send them back. Same if they argue or minimize it.\n\nFatigue causes small misses. Cross-contamination without awareness means they don't understand the system yet.",
+  "commonErrors": [
+    {
+      "_match_existing_by_description": "Confusing yellow (raw poultry) with brown (cooked or ready-to-eat)",
+      "recoveryPlay": "Stop them. Pull the board, knife, and anything that got touched. Set it back up the right way and have them tell you the rule while they do it.",
+      "realWorldImpact": "Raw poultry crossing into ready-to-eat food is not a small mix-up; that's a real food safety problem."
+    },
+    {
+      "_match_existing_by_description": "Assuming any clean board is fine in a pinch",
+      "recoveryPlay": "Pause them and ask, 'What are you cutting, and what barrier do you need?' If they substitute, it needs to be clean, approved, and clearly kept to one job.",
+      "realWorldImpact": "Clean doesn't automatically mean safe for the task."
+    },
+    {
+      "_match_existing_by_description": "Treating allergen (purple) as optional when an allergen ticket comes through",
+      "recoveryPlay": "Stop the ticket. Fresh gloves, clean surface, purple tools, verified ingredients. Then call the allergen back to expo or the lead before firing it.",
+      "realWorldImpact": "Allergens are a hard stop because the guest can actually get hurt."
+    }
+  ]
+}

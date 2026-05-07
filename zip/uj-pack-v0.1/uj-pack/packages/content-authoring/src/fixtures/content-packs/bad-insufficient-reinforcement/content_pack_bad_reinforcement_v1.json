@@ -1,0 +1,77 @@
+{
+  "_comment": "Triggers INSUFFICIENT_REINFORCEMENT. FT5-foo is fundamentalsTaught in block 1 but only fundamentalsReinforced in block 2 (one OTHER block). Rule requires reinforcement in >=2 OTHER blocks. Block 3 explicitly does NOT reinforce FT5-foo.",
+  "id": "pack-bad-reinforcement-v1",
+  "schemaVersion": "content-pack.v1",
+  "name": "Bad Reinforcement",
+  "version": "0.1.0",
+  "description": "Fixture for bad-insufficient-reinforcement.",
+  "updatedAt": "2026-05-06",
+  "teachingBlocks": [
+    {
+      "id": "tb-reinforce-one",
+      "title": "Block One — teaches FT5-foo",
+      "mode": "L1",
+      "concept": "Teaches FT5-foo.",
+      "canonicalSolution": "n/a",
+      "explanation": "Test fixture.",
+      "hints": [],
+      "commonErrors": [],
+      "surfaceVariants": [],
+      "assessment": [],
+      "prerequisites": [],
+      "contentLinks": {
+        "sourceModuleId": "MD6-reinforce-one",
+        "fundamentalsTaught": ["FT5-foo"],
+        "fundamentalsReinforced": [],
+        "downtimeDecisions": [],
+        "chaosEvents": [],
+        "externalAssessmentId": null,
+        "ticketFlows": []
+      }
+    },
+    {
+      "id": "tb-reinforce-two",
+      "title": "Block Two — reinforces FT5-foo (only one)",
+      "mode": "L1",
+      "concept": "Reinforces FT5-foo.",
+      "canonicalSolution": "n/a",
+      "explanation": "Test fixture.",
+      "hints": [],
+      "commonErrors": [],
+      "surfaceVariants": [],
+      "assessment": [],
+      "prerequisites": [],
+      "contentLinks": {
+        "sourceModuleId": "MD6-reinforce-two",
+        "fundamentalsTaught": [],
+        "fundamentalsReinforced": ["FT5-foo"],
+        "downtimeDecisions": [],
+        "chaosEvents": [],
+        "externalAssessmentId": null,
+        "ticketFlows": []
+      }
+    },
+    {
+      "id": "tb-reinforce-three",
+      "title": "Block Three — does NOT reinforce FT5-foo",
+      "mode": "L1",
+      "concept": "Reinforces nothing.",
+      "canonicalSolution": "n/a",
+      "explanation": "Test fixture.",
+      "hints": [],
+      "commonErrors": [],
+      "surfaceVariants": [],
+      "assessment": [],
+      "prerequisites": [],
+      "contentLinks": {
+        "sourceModuleId": "MD6-reinforce-three",
+        "fundamentalsTaught": [],
+        "fundamentalsReinforced": [],
+        "downtimeDecisions": [],
+        "chaosEvents": [],
+        "externalAssessmentId": null,
+        "ticketFlows": []
+      }
+    }
+  ]
+}

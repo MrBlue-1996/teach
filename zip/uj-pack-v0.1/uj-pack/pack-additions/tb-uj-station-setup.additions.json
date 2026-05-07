@@ -1,0 +1,38 @@
+{
+  "_comment": "Merge into existing tb-uj-station-setup block.",
+  "id": "tb-uj-station-setup",
+  "contentLinks": {
+    "sourceModuleId": "MD6-station-setup",
+    "fundamentalsTaught": ["FT5-clean-as-you-go"],
+    "fundamentalsReinforced": ["FT5-safety-first", "FT5-communication"],
+    "downtimeDecisions": ["DT8-restock-reset-clean"],
+    "chaosEvents": ["CE9-missing-tool"],
+    "externalAssessmentId": "AS7-station-readiness-check",
+    "ticketFlows": []
+  },
+  "deviceConstraints": { "maxResponseChars": 2000 },
+  "triggerRules": [
+    { "type": "stuck_time", "thresholdSeconds": 60 },
+    { "type": "repeated_errors", "threshold": 2 },
+    { "type": "help_requested", "enabled": true }
+  ],
+  "retention": { "reassessAfterDays": 60, "decayHalfLifeDays": 45 },
+  "trainerNotes": "What does a properly opened station look like 12 minutes before first ticket?\n\nTwelve minutes before first ticket, the station should look boring — and that's a compliment.\n\nMise is stocked, labeled, rotated, and within reach. Pans are clean and cold or hot as needed. Tools are set where the cook can grab them without crossing their own body. Towels are clean and folded. Sani bucket is fresh. Trash isn't already half full. Backup is close but not cluttering the working line.\n\nMost important: the cook is not still hunting. They're not asking where tongs are, where backups are, or whether the sauce is made. At 12 minutes out, they should be checking, tasting, temping, and mentally walking the first 10 tickets.\n\nAn open station is not \"I have stuff.\" It's \"I can take a hit right now.\"\n\nWhen a cook self-declares ready instead of going through the lead, how do you correct it without embarrassing them?\n\nI keep it calm and procedural.\n\nI say, \"Good hustle. Next step is you call the lead over and have them clear you. We don't self-clear stations.\"\n\nNo need to make a scene. I'll walk with them and say, \"Show me your open like you're handing it off.\" That turns it into training, not punishment.\n\nThe point is simple: readiness is verified, not announced. New cooks need to learn that \"I feel ready\" and \"the station is ready\" are not always the same thing.\n\nWhat's the one shortcut new cooks take that breaks the whole open?\n\nThey stock the pretty top and ignore backups.\n\nThe rail looks full, the pans look clean, and they say they're ready. Then 20 minutes into service, they're out of sauce, out of cut garnish, out of proteins, or they don't know where the backup is.\n\nThat breaks the open because the station was only ready for the first few tickets. A real open includes the next rush, not just the first order.",
+  "commonErrors": [
+    {
+      "_match_existing_by_description": "Eyeballing equipment temperature instead of using a thermometer",
+      "recoveryPlay": "Don't guess. Temp it. If it's not right, don't load product into it just because it 'feels cold' or 'seems hot.' Get the lead involved.",
+      "realWorldImpact": "Guessing temps is how product sits unsafe before service even starts."
+    },
+    {
+      "_match_existing_by_description": "Calling \"I'm up\" to nobody in particular instead of through the lead",
+      "recoveryPlay": "Pull them back with, 'Good, now show the lead.' Walk the station: mise, temps, backups, tools, towels, sani, trash. Then the lead clears it.",
+      "realWorldImpact": "If nobody verifies the station, nobody really knows if it's ready."
+    },
+    {
+      "_match_existing_by_description": "Staging tools before sanitizing the surface they sit on",
+      "recoveryPlay": "Move the tools off. Clean and sanitize the surface first. Anything that touched the dirty surface gets cleaned again before it goes back.",
+      "realWorldImpact": "Clean tools on a dirty table are just dirty tools with extra steps."
+    }
+  ]
+}

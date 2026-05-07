@@ -1,0 +1,28 @@
+{
+  "_comment": "Triggers SAFETY_TRIGGER_TOO_LENIENT. Block id 'tb-orientation-safety' is in the safety-critical list (validator covers both 'tb-uj-orientation-safety' and 'tb-orientation-safety' for fixtures) and stuck_time threshold is 90s, which exceeds the max of 45s for safety blocks.",
+  "id": "pack-bad-safety-trigger-v1",
+  "schemaVersion": "content-pack.v1",
+  "name": "Bad Safety Trigger",
+  "version": "0.1.0",
+  "description": "Fixture for bad-safety-trigger-too-lenient.",
+  "updatedAt": "2026-05-06",
+  "teachingBlocks": [
+    {
+      "id": "tb-orientation-safety",
+      "title": "Orientation Safety (lenient trigger)",
+      "mode": "L1",
+      "concept": "Safety block with stuck_time too high.",
+      "canonicalSolution": "n/a",
+      "explanation": "Test fixture.",
+      "hints": [],
+      "commonErrors": [],
+      "surfaceVariants": [],
+      "assessment": [],
+      "prerequisites": [],
+      "triggerRules": [
+        { "type": "stuck_time", "thresholdSeconds": 90 },
+        { "type": "help_requested", "enabled": true }
+      ]
+    }
+  ]
+}

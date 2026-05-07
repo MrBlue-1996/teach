@@ -1,0 +1,24 @@
+{
+  "_comment": "Triggers FILENAME_ID_MISMATCH. Filename slug 'bad_filename_v1' implies id 'pack-bad-filename-v1' but pack.id is 'pack-something-else-v1'.",
+  "id": "pack-something-else-v1",
+  "schemaVersion": "content-pack.v1",
+  "name": "Bad Filename Mismatch",
+  "version": "0.1.0",
+  "description": "Fixture for bad-filename-id-mismatch.",
+  "updatedAt": "2026-05-06",
+  "teachingBlocks": [
+    {
+      "id": "tb-bad-filename",
+      "title": "Bad Filename",
+      "mode": "L1",
+      "concept": "Filename does not match pack id.",
+      "canonicalSolution": "n/a",
+      "explanation": "Trigger filename-id mismatch.",
+      "hints": [],
+      "commonErrors": [],
+      "surfaceVariants": [],
+      "assessment": [],
+      "prerequisites": []
+    }
+  ]
+}

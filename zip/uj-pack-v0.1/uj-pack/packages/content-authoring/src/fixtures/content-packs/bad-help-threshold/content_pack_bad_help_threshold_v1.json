@@ -1,0 +1,25 @@
+{
+  "_comment": "Triggers a SCHEMA-LEVEL discriminated union rejection. help_requested variant requires `enabled: boolean` but this fixture uses `threshold: 5` (which is for the repeated_errors variant). Test only asserts >=1 issue exists.",
+  "id": "pack-bad-help-threshold-v1",
+  "schemaVersion": "content-pack.v1",
+  "name": "Bad Help Threshold",
+  "version": "0.1.0",
+  "description": "Fixture for bad-help-threshold.",
+  "updatedAt": "2026-05-06",
+  "teachingBlocks": [
+    {
+      "id": "tb-bad-help-threshold",
+      "title": "Bad Help Threshold",
+      "mode": "L1",
+      "concept": "Cross-variant field on discriminated union.",
+      "canonicalSolution": "n/a",
+      "explanation": "Trigger schema rejection on triggerRules[0].",
+      "hints": [],
+      "commonErrors": [],
+      "surfaceVariants": [],
+      "assessment": [],
+      "prerequisites": [],
+      "triggerRules": [{ "type": "help_requested", "threshold": 5 }]
+    }
+  ]
+}

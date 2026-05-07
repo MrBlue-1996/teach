@@ -1,0 +1,37 @@
+{
+  "_comment": "Triggers UNAUTHORIZED_PROPRIETARY_CLAIM. Block-level explanation contains 'official Uncle Julio's' (case-insensitive regex match) but every surfaceVariant has sourceDataStatus: demo, not authorized.",
+  "id": "pack-bad-proprietary-v1",
+  "schemaVersion": "content-pack.v1",
+  "name": "Bad Proprietary Claim",
+  "version": "0.1.0",
+  "description": "Fixture for bad-proprietary-claim.",
+  "updatedAt": "2026-05-06",
+  "teachingBlocks": [
+    {
+      "id": "tb-bad-proprietary",
+      "title": "Bad Proprietary",
+      "mode": "L1",
+      "concept": "Unauthorized brand claim in demo content.",
+      "canonicalSolution": "n/a",
+      "explanation": "This is the official Uncle Julio's recipe for skirt steak.",
+      "hints": [],
+      "commonErrors": [],
+      "surfaceVariants": [
+        {
+          "id": "sv-bad-prop",
+          "kind": "solve_first",
+          "data": {
+            "sourceModuleId": "MD6-bad-prop",
+            "sourceDataStatus": "demo",
+            "stationRelevance": ["ST3-generic-line-station"],
+            "roleTarget": ["new_cook"],
+            "inputType": "short_answer",
+            "expectedResponse": "any"
+          }
+        }
+      ],
+      "assessment": [],
+      "prerequisites": []
+    }
+  ]
+}

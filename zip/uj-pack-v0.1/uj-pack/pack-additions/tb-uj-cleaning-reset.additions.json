@@ -1,0 +1,37 @@
+{
+  "_comment": "Merge into existing tb-uj-cleaning-reset block.",
+  "id": "tb-uj-cleaning-reset",
+  "contentLinks": {
+    "sourceModuleId": "MD6-cleaning-reset",
+    "fundamentalsTaught": [],
+    "fundamentalsReinforced": ["FT5-clean-as-you-go", "FT5-safety-first"],
+    "downtimeDecisions": ["DT8-restock-reset-clean"],
+    "chaosEvents": ["CE9-rush-ticket"],
+    "externalAssessmentId": null,
+    "ticketFlows": []
+  },
+  "deviceConstraints": { "maxResponseChars": 2000 },
+  "triggerRules": [
+    { "type": "stuck_time", "thresholdSeconds": 90 },
+    { "type": "help_requested", "enabled": true }
+  ],
+  "retention": { "reassessAfterDays": 30, "decayHalfLifeDays": 21 },
+  "trainerNotes": "How do you know a cook understands the difference between a hazard and a cosmetic issue mid-service?\n\nThey clean the thing that can hurt someone or contaminate food first.\n\nOil on the floor? Hazard. Raw protein juice near ready-to-eat product? Hazard. Sauce on a plate rim? Quality issue, fix before it goes. A few crumbs in the corner of the station during a rush? Cosmetic, handle when you can.\n\nA cook who understands this doesn't stop service to detail polish a low-risk area while standing next to a slick floor or dirty knife. They triage. Safety and contamination first, guest-facing quality second, pretty details last.\n\nWhen they try to do a full reset between tickets, what do you say?\n\nI say, \"Not a full reset. Service reset.\"\n\nThen I define it fast: \"Clear the hazard, restock the need, wipe the working space, and get eyes back on tickets.\"\n\nNew cooks sometimes think reset means make it look like opening again. That's not realistic mid-service. Between tickets, you're not detailing the station. You're getting it functional and safe for the next push.\n\nSave the full reset for the real break or close.\n\nWhat's the cleaning shortcut that looks fine but actively contaminates?\n\nUsing one towel for everything.\n\nIt looks efficient. It looks like they're keeping clean. But if that towel hits raw area, then cutting board, then plate edge, then hands, now they've just moved contamination all over the station.\n\nSame problem with dunking a filthy towel in sani and thinking it's magic. Sani is not a reset button for bad habits.\n\nClean towel, right bucket, right surface, right sequence. Otherwise you're just spreading the mess thinner.",
+  "commonErrors": [
+    {
+      "_match_existing_by_description": "Treating a gray sanitizer cloth as still useful because the bucket is still wet",
+      "recoveryPlay": "Toss the rag. Check the bucket, refresh it if needed, and re-wipe anything that dirty towel touched. Wet doesn't mean clean.",
+      "realWorldImpact": "A nasty sani rag spreads the mess while making everyone feel like it got cleaned."
+    },
+    {
+      "_match_existing_by_description": "Doing a full reset all at once and missing two tickets in the process",
+      "recoveryPlay": "Stop the deep clean. Eyes back on tickets. Do the quick version: clear the hazard, wipe the work area, grab what you're low on, and keep cooking.",
+      "realWorldImpact": "Mid-service is not the time to make the station perfect while food dies on the rail."
+    },
+    {
+      "_match_existing_by_description": "Saying \"I'll clean it after the rush\" for items that are actively contaminating now",
+      "recoveryPlay": "No, clean it now. Move the food, pull the dirty tools, sanitize the area, change gloves, and restart clean.",
+      "realWorldImpact": "Active contamination doesn't wait politely for the rush to end."
+    }
+  ]
+}

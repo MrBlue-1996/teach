@@ -1,0 +1,25 @@
+{
+  "_comment": "Triggers TEXT_OVER_DEVICE_CAP. deviceConstraints.maxResponseChars is 500 but the explanation field is well over 500 characters. Filler text below is intentionally long.",
+  "id": "pack-bad-over-cap-v1",
+  "schemaVersion": "content-pack.v1",
+  "name": "Bad Over Response Cap",
+  "version": "0.1.0",
+  "description": "Fixture for bad-over-response-cap.",
+  "updatedAt": "2026-05-06",
+  "teachingBlocks": [
+    {
+      "id": "tb-bad-over-cap",
+      "title": "Over Cap",
+      "mode": "L1",
+      "concept": "explanation length exceeds the declared cap.",
+      "canonicalSolution": "n/a",
+      "explanation": "This explanation is intentionally over the device cap of 500 characters. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. The point is that this string is more than 500 characters long so it trips the cap rule.",
+      "hints": [],
+      "commonErrors": [],
+      "surfaceVariants": [],
+      "assessment": [],
+      "prerequisites": [],
+      "deviceConstraints": { "maxResponseChars": 500 }
+    }
+  ]
+}

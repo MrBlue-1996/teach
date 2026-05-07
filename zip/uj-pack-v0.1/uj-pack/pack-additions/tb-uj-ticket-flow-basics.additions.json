@@ -1,0 +1,38 @@
+{
+  "_comment": "Merge into existing tb-uj-ticket-flow-basics block.",
+  "id": "tb-uj-ticket-flow-basics",
+  "contentLinks": {
+    "sourceModuleId": "MD6-ticket-flow-basics",
+    "fundamentalsTaught": [],
+    "fundamentalsReinforced": ["FT5-communication", "FT5-safety-first"],
+    "downtimeDecisions": [],
+    "chaosEvents": ["CE9-rush-ticket"],
+    "externalAssessmentId": null,
+    "ticketFlows": ["RC4-demo-ticket-flow"]
+  },
+  "deviceConstraints": { "maxResponseChars": 2000 },
+  "triggerRules": [
+    { "type": "stuck_time", "thresholdSeconds": 60 },
+    { "type": "repeated_errors", "threshold": 2 },
+    { "type": "help_requested", "enabled": true }
+  ],
+  "retention": { "reassessAfterDays": 45, "decayHalfLifeDays": 30 },
+  "trainerNotes": "How do you spot a cook who's anchoring tickets correctly vs. starting everything at once?\n\nA cook who anchors tickets knows what item controls the timing.\n\nThey look at the ticket and identify the long cook first — steak temp, fryer item, oven item, whatever drives the window. They start that, then build the rest around it. Their hands are busy, but there's order to it.\n\nA cook starting everything at once looks frantic. Everything hits heat at the same time, then they're holding finished items while long items drag behind. You'll see plates dying, fries getting soft, garnish sitting too early, and the cook saying, \"I'm waiting on one thing.\"\n\nAnchoring means the ticket lands together. Starting everything at once just creates a traffic jam.\n\nWhat does an audible acknowledgment sound like when it's right, and when it's mailed in?\n\nWhen it's right, it's clear, specific, and useful.\n\nExample: \"Two burgers, one mid, one well, heard.\" \"Fire salmon, no butter, heard.\" \"Walking fries for table 24.\"\n\nThat tells me they heard the item, the modifier, and the timing.\n\nWhen it's mailed in, it's just noise: \"Yep.\" \"Okay.\" \"Got it.\" \"Heard.\"\n\nThat might be fine for one simple call, but during a rush, vague acknowledgments are dangerous. If I don't know what you heard, I have to assume you missed part of it.\n\nWhat's the moment in a rush where this skill either holds or collapses?\n\nIt's when the second wave hits before the first wave is cleared.\n\nAnybody can look organized with three tickets. The test is when five more come in, the window is calling hands, expo is asking for times, and one ticket has mods.\n\nThat's where anchoring either holds or collapses. A solid cook keeps cooking by priority: long items working, quick items timed, finished food moving. A shaky cook starts reacting to the loudest voice and loses the ticket order.\n\nThe rush doesn't break the skill. It reveals whether the skill was real.",
+  "commonErrors": [
+    {
+      "_match_existing_by_description": "Starting all items at the same time and holding the fast ones until the slow one finishes",
+      "recoveryPlay": "Stop and find the anchor item. Start with what takes longest, then time the quick items around it. If the fast stuff is already dying, remake it.",
+      "realWorldImpact": "Starting everything at once just means the quick food gets old while the slow food catches up."
+    },
+    {
+      "_match_existing_by_description": "Acknowledging the fire silently — a nod is not an acknowledgment",
+      "recoveryPlay": "Make them say it back. Item, modifier, timing. 'Heard' is only useful if we know what they heard.",
+      "realWorldImpact": "A nod doesn't tell the line anything, and it doesn't protect the ticket."
+    },
+    {
+      "_match_existing_by_description": "Counting time against your own item instead of against the slowest item on the ticket",
+      "recoveryPlay": "Ask, 'What's the longest item?' Reset the timing from there. Quick items wait until they can land with the anchor.",
+      "realWorldImpact": "If every cook times only their own piece, the plate never comes together clean."
+    }
+  ]
+}
