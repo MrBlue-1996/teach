@@ -1,8 +1,8 @@
 {
   "id": "pack-uncle-julios-v1",
   "name": "Uncle Julio's Service-Ready Line Cook Training",
-  "version": "0.1.0-demo",
-  "description": "Service-ready line cook training pack for Uncle Julio's. Demo-content build with structurally complete placeholders for any brand-specific data that requires authorized source. Solve-first pedagogy throughout. This converted repo manifest is demo/staging content only; brand-specific fields still require authorized Uncle Julio's or Sun Holdings source before official use.",
+  "version": "0.1.1",
+  "description": "Uncle Julio's training pack v0.1.1 — high-turnover BoH operations. Distributed assessment with manager opportunistic sign-off, micro-credentialing per block, spaced reinforcement via decay-based reassessment, recovery-first failure handling, and stimulus-attached challenges (ticket / station_state / huddle_notes / step_bank / etc.) so prompts referencing artifacts always render the artifact in the UI. Demo content; brand-specific fields require authorized source before reclassification from sourceDataStatus: demo to authorized.",
   "tags": ["required"],
   "roleMappings": [
     "badge-orientation-safety",
@@ -357,7 +357,19 @@
           "description": "Treating allergen (purple) as optional when an allergen ticket comes through.",
           "remediation": "Use the module hints, success criteria, and trainer observation standard before retrying."
         }
-      ]
+      ],
+      "stimulus": {
+        "kind": "station_state",
+        "contextHeader": "Pre-portion. The right colored boards should be at hand. Yellow is in the dish pit.",
+        "observations": [
+          "Item to portion: raw chicken thighs",
+          "Item to portion: sliced tomato",
+          "Item to portion: cooked carnitas",
+          "Item to portion: raw shrimp",
+          "Yellow board: NOT AT STATION (in dish pit)",
+          "Available clean boards at station: red, green, blue, brown"
+        ]
+      }
     },
     {
       "id": "tb-uj-station-setup",
@@ -478,7 +490,21 @@
           "description": "Calling 'I'm up' to nobody in particular instead of through the lead.",
           "remediation": "Use the module hints, success criteria, and trainer observation standard before retrying."
         }
-      ]
+      ],
+      "stimulus": {
+        "kind": "step_bank",
+        "instruction": "Drag these eight steps into the correct order to open a cold station. You have 12 minutes until first ticket.",
+        "steps": [
+          "stage tools",
+          "wipe and sanitize surfaces",
+          "mix sanitizer bucket",
+          "verify equipment temperature",
+          "confirm cutting board color matches assigned protein",
+          "stock rail to par in FIFO order",
+          "wash hands and check apron",
+          "tell the lead the station is up"
+        ]
+      }
     },
     {
       "id": "tb-uj-line-readiness",
@@ -589,7 +615,25 @@
           "description": "Pre-portioning so much that hold quality drops before the rush hits.",
           "remediation": "Use the module hints, success criteria, and trainer observation standard before retrying."
         }
-      ]
+      ],
+      "stimulus": {
+        "kind": "huddle_notes",
+        "header": "Pre-shift huddle (just ended). 30 minutes until first ticket.",
+        "notes": [
+          {
+            "label": "Reservations",
+            "detail": "60-top on the books at 7:00 PM"
+          },
+          {
+            "label": "VIP",
+            "detail": "Regular VIP arriving 6:30 PM"
+          },
+          {
+            "label": "Supply",
+            "detail": "Produce delivery short on a key item (ask lead which)"
+          }
+        ]
+      }
     },
     {
       "id": "tb-uj-ticket-flow-basics",
@@ -708,7 +752,37 @@
           "description": "Counting time against your own item instead of against the slowest item on the ticket.",
           "remediation": "Use the module hints, success criteria, and trainer observation standard before retrying."
         }
-      ]
+      ],
+      "stimulus": {
+        "kind": "ticket",
+        "table": "TABLE 7",
+        "guests": 4,
+        "server": "Lena",
+        "time": "7:42 PM",
+        "items": [
+          {
+            "quantity": 1,
+            "name": "Skirt Steak Fajitas",
+            "cookTimeSeconds": 720
+          },
+          {
+            "quantity": 1,
+            "name": "Chicken Enchiladas",
+            "cookTimeSeconds": 360
+          },
+          {
+            "quantity": 1,
+            "name": "Carnitas Tacos",
+            "cookTimeSeconds": 360
+          },
+          {
+            "quantity": 1,
+            "name": "Side Mexican Rice",
+            "cookTimeSeconds": 90
+          }
+        ],
+        "notes": "ALL DAY"
+      }
     },
     {
       "id": "tb-uj-downtime-decisions",
@@ -821,7 +895,19 @@
           "description": "Treating downtime as rest time and starting the next rush from scratch.",
           "remediation": "Use the module hints, success criteria, and trainer observation standard before retrying."
         }
-      ]
+      ],
+      "stimulus": {
+        "kind": "station_state",
+        "contextHeader": "The rush is over. Next push starts in 12 minutes.",
+        "windowMinutes": 12,
+        "observations": [
+          "Rail: half-empty (sauce, cut garnish, two proteins below par)",
+          "Station: messy but functional (used pans on side, board with trim)",
+          "Sidework deep-clean task overdue (oven gaskets per the closing list)",
+          "Sani bucket: still wet but cloudy",
+          "Trash: 60% full"
+        ]
+      }
     },
     {
       "id": "tb-uj-cleaning-reset",
@@ -939,7 +1025,18 @@
           "description": "Saying 'I'll clean it after the rush' for items that are actively contaminating now.",
           "remediation": "Use the module hints, success criteria, and trainer observation standard before retrying."
         }
-      ]
+      ],
+      "stimulus": {
+        "kind": "station_state",
+        "contextHeader": "Mid-service. Tickets still firing but slower.",
+        "observations": [
+          "Three sauté pans stacked on the side of the station",
+          "Cutting board has trim and protein juice on it",
+          "Sanitizer cloth on the counter is visibly gray",
+          "Sani bucket: still wet, looks dirty",
+          "Two tickets currently working, one more on the rail"
+        ]
+      }
     },
     {
       "id": "tb-uj-assessment-gate",
@@ -1058,7 +1155,7 @@
   ],
   "author": "TopShelf Teaching Team",
   "createdAt": "2026-05-05T00:00:00.000Z",
-  "updatedAt": "2026-05-05T00:00:00.000Z",
+  "updatedAt": "2026-05-08T00:00:00.000Z",
   "signature": "sig-v1-ECDSA-P256-SHA256-cccd585bdc8bb40b321afad6c229156822d69f87e2fa27e1fe9525f12d61acd4",
   "signingKeyId": "key-dev-001",
   "schemaVersion": "1.0.0"

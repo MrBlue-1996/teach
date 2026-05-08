@@ -59,6 +59,31 @@ const STRUCTURED_ASSET_FIELDS = [
   },
 ];
 
+const PER_PACK_REQUIRED_STIMULUS: Record<string, ReadonlySet<string>> = {
+  'pack-uncle-julios-v1': new Set([
+    'tb-uj-tools-color-barriers',
+    'tb-uj-station-setup',
+    'tb-uj-line-readiness',
+    'tb-uj-ticket-flow-basics',
+    'tb-uj-downtime-decisions',
+    'tb-uj-cleaning-reset',
+  ]),
+};
+
+const GENERIC_STIMULUS_EXEMPT = new Set(['orientation-safety', 'assessment-gate']);
+
+const STIMULUS_KEYWORDS = [
+  /\bticket\b/i,
+  /\bhuddle\b/i,
+  /\byour station\b/i,
+  /\bstation has\b/i,
+  /\bstation is\b/i,
+  /\bthe board\b/i,
+  /\bmenu board\b/i,
+  /\border\b/i,
+  /\bexpo fires\b/i,
+];
+
 function expectedPackIdFromSourcePath(sourcePath: string): string | null {
   const normalizedPath = sourcePath.replace(/\\/g, '/');
   const fileName = normalizedPath.split('/').at(-1);
@@ -432,6 +457,35 @@ export class ContentPackValidator {
     }
 
     for (const block of pack.teachingBlocks) {
+      const requiredStimulusForPack = PER_PACK_REQUIRED_STIMULUS[pack.id];
+      if (requiredStimulusForPack?.has(block.id) === true) {
+        if (block.stimulus === undefined) {
+          errors.push({
+            code: 'STIMULUS_REQUIRED',
+            path: `teachingBlocks.${block.id}.stimulus`,
+            message:
+              'Challenge prompt references an external artifact, but no stimulus is attached.',
+            severity: 'error',
+          });
+        }
+      } else if (block.stimulus === undefined) {
+        const isExempt = Array.from(GENERIC_STIMULUS_EXEMPT).some((fragment) =>
+          block.id.includes(fragment)
+        );
+        if (!isExempt) {
+          const promptText = [block.concept, block.canonicalSolution, ...block.hints].join(' ');
+          if (STIMULUS_KEYWORDS.some((pattern) => pattern.test(promptText))) {
+            errors.push({
+              code: 'STIMULUS_REQUIRED',
+              path: `teachingBlocks.${block.id}.stimulus`,
+              message:
+                'Prompt appears to reference ticket/station/huddle/menu artifacts but no stimulus is attached.',
+              severity: 'error',
+            });
+          }
+        }
+      }
+
       if (pack.assetCatalog !== undefined) {
         if (block.title === undefined) {
           errors.push({

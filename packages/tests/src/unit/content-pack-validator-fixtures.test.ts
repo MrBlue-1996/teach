@@ -59,6 +59,11 @@ describe('fixture-backed content pack validation', () => {
       expectedCode: 'ORPHAN_FUNDAMENTAL',
       expectedMessage: 'not referenced',
     },
+    {
+      fileName: 'bad-missing-stimulus.json',
+      expectedCode: 'STIMULUS_REQUIRED',
+      expectedMessage: 'stimulus',
+    },
   ])(
     'rejects $fileName through the real validator',
     ({ fileName, expectedCode, expectedMessage }) => {

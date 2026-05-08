@@ -13,6 +13,7 @@ import {
   roleIdSchema,
   difficultyLevelSchema,
   contentTagSchema,
+  challengeStimulusSchema,
   minDeviceProfileSchema,
   surfaceVariantSchema,
   successCriteriaSchema,
@@ -221,6 +222,50 @@ describe('Object Schemas', () => {
       const error = { pattern: '', description: 'desc', remediation: 'fix' };
       expect(commonErrorSchema.safeParse(error).success).toBe(false);
     });
+  });
+});
+
+describe('challengeStimulusSchema', () => {
+  it('accepts ticket variant', () => {
+    const result = challengeStimulusSchema.safeParse({
+      kind: 'ticket',
+      table: 'TABLE 7',
+      items: [{ quantity: 1, name: 'Skirt Steak Fajitas', cookTimeSeconds: 720 }],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('accepts station_state variant', () => {
+    const result = challengeStimulusSchema.safeParse({
+      kind: 'station_state',
+      observations: ['Rail half-empty', 'Station messy'],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('accepts step_bank variant', () => {
+    const result = challengeStimulusSchema.safeParse({
+      kind: 'step_bank',
+      steps: ['stage tools', 'wash hands'],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects ticket with empty items', () => {
+    const result = challengeStimulusSchema.safeParse({
+      kind: 'ticket',
+      table: 'TABLE 7',
+      items: [],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('rejects unknown stimulus kind', () => {
+    const result = challengeStimulusSchema.safeParse({
+      kind: 'video',
+      url: 'https://example.com',
+    });
+    expect(result.success).toBe(false);
   });
 });
 

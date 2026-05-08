@@ -13,8 +13,9 @@ import { fileURLToPath } from 'url';
 
 import { validateContentPack } from '../validation/content-validator.js';
 
-type ValidationIssue = {
-  file: string;
+export type ValidationIssue = {
+  code: string;
+  path: string;
   message: string;
 };
 
@@ -64,14 +65,74 @@ async function collectJsonFiles(rootDir: string): Promise<string[]> {
   return files.sort();
 }
 
-function isContentPackManifestFile(absoluteFile: string): boolean {
-  const parentDir = path.dirname(absoluteFile);
-  const fileName = path.basename(absoluteFile);
+function toRepoRelative(targetPath: string): string {
+  return path.relative(repoRoot, targetPath);
+}
 
-  return (
-    parentDir === path.join(repoRoot, 'content-packs') &&
-    fileName.startsWith(CONTENT_PACK_FILE_PREFIX)
-  );
+function toIssuePath(targetPath: string): string {
+  const relative = toRepoRelative(targetPath);
+  return relative.startsWith('..') ? targetPath : relative;
+}
+
+async function resolveJsonFiles(inputPaths: readonly string[]): Promise<string[]> {
+  const discoveredJsonFiles = new Set<string>();
+
+  for (const inputPath of inputPaths) {
+    const absoluteInput = path.resolve(inputPath);
+    if (!(await pathExists(absoluteInput))) {
+      continue;
+    }
+
+    // CLI intentionally stats validated local input paths.
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
+    const stat = await fs.stat(absoluteInput);
+
+    if (stat.isDirectory()) {
+      for (const file of await collectJsonFiles(absoluteInput)) {
+        discoveredJsonFiles.add(file);
+      }
+      continue;
+    }
+
+    if (stat.isFile() && absoluteInput.endsWith('.json')) {
+      discoveredJsonFiles.add(absoluteInput);
+    }
+  }
+
+  return Array.from(discoveredJsonFiles).sort();
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
+function looksLikeContentPackManifest(value: unknown): value is { id?: unknown } {
+  if (!isRecord(value)) {
+    return false;
+  }
+
+  return Array.isArray(value.teachingBlocks);
+}
+
+function validateFilenameIdMatch(absoluteFile: string, parsed: unknown): ValidationIssue[] {
+  const baseName = path.basename(absoluteFile, '.json');
+  if (!baseName.startsWith(CONTENT_PACK_FILE_PREFIX) || !isRecord(parsed)) {
+    return [];
+  }
+
+  const expectedId = `pack-${baseName.replace(/^content_pack_/, '').replace(/_/g, '-')}`;
+  const actualId = parsed.id;
+  if (typeof actualId === 'string' && actualId === expectedId) {
+    return [];
+  }
+
+  return [
+    {
+      code: 'FILENAME_ID_MISMATCH',
+      path: toIssuePath(absoluteFile),
+      message: `filename implies id "${expectedId}" but pack.id is "${String(actualId)}"`,
+    },
+  ];
 }
 
 async function validateRequiredFiles(): Promise<ValidationIssue[]> {
@@ -80,7 +141,8 @@ async function validateRequiredFiles(): Promise<ValidationIssue[]> {
   for (const requiredFile of REQUIRED_PACKAGE_FILES) {
     if (!(await pathExists(requiredFile))) {
       issues.push({
-        file: path.relative(repoRoot, requiredFile),
+        code: 'REQUIRED_FILE_MISSING',
+        path: toIssuePath(requiredFile),
         message: 'Required package entry file is missing.',
       });
     }
@@ -89,16 +151,79 @@ async function validateRequiredFiles(): Promise<ValidationIssue[]> {
   return issues;
 }
 
-async function main(): Promise<void> {
+type ValidationArtifactsResult = {
+  issues: ValidationIssue[];
+  skippedFiles: string[];
+  validatedPackCount: number;
+};
+
+export async function validateContentPackArtifacts(
+  inputPaths: readonly string[]
+): Promise<ValidationArtifactsResult> {
   const issues: ValidationIssue[] = [];
-  const discoveredJsonFiles = new Set<string>();
   const skippedFiles: string[] = [];
   let validatedPackCount = 0;
 
   issues.push(...(await validateRequiredFiles()));
 
+  const jsonFiles = await resolveJsonFiles(inputPaths);
+  if (jsonFiles.length === 0) {
+    return { issues, skippedFiles, validatedPackCount };
+  }
+
+  for (const absoluteFile of jsonFiles) {
+    const issuePath = toIssuePath(absoluteFile);
+    const baseName = path.basename(absoluteFile, '.json');
+    const isManifestFileName = baseName.startsWith(CONTENT_PACK_FILE_PREFIX);
+
+    if (!isManifestFileName) {
+      skippedFiles.push(issuePath);
+      continue;
+    }
+
+    try {
+      // CLI intentionally reads discovered files from validated local paths.
+      // eslint-disable-next-line security/detect-non-literal-fs-filename
+      const raw = await fs.readFile(absoluteFile, 'utf8');
+      const parsed: unknown = JSON.parse(raw);
+
+      if (!looksLikeContentPackManifest(parsed)) {
+        skippedFiles.push(issuePath);
+        continue;
+      }
+
+      const result = validateContentPack(parsed, { sourcePath: issuePath });
+      if (!result.valid) {
+        for (const error of result.errors) {
+          issues.push({
+            code: error.code,
+            path: issuePath,
+            message: `${error.code} at ${error.path || '<root>'}: ${error.message}`,
+          });
+        }
+      } else {
+        validatedPackCount += 1;
+      }
+
+      issues.push(...validateFilenameIdMatch(absoluteFile, parsed));
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      issues.push({
+        code: 'INVALID_JSON',
+        path: issuePath,
+        message: `Invalid JSON: ${message}`,
+      });
+    }
+  }
+
+  return { issues, skippedFiles, validatedPackCount };
+}
+
+async function main(): Promise<void> {
+  const args = process.argv.slice(2);
+  const candidateInputs = args.length > 0 ? args : CANDIDATE_DIRECTORIES;
   const existingDirectories: string[] = [];
-  for (const candidate of CANDIDATE_DIRECTORIES) {
+  for (const candidate of candidateInputs) {
     if (await pathExists(candidate)) {
       existingDirectories.push(candidate);
     }
@@ -107,55 +232,17 @@ async function main(): Promise<void> {
   if (existingDirectories.length === 0) {
     console.warn(
       '[validate:packs] No content-pack directories found. Checked:',
-      CANDIDATE_DIRECTORIES.map((dir) => path.relative(repoRoot, dir)).join(', ')
+      candidateInputs.map((dir) => path.relative(repoRoot, path.resolve(dir))).join(', ')
     );
     process.exit(0);
   }
 
-  for (const directory of existingDirectories) {
-    const jsonFiles = await collectJsonFiles(directory);
-    for (const file of jsonFiles) {
-      discoveredJsonFiles.add(file);
-    }
-  }
+  const { issues, skippedFiles, validatedPackCount } =
+    await validateContentPackArtifacts(existingDirectories);
 
-  if (discoveredJsonFiles.size === 0) {
+  if (validatedPackCount === 0 && skippedFiles.length === 0 && issues.length === 0) {
     console.warn('[validate:packs] No JSON content-pack artifacts found. Validation skipped.');
     process.exit(0);
-  }
-
-  for (const absoluteFile of Array.from(discoveredJsonFiles).sort()) {
-    const relativeFile = path.relative(repoRoot, absoluteFile);
-
-    if (!isContentPackManifestFile(absoluteFile)) {
-      skippedFiles.push(relativeFile);
-      continue;
-    }
-
-    try {
-      // CLI intentionally reads discovered files from a validated local repository path.
-      // eslint-disable-next-line security/detect-non-literal-fs-filename
-      const raw = await fs.readFile(absoluteFile, 'utf8');
-      const parsed: unknown = JSON.parse(raw);
-
-      const result = validateContentPack(parsed, { sourcePath: relativeFile });
-      if (!result.valid) {
-        for (const error of result.errors) {
-          issues.push({
-            file: relativeFile,
-            message: `${error.code} at ${error.path || '<root>'}: ${error.message}`,
-          });
-        }
-      } else {
-        validatedPackCount += 1;
-      }
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      issues.push({
-        file: relativeFile,
-        message: `Invalid JSON: ${message}`,
-      });
-    }
   }
 
   if (validatedPackCount === 0 && issues.length === 0) {
@@ -168,7 +255,7 @@ async function main(): Promise<void> {
   if (issues.length > 0) {
     console.error('[validate:packs] Validation failed.');
     for (const issue of issues) {
-      console.error(` - ${issue.file}: ${issue.message}`);
+      console.error(` - ${issue.path}: ${issue.message}`);
     }
     if (skippedFiles.length > 0) {
       console.error(

@@ -87,6 +87,104 @@ export interface TriggerRule {
   readonly unit?: 'seconds';
 }
 
+/** Ticket-line item shown in a ticket stimulus */
+export interface TicketStimulusItem {
+  /** Item quantity */
+  readonly quantity: number;
+  /** Item name */
+  readonly name: string;
+  /** Optional item modifiers */
+  readonly modifiers?: readonly string[];
+  /** Optional prep/cook time in seconds */
+  readonly cookTimeSeconds?: number;
+}
+
+/** Ticket-style challenge stimulus */
+export interface TicketStimulus {
+  /** Discriminator */
+  readonly kind: 'ticket';
+  /** Ticket/table identifier */
+  readonly table: string;
+  /** Optional guest count */
+  readonly guests?: number;
+  /** Optional server name */
+  readonly server?: string;
+  /** Optional service time label */
+  readonly time?: string;
+  /** Ticket items */
+  readonly items: readonly TicketStimulusItem[];
+  /** Optional notes */
+  readonly notes?: string;
+}
+
+/** Station-state challenge stimulus */
+export interface StationStateStimulus {
+  /** Discriminator */
+  readonly kind: 'station_state';
+  /** Optional context header */
+  readonly contextHeader?: string;
+  /** Optional window in minutes */
+  readonly windowMinutes?: number;
+  /** Station observations */
+  readonly observations: readonly string[];
+}
+
+/** Huddle-notes challenge stimulus */
+export interface HuddleNotesStimulus {
+  /** Discriminator */
+  readonly kind: 'huddle_notes';
+  /** Optional header */
+  readonly header?: string;
+  /** Notes list */
+  readonly notes: readonly {
+    readonly label: string;
+    readonly detail: string;
+  }[];
+}
+
+/** Menu-board challenge stimulus */
+export interface MenuBoardStimulus {
+  /** Discriminator */
+  readonly kind: 'menu_board';
+  /** Optional header */
+  readonly header?: string;
+  /** Optional featured items */
+  readonly features?: readonly string[];
+  /** Optional 86 item list */
+  readonly eightySixItems?: readonly string[];
+  /** Optional notes */
+  readonly notes?: readonly string[];
+}
+
+/** Step-bank challenge stimulus */
+export interface StepBankStimulus {
+  /** Discriminator */
+  readonly kind: 'step_bank';
+  /** Optional instruction */
+  readonly instruction?: string;
+  /** Ordered steps */
+  readonly steps: readonly string[];
+}
+
+/** Plain-text challenge stimulus */
+export interface PlainTextStimulus {
+  /** Discriminator */
+  readonly kind: 'plain_text';
+  /** Whether text is monospaced */
+  readonly monospace?: boolean;
+  /** Text lines */
+  readonly lines: readonly string[];
+}
+
+/** Structured stimulus for challenge prompts */
+export type ChallengeStimulus =
+  | TicketStimulus
+  | StationStateStimulus
+  | HuddleNotesStimulus
+  | MenuBoardStimulus
+  | StepBankStimulus
+  | PlainTextStimulus;
+
 /** Structured module links for semantic pack validation */
 export interface ModuleLinks {
   /** Referenced fundamentals */
@@ -157,6 +255,8 @@ export interface TeachingBlock {
   readonly mode: LearningMode;
   /** Optional narrative content body */
   readonly content?: string;
+  /** Optional structured challenge stimulus */
+  readonly stimulus?: ChallengeStimulus;
   /** Canonical solution shown first (Solve-First pedagogy) */
   readonly canonicalSolution: string;
   /** Explanation of the canonical solution */

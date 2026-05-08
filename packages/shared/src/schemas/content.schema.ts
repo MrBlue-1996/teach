@@ -86,6 +86,98 @@ export const triggerRuleSchema = z
   })
   .strict();
 
+/**
+ * Structured stimulus rendered above prompt text. Ensures challenge prompts
+ * that reference artifacts (ticket/huddle/station/etc.) are solvable as displayed.
+ */
+export const ticketStimulusSchema = z
+  .object({
+    kind: z.literal('ticket'),
+    table: z.string().min(1).max(40),
+    guests: z.number().int().min(1).max(99).optional(),
+    server: z.string().min(1).max(40).optional(),
+    time: z.string().min(1).max(20).optional(),
+    items: z
+      .array(
+        z
+          .object({
+            quantity: z.number().int().min(1).max(99),
+            name: z.string().min(1).max(120),
+            modifiers: z.array(z.string().min(1).max(120)).readonly().optional(),
+            cookTimeSeconds: z.number().int().min(15).max(7200).optional(),
+          })
+          .strict()
+      )
+      .min(1)
+      .max(20)
+      .readonly(),
+    notes: z.string().max(200).optional(),
+  })
+  .strict();
+
+export const stationStateStimulusSchema = z
+  .object({
+    kind: z.literal('station_state'),
+    contextHeader: z.string().max(200).optional(),
+    windowMinutes: z.number().int().min(1).max(240).optional(),
+    observations: z.array(z.string().min(1).max(200)).min(1).max(15).readonly(),
+  })
+  .strict();
+
+export const huddleNotesStimulusSchema = z
+  .object({
+    kind: z.literal('huddle_notes'),
+    header: z.string().max(120).optional(),
+    notes: z
+      .array(
+        z
+          .object({
+            label: z.string().min(1).max(40),
+            detail: z.string().min(1).max(200),
+          })
+          .strict()
+      )
+      .min(1)
+      .max(15)
+      .readonly(),
+  })
+  .strict();
+
+export const menuBoardStimulusSchema = z
+  .object({
+    kind: z.literal('menu_board'),
+    header: z.string().max(120).optional(),
+    features: z.array(z.string().min(1).max(200)).readonly().optional(),
+    eightySixItems: z.array(z.string().min(1).max(120)).readonly().optional(),
+    notes: z.array(z.string().min(1).max(200)).readonly().optional(),
+  })
+  .strict();
+
+export const stepBankStimulusSchema = z
+  .object({
+    kind: z.literal('step_bank'),
+    instruction: z.string().min(1).max(200).optional(),
+    steps: z.array(z.string().min(1).max(200)).min(2).max(15).readonly(),
+  })
+  .strict();
+
+export const plainTextStimulusSchema = z
+  .object({
+    kind: z.literal('plain_text'),
+    monospace: z.boolean().optional(),
+    lines: z.array(z.string().max(200)).min(1).max(30).readonly(),
+  })
+  .strict();
+
+export const challengeStimulusSchema = z.discriminatedUnion('kind', [
+  ticketStimulusSchema,
+  stationStateStimulusSchema,
+  huddleNotesStimulusSchema,
+  menuBoardStimulusSchema,
+  stepBankStimulusSchema,
+  plainTextStimulusSchema,
+]);
+
 /** Structured module links */
 export const moduleLinksSchema = z
   .object({
@@ -200,6 +292,7 @@ export const teachingBlockSchema = z
     successCriteria: successCriteriaSchema,
     deviceConstraints: deviceConstraintsSchema.optional(),
     moduleLinks: moduleLinksSchema.optional(),
+    stimulus: challengeStimulusSchema.optional(),
     hints: z.array(z.string().min(1).max(1000)).readonly(),
     commonErrors: z.array(commonErrorSchema).readonly(),
   })

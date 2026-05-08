@@ -67,7 +67,7 @@ describe('shipped content pack manifests', () => {
   it("keeps the Uncle Julio's pack in demo mode", () => {
     const pack = loadContentPack('content_pack_uncle_julios_v1.json') as PackShape;
 
-    expect(pack.version).toBe('0.1.0-demo');
+    expect(pack.version).toBe('0.1.1');
     expect(pack.integrity?.releaseMode).toBe('demo');
     expect(pack.integrity?.checksum ?? null).toBeNull();
   });

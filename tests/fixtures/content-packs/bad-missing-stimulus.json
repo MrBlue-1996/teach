@@ -1,0 +1,58 @@
+{
+  "id": "pack-uncle-julios-v1",
+  "name": "Fixture Missing Stimulus",
+  "version": "1.0.0",
+  "description": "Fixture that intentionally omits required stimulus for a strict uncle-julios block.",
+  "tags": ["required", "fixtures"],
+  "roleMappings": ["badge-fixture-role-v1"],
+  "difficulty": "beginner",
+  "minDeviceProfile": {
+    "ramMb": 512,
+    "networkKbps": 128,
+    "requiresWebGL": false,
+    "requiresWebGPU": false,
+    "requiresWasm": false
+  },
+  "teachingBlocks": [
+    {
+      "id": "tb-uj-ticket-flow-basics",
+      "concept": "Expo fires a ticket and asks for timing.",
+      "mode": "L0",
+      "canonicalSolution": "Acknowledge, anchor on longest cook, and stage remaining items to land together.",
+      "explanation": "This challenge references a ticket but intentionally omits stimulus for validator coverage.",
+      "surfaceVariants": [
+        {
+          "id": "variant-a",
+          "description": "Variant A",
+          "data": {
+            "prompt": "Quick challenge prompt"
+          }
+        },
+        {
+          "id": "variant-b",
+          "description": "Variant B",
+          "data": {
+            "prompt": "Quick challenge prompt alternate"
+          }
+        }
+      ],
+      "timeBudgetSeconds": 120,
+      "difficulty": "beginner",
+      "prerequisites": [],
+      "successCriteria": {
+        "minCorrectnessScore": 0.7,
+        "maxTimeSeconds": 240,
+        "maxRetries": 2,
+        "requiresExplanation": false
+      },
+      "hints": ["Anchor on longest item first."],
+      "commonErrors": []
+    }
+  ],
+  "author": "Fixture Test Author",
+  "createdAt": "2026-05-08T00:00:00.000Z",
+  "updatedAt": "2026-05-08T00:00:00.000Z",
+  "signature": "sig-v1-ECDSA-P256-SHA256-fixturemissingstimulus",
+  "signingKeyId": "key-fixture-001",
+  "schemaVersion": "1.0.0"
+}

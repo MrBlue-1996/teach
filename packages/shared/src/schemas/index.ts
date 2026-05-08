@@ -41,6 +41,7 @@ export {
   roleIdSchema,
   difficultyLevelSchema,
   contentTagSchema,
+  challengeStimulusSchema,
   minDeviceProfileSchema,
   surfaceVariantSchema,
   successCriteriaSchema,
