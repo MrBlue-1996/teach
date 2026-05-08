@@ -30,7 +30,7 @@ export interface ValidationOptions {
   readonly sourcePath?: string;
 }
 
-const OFFICIAL_CLAIM_PATTERN = /official uncle julio'?s?/i;
+const OFFICIAL_CLAIM_PATTERN = /official uncle julio[\u2019']?s?/i;
 
 const STRUCTURED_ASSET_FIELDS = [
   {
@@ -473,7 +473,26 @@ export class ContentPackValidator {
           block.id.includes(fragment)
         );
         if (!isExempt) {
-          const promptText = [block.concept, block.canonicalSolution, ...block.hints].join(' ');
+          const surfacePrompts: string[] = [];
+          for (const variant of block.surfaceVariants) {
+            const data = variant.data;
+            if (!isRecord(data)) {
+              continue;
+            }
+
+            const prompt = getRecordValue(data, 'prompt');
+            if (typeof prompt === 'string') {
+              surfacePrompts.push(prompt);
+            }
+          }
+
+          const promptText = [
+            block.concept,
+            block.canonicalSolution,
+            block.explanation,
+            ...block.hints,
+            ...surfacePrompts,
+          ].join(' ');
           if (STIMULUS_KEYWORDS.some((pattern) => pattern.test(promptText))) {
             errors.push({
               code: 'STIMULUS_REQUIRED',

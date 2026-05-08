@@ -1,0 +1,58 @@
+{
+  "id": "pack-bad-official-claim-curly-v1",
+  "name": "Fixture Curly Official Claim",
+  "version": "1.0.0",
+  "description": "This pack claims official Uncle Julio’s alignment without authorized source references.",
+  "tags": ["required", "fixtures"],
+  "roleMappings": ["badge-fixture-role-v1"],
+  "difficulty": "beginner",
+  "minDeviceProfile": {
+    "ramMb": 512,
+    "networkKbps": 128,
+    "requiresWebGL": false,
+    "requiresWebGPU": false,
+    "requiresWasm": false
+  },
+  "teachingBlocks": [
+    {
+      "id": "tb-fixture-curly-official-claim-001",
+      "concept": "Use the fallback workflow for a delayed prep station.",
+      "mode": "L0",
+      "canonicalSolution": "Prioritize safety checks and reorder prep tasks by urgency.",
+      "explanation": "No authorized source data is attached in this fixture.",
+      "surfaceVariants": [
+        {
+          "id": "variant-a",
+          "description": "Variant A",
+          "data": {
+            "prompt": "Respond to the delayed prep workflow."
+          }
+        },
+        {
+          "id": "variant-b",
+          "description": "Variant B",
+          "data": {
+            "prompt": "Alternate phrasing of the same challenge."
+          }
+        }
+      ],
+      "timeBudgetSeconds": 180,
+      "difficulty": "beginner",
+      "prerequisites": [],
+      "successCriteria": {
+        "minCorrectnessScore": 0.7,
+        "maxTimeSeconds": 240,
+        "maxRetries": 2,
+        "requiresExplanation": false
+      },
+      "hints": ["Lead with safety, then sequence prep."],
+      "commonErrors": []
+    }
+  ],
+  "author": "Fixture Test Author",
+  "createdAt": "2026-05-08T00:00:00.000Z",
+  "updatedAt": "2026-05-08T00:00:00.000Z",
+  "signature": "sig-v1-ECDSA-P256-SHA256-fixturecurlyclaim",
+  "signingKeyId": "key-fixture-001",
+  "schemaVersion": "1.0.0"
+}

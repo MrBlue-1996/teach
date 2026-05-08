@@ -50,6 +50,11 @@ describe('fixture-backed content pack validation', () => {
       expectedMessage: 'Official Uncle Julio',
     },
     {
+      fileName: 'bad-official-claim-curly.json',
+      expectedCode: 'UNAUTHORIZED_OFFICIAL_CLAIM',
+      expectedMessage: 'Official Uncle Julio',
+    },
+    {
       fileName: 'bad-response-cap.json',
       expectedCode: 'RESPONSE_CAP_EXCEEDED',
       expectedMessage: 'maxResponseChars',

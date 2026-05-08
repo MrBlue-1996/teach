@@ -66,3 +66,6 @@ package-lock.json
 .github/state/queue.md
 .github/state/decisions.md
 .github/state/blockers.md
+
+# Uploaded external patch bundles
+zip/

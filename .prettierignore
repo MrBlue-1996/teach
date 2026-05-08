@@ -23,3 +23,6 @@ content-packs/**/*.sig
 
 # WASM binaries
 *.wasm
+
+# Uploaded external patch bundles (not source-of-truth repo code)
+zip/
