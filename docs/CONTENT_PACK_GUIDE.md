@@ -34,6 +34,11 @@ Every manifest must include these fields:
 
 Common optional fields include `slug`, `title`, `domain`, `certificationTarget`, `chromebookCompatible`, `targetDeviceProfile`, `status`, and `metadata`.
 
+Filename and ID consistency is enforced for shipped manifests:
+
+- `content_pack_uncle_julios_v1.json` must declare `"id": "pack-uncle-julios-v1"`
+- mismatches produce `FILENAME_ID_MISMATCH`
+
 ## Required Teaching Block Fields
 
 Every teaching block must include these fields:
@@ -67,6 +72,7 @@ Structured packs may additionally use:
 - block-level `objective`
 - block-level `deviceConstraints`
 - block-level `moduleLinks`
+- block-level `stimulus`
 
 When `assetCatalog` is present, the validator also enforces these rules:
 
@@ -155,11 +161,17 @@ Or run the package-local command directly:
 pnpm --filter @topshelf/content-authoring run validate:packs
 ```
 
+You can also pass explicit file and/or directory paths:
+
+```bash
+pnpm --filter @topshelf/content-authoring run validate:packs -- content-packs/content_pack_uncle_julios_v1.json
+```
+
 The validator only treats top-level `content_pack_*.json` files as shipped manifests. Other JSON files under `content-packs/` are skipped on purpose.
 
 ## Packaging
 
-The Uncle Julio's manifest is currently a demo-mode artifact.
+The Uncle Julio's manifest (`version: 0.1.1`) is currently a demo-mode artifact.
 
 ```bash
 pnpm checksum:uncle-julios

@@ -7,7 +7,6 @@
 import type { Metadata } from 'next';
 import { Bell, CircleCheck, Info, TriangleAlert } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 
 export const metadata: Metadata = {
   title: 'Notifications',
@@ -51,7 +50,9 @@ export default function NotificationsPage() {
             Keep up with account updates and learning progress reminders.
           </p>
         </div>
-        <Button variant="outline">Mark all read</Button>
+        <p className="rounded-md border bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
+          Read-only demo feed: {notifications.length} items
+        </p>
       </header>
 
       <div className="space-y-3">
