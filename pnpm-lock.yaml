@@ -213,10 +213,10 @@ importers:
     dependencies:
       '@hono/node-server':
         specifier: ^1.8.0
-        version: 1.19.14(hono@4.12.17)
+        version: 1.19.14(hono@4.12.18)
       '@hono/zod-validator':
         specifier: ^0.7.6
-        version: 0.7.6(hono@4.12.17)(zod@3.25.76)
+        version: 0.7.6(hono@4.12.18)(zod@3.25.76)
       '@topshelf/auth':
         specifier: workspace:*
         version: link:../auth
@@ -242,8 +242,8 @@ importers:
         specifier: workspace:*
         version: link:../shared
       hono:
-        specifier: ^4.0.0
-        version: 4.12.17
+        specifier: ^4.12.18
+        version: 4.12.18
       ioredis:
         specifier: ^5.10.1
         version: 5.10.1
@@ -3432,8 +3432,8 @@ packages:
   help-me@5.0.0:
     resolution: {integrity: sha512-7xgomUX6ADmcYzFik0HzAxh/73YlKR9bmFzf51CZwR+b6YtzU2m0u49hQCqV6SvlqIqsaxovfwdvbnsw3b/zpg==}
 
-  hono@4.12.17:
-    resolution: {integrity: sha512-FbJJNb/XgX7YW0hX/V8w5oYLztKEsRLykCMZWt1WdLtsfjzMvmoqWBA4H4t5norinq8/rh20oiZYr+WSl4UzAQ==}
+  hono@4.12.18:
+    resolution: {integrity: sha512-RWzP96k/yv0PQfyXnWjs6zot20TqfpfsNXhOnev8d1InAxubW93L11/oNUc3tQqn2G0bSdAOBpX+2uDFHV7kdQ==}
     engines: {node: '>=16.9.0'}
 
   html-encoding-sniffer@6.0.0:
@@ -5592,13 +5592,13 @@ snapshots:
 
   '@fontsource/montserrat@5.2.8': {}
 
-  '@hono/node-server@1.19.14(hono@4.12.17)':
+  '@hono/node-server@1.19.14(hono@4.12.18)':
     dependencies:
-      hono: 4.12.17
+      hono: 4.12.18
 
-  '@hono/zod-validator@0.7.6(hono@4.12.17)(zod@3.25.76)':
+  '@hono/zod-validator@0.7.6(hono@4.12.18)(zod@3.25.76)':
     dependencies:
-      hono: 4.12.17
+      hono: 4.12.18
       zod: 3.25.76
 
   '@hookform/resolvers@3.10.0(react-hook-form@7.75.0(react@19.2.5))':
@@ -7580,7 +7580,7 @@ snapshots:
 
   help-me@5.0.0: {}
 
-  hono@4.12.17: {}
+  hono@4.12.18: {}
 
   html-encoding-sniffer@6.0.0:
     dependencies:
