@@ -73,7 +73,7 @@ export const contentAuthorSchema = z
 /** Device constraints for authored teaching responses */
 export const deviceConstraintsSchema = z
   .object({
-    maxResponseChars: z.number().int().min(1).max(10000),
+    maxResponseChars: z.number().int().min(200).max(50000),
   })
   .strict();
 

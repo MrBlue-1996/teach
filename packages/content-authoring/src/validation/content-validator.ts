@@ -30,7 +30,7 @@ export interface ValidationOptions {
   readonly sourcePath?: string;
 }
 
-const OFFICIAL_CLAIM_PATTERN = /official uncle julio[\u2019']?s?/i;
+const OFFICIAL_CLAIM_PATTERN = /official\s+uncle\s+julio[\u2019']?s/i;
 
 const STRUCTURED_ASSET_FIELDS = [
   {
