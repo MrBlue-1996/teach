@@ -19,7 +19,9 @@ import { GradeBadge } from '@/components/kitchen/GradeBadge';
 import { RecipeCard } from '@/components/kitchen/RecipeCard';
 import { SafetyAlert } from '@/components/kitchen/SafetyAlert';
 import { TempGauge } from '@/components/kitchen/TempGauge';
+import { StimulusRenderer } from '@/components/kitchen/stimuli/StimulusRenderer';
 import { getPack } from '@/lib/kitchen-packs';
+import { getSolveStimulus } from '@/lib/kitchen-stimuli';
 
 export default function ChallengeRunnerPage() {
   const params = useParams<{ slug: string }>();
@@ -57,16 +59,23 @@ export default function ChallengeRunnerPage() {
         </span>
       </header>
 
-      <PhaseView config={config} ch={ch} onExit={() => router.push('/kitchen')} />
+      <PhaseView
+        slug={params.slug}
+        config={config}
+        ch={ch}
+        onExit={() => router.push('/kitchen')}
+      />
     </main>
   );
 }
 
 function PhaseView({
+  slug,
   config,
   ch,
   onExit,
 }: {
+  slug: string;
   config: ChallengeConfig;
   ch: ReturnType<typeof useChallenge>;
   onExit: () => void;
@@ -77,7 +86,7 @@ function PhaseView({
       return <SetupView config={config} onStart={ch.start} />;
     case ChallengePhase.SOLVE:
     case ChallengePhase.VERIFY:
-      return <SolveView config={config} ch={ch} />;
+      return <SolveView slug={slug} config={config} ch={ch} />;
     case ChallengePhase.CONSEQUENCE:
       return <ConsequenceView ch={ch} />;
     case ChallengePhase.TEACH:
@@ -135,25 +144,42 @@ function SetupView({ config, onStart }: { config: ChallengeConfig; onStart: () =
 // ---------- SOLVE ----------
 
 function SolveView({
+  slug,
   config,
   ch,
 }: {
+  slug: string;
   config: ChallengeConfig;
   ch: ReturnType<typeof useChallenge>;
 }) {
+  const stimulus = useMemo(() => getSolveStimulus(slug, config), [slug, config]);
+
+  let solveContent: React.ReactNode;
   switch (config.type) {
     case ChallengeType.RUSH_HOUR:
-      return <RushHourView config={config} ch={ch} />;
+      solveContent = <RushHourView config={config} ch={ch} />;
+      break;
     case ChallengeType.TEMP_CHECK:
-      return <TempCheckView config={config} ch={ch} />;
+      solveContent = <TempCheckView config={config} ch={ch} />;
+      break;
     case ChallengeType.GHOST_RECIPE:
     case ChallengeType.STATION_SETUP:
     case ChallengeType.INVENTORY_SCRAMBLE:
     case ChallengeType.LABOR_PREP:
     case ChallengeType.HAZARD_SCAN:
     case ChallengeType.MOCK_IMPOSSIBLE:
-      return <SimpleSolveView config={config} ch={ch} />;
+      solveContent = <SimpleSolveView config={config} ch={ch} />;
+      break;
+    default:
+      solveContent = null;
   }
+
+  return (
+    <div className="flex flex-col gap-4">
+      {stimulus && <StimulusRenderer stimulus={stimulus} />}
+      {solveContent}
+    </div>
+  );
 }
 
 function RushHourView({
