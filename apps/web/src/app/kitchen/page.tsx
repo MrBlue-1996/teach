@@ -16,6 +16,7 @@ import {
   AlertTriangle,
   Star,
   BookOpen,
+  Smartphone,
 } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
@@ -344,6 +345,13 @@ export default function KitchenDashboardPage() {
             <button className="btn-action btn-ghost flex w-full items-center justify-center gap-3">
               <BookOpen className="h-6 w-6" />
               Recipe Book
+            </button>
+          </Link>
+
+          <Link href="/kitchen/preview">
+            <button className="btn-action btn-ghost flex w-full items-center justify-center gap-3">
+              <Smartphone className="h-6 w-6" />
+              Phone Preview
             </button>
           </Link>
         </div>
