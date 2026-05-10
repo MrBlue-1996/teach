@@ -12,6 +12,7 @@
     "test:integration": "vitest run src/integration",
     "test:parity": "vitest run src/parity",
     "test:e2e": "playwright test",
+    "test:e2e:phone": "playwright test --project=pixel-7",
     "test:e2e:ui": "playwright test --ui",
     "lint": "eslint src",
     "typecheck": "tsc --noEmit"
