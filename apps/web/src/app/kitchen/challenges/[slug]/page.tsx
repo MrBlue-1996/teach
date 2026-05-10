@@ -313,13 +313,6 @@ function SimpleSolveView({
       </header>
       <p>{config.briefing}</p>
       <div className="generic-solve__actions">
-        <button
-          type="button"
-          className="btn-action btn-safe"
-          onClick={() => ch.logEvent(EventType.SEQUENCE_STEP_DONE, {})}
-        >
-          Mark step done
-        </button>
         <button type="button" className="btn-action btn-primary" onClick={ch.endSolve}>
           Submit
         </button>
@@ -400,9 +393,6 @@ function TeachView({
       <div className="challenge-teach__actions">
         <button type="button" className="btn-action btn-primary" onClick={ch.toVerify}>
           Prove it — verify run
-        </button>
-        <button type="button" className="btn-action btn-ghost" onClick={ch.toMastery}>
-          Skip to mastery
         </button>
       </div>
     </section>

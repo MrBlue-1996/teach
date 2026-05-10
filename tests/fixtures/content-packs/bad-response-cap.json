@@ -19,7 +19,7 @@
       "concept": "Response Cap Guardrail",
       "mode": "L0",
       "canonicalSolution": "echo 'cap fixture'",
-      "explanation": "This explanation is intentionally longer than the configured character cap so the validator rejects it.",
+      "explanation": "This explanation is intentionally very long so it exceeds the configured character cap while still passing schema bounds. It includes additional detail about queue balancing, handoff timing, station readiness checks, and prioritization decisions to ensure the text length remains above two hundred characters for the fixture assertion.",
       "surfaceVariants": [
         {
           "id": "variant-a",
@@ -46,7 +46,7 @@
         "requiresExplanation": false
       },
       "deviceConstraints": {
-        "maxResponseChars": 40
+        "maxResponseChars": 200
       },
       "hints": ["Look at the cap.", "Then compare it with the explanation length."],
       "commonErrors": []

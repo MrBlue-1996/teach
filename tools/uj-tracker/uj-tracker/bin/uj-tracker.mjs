@@ -102,7 +102,10 @@ function parseBlock(lines, startLine, baseIndent) {
   let i = startLine;
   while (i < lines.length) {
     const l = lines[i];
-    if (l.trim() === '' || l.trim().startsWith('#')) { i++; continue; }
+    if (l.trim() === '' || l.trim().startsWith('#')) {
+      i++;
+      continue;
+    }
     const indent = l.match(/^(\s*)/)[1].length;
     if (indent < baseIndent) return { value: null, nextLine: i };
     if (l.trim().startsWith('- ')) {
@@ -119,7 +122,10 @@ function parseSequence(lines, startLine, baseIndent) {
   let i = startLine;
   while (i < lines.length) {
     const l = lines[i];
-    if (l.trim() === '' || l.trim().startsWith('#')) { i++; continue; }
+    if (l.trim() === '' || l.trim().startsWith('#')) {
+      i++;
+      continue;
+    }
     const indent = l.match(/^(\s*)/)[1].length;
     if (indent < baseIndent) break;
     if (indent !== baseIndent || !l.trim().startsWith('- ')) break;
@@ -140,13 +146,22 @@ function parseMapping(lines, startLine, baseIndent) {
   let i = startLine;
   while (i < lines.length) {
     const l = lines[i];
-    if (l.trim() === '' || l.trim().startsWith('#')) { i++; continue; }
+    if (l.trim() === '' || l.trim().startsWith('#')) {
+      i++;
+      continue;
+    }
     const indent = l.match(/^(\s*)/)[1].length;
     if (indent < baseIndent) break;
-    if (indent > baseIndent) { i++; continue; }
+    if (indent > baseIndent) {
+      i++;
+      continue;
+    }
     // Parse "key: value" or "key:" + nested block
     const m = l.match(/^\s*([^:]+):\s*(.*)$/);
-    if (!m) { i++; continue; }
+    if (!m) {
+      i++;
+      continue;
+    }
     const key = m[1].trim();
     const inlineVal = m[2];
     if (inlineVal === '' || inlineVal === undefined) {
@@ -161,7 +176,11 @@ function parseMapping(lines, startLine, baseIndent) {
       const buf = [];
       while (i < lines.length) {
         const li = lines[i];
-        if (li.trim() === '') { buf.push(''); i++; continue; }
+        if (li.trim() === '') {
+          buf.push('');
+          i++;
+          continue;
+        }
         const ind = li.match(/^(\s*)/)[1].length;
         if (ind < childIndent) break;
         buf.push(li.substring(childIndent));
@@ -187,7 +206,11 @@ function parseScalar(s) {
   if (s.startsWith("'") && s.endsWith("'")) return s.slice(1, -1);
   // Inline list "[a, b, c]"
   if (s.startsWith('[') && s.endsWith(']')) {
-    return s.slice(1, -1).split(',').map((x) => parseScalar(x.trim())).filter((x) => x !== null);
+    return s
+      .slice(1, -1)
+      .split(',')
+      .map((x) => parseScalar(x.trim()))
+      .filter((x) => x !== null);
   }
   return s;
 }
@@ -198,12 +221,12 @@ function parseScalar(s) {
 
 function allTasks(data) {
   const out = [];
-  for (const x of (data.cross_cutting || [])) {
+  for (const x of data.cross_cutting || []) {
     out.push({ kind: 'cross', task: x });
   }
-  for (const phase of (data.phases || [])) {
-    for (const batch of (phase.batches || [])) {
-      for (const task of (batch.tasks || [])) {
+  for (const phase of data.phases || []) {
+    for (const batch of phase.batches || []) {
+      for (const task of batch.tasks || []) {
         out.push({ kind: 'task', phase, batch, task });
       }
     }
@@ -256,7 +279,9 @@ function runGate(gate) {
     }
     case 'github_pr': {
       try {
-        const out = execSync(`gh pr view ${gate.pr} --json state -q .state`, { stdio: 'pipe' }).toString().trim();
+        const out = execSync(`gh pr view ${gate.pr} --json state -q .state`, { stdio: 'pipe' })
+          .toString()
+          .trim();
         return out === 'MERGED'
           ? { status: 'pass', detail: `PR #${gate.pr} merged` }
           : { status: 'fail', detail: `PR #${gate.pr} state: ${out}` };
@@ -309,7 +334,8 @@ function cmdStatus(args) {
   const total = tasks.length;
   const done = byStatus.done || 0;
   const pct = total > 0 ? Math.round((done / total) * 100) : 0;
-  const summary = `${done}/${total} done (${pct}%)  ` +
+  const summary =
+    `${done}/${total} done (${pct}%)  ` +
     `[● ${byStatus.done || 0}  ◐ ${byStatus['in-progress'] || 0}  ◔ ${byStatus.review || 0}  ⊘ ${byStatus.blocked || 0}  ◯ ${byStatus.pending || 0}  · ${byStatus.deferred || 0}]`;
   if (md) {
     lines.push(`**Progress:** ${summary}`);
@@ -321,10 +347,12 @@ function cmdStatus(args) {
   // Cross-cutting
   if (md) lines.push('## Cross-cutting');
   else lines.push('  Cross-cutting');
-  for (const x of (data.cross_cutting || [])) {
+  for (const x of data.cross_cutting || []) {
     const icon = statusIcon(x.status || 'pending');
     if (md) {
-      lines.push(`- ${icon} **${x.id}** ${x.title} _(${x.agent}${x.status ? ', ' + x.status : ''})_`);
+      lines.push(
+        `- ${icon} **${x.id}** ${x.title} _(${x.agent}${x.status ? ', ' + x.status : ''})_`
+      );
     } else {
       lines.push(`    ${icon}  ${x.id}  ${x.title}  [${x.agent}]`);
     }
@@ -332,7 +360,7 @@ function cmdStatus(args) {
   if (md) lines.push('');
 
   // Phases
-  for (const phase of (data.phases || [])) {
+  for (const phase of data.phases || []) {
     const phaseTasks = (phase.batches || []).flatMap((b) => b.tasks || []);
     const phaseDone = phaseTasks.filter((t) => t.status === 'done').length;
     const phaseTotal = phaseTasks.length;
@@ -346,15 +374,17 @@ function cmdStatus(args) {
       lines.push(`  ${phase.goal}\n`);
     }
 
-    for (const batch of (phase.batches || [])) {
+    for (const batch of phase.batches || []) {
       if (md) {
         lines.push(`### ${batch.id} — ${batch.title}`);
         if (batch.parallelism) lines.push(`_parallelism: ${batch.parallelism}_`);
         lines.push('');
       } else {
-        lines.push(`    ${batch.id}  ${batch.title}` + (batch.parallelism ? `  (∥${batch.parallelism})` : ''));
+        lines.push(
+          `    ${batch.id}  ${batch.title}` + (batch.parallelism ? `  (∥${batch.parallelism})` : '')
+        );
       }
-      for (const task of (batch.tasks || [])) {
+      for (const task of batch.tasks || []) {
         const icon = statusIcon(task.status || 'pending');
         const agent = task.agent ? ` [${task.agent}]` : '';
         const blocked = task.blocked_on ? ` ⊘ ${task.blocked_on}` : '';
@@ -381,12 +411,21 @@ function cmdCheck(args) {
     : tasks;
 
   console.log(`\nRunning automated gate checks${filter ? ` for ${filter}` : ''}...\n`);
-  let pass = 0, fail = 0, manual = 0;
+  let pass = 0,
+    fail = 0,
+    manual = 0;
   for (const { task } of matching) {
     if (!task.gates) continue;
     for (const gate of task.gates) {
       const result = runGate(gate);
-      const sym = result.status === 'pass' ? '✓' : result.status === 'fail' ? '✗' : result.status === 'manual' ? '·' : '?';
+      const sym =
+        result.status === 'pass'
+          ? '✓'
+          : result.status === 'fail'
+            ? '✗'
+            : result.status === 'manual'
+              ? '·'
+              : '?';
       console.log(`  ${sym}  ${task.id}  ${gate.description}`);
       if (result.status !== 'manual') {
         console.log(`        ${result.detail}`);
@@ -428,14 +467,17 @@ function cmdNext() {
   // Next = first task in phase order with status pending or in-progress
   // not blocked by an unfinished phase dependency.
   const phaseStatus = {};
-  for (const phase of (data.phases || [])) {
+  for (const phase of data.phases || []) {
     const pt = (phase.batches || []).flatMap((b) => b.tasks || []);
-    const allDone = pt.length > 0 && pt.every((t) => t.status === 'done' || t.status === 'deferred');
+    const allDone =
+      pt.length > 0 && pt.every((t) => t.status === 'done' || t.status === 'deferred');
     phaseStatus[phase.id] = allDone ? 'done' : 'open';
   }
 
   // Cross-cutting first
-  const xcOpen = (data.cross_cutting || []).filter((x) => x.status !== 'done' && x.status !== 'deferred');
+  const xcOpen = (data.cross_cutting || []).filter(
+    (x) => x.status !== 'done' && x.status !== 'deferred'
+  );
 
   console.log('\nNext to work on:\n');
   if (xcOpen.length) {
@@ -445,7 +487,7 @@ function cmdNext() {
     }
   }
 
-  for (const phase of (data.phases || [])) {
+  for (const phase of data.phases || []) {
     if (phaseStatus[phase.id] === 'done') continue;
     // Check phase dependencies
     if (phase.depends_on) {
@@ -456,8 +498,8 @@ function cmdNext() {
       }
     }
     console.log(`\n  ${phase.id} ${phase.title}:`);
-    for (const batch of (phase.batches || [])) {
-      const batchTasks = (batch.tasks || []);
+    for (const batch of phase.batches || []) {
+      const batchTasks = batch.tasks || [];
       const batchDone = batchTasks.every((t) => t.status === 'done' || t.status === 'deferred');
       if (batchDone) continue;
       // Check batch dependencies within phase
@@ -469,10 +511,14 @@ function cmdNext() {
         });
         if (blockedOn.length) continue;
       }
-      console.log(`    ${batch.id} ${batch.title}` + (batch.parallelism ? ` (∥${batch.parallelism})` : ''));
+      console.log(
+        `    ${batch.id} ${batch.title}` + (batch.parallelism ? ` (∥${batch.parallelism})` : '')
+      );
       for (const t of batchTasks) {
         if (t.status === 'done' || t.status === 'deferred') continue;
-        console.log(`      ${statusIcon(t.status || 'pending')}  ${t.id}  ${t.title}  [${t.agent}]`);
+        console.log(
+          `      ${statusIcon(t.status || 'pending')}  ${t.id}  ${t.title}  [${t.agent}]`
+        );
       }
     }
     return; // Only show the current open phase
@@ -496,8 +542,10 @@ function cmdSanity() {
   const p1 = data.byId.P1;
   const p0Tasks = (p0?.batches || []).flatMap((b) => b.tasks || []);
   const p1Tasks = (p1?.batches || []).flatMap((b) => b.tasks || []);
-  const p0Done = p0Tasks.length > 0 && p0Tasks.every((t) => t.status === 'done' || t.status === 'deferred');
-  const p1Done = p1Tasks.length > 0 && p1Tasks.every((t) => t.status === 'done' || t.status === 'deferred');
+  const p0Done =
+    p0Tasks.length > 0 && p0Tasks.every((t) => t.status === 'done' || t.status === 'deferred');
+  const p1Done =
+    p1Tasks.length > 0 && p1Tasks.every((t) => t.status === 'done' || t.status === 'deferred');
 
   console.log(`\n  Sanity gate: P0 + P1 done by week ${limit}`);
   console.log(`  Project started: ${start}`);
@@ -524,11 +572,21 @@ function cmdSanity() {
 
 const [, , command, ...rest] = process.argv;
 switch (command) {
-  case 'status': cmdStatus(rest); break;
-  case 'check': cmdCheck(rest); break;
-  case 'set': cmdSet(rest); break;
-  case 'next': cmdNext(); break;
-  case 'sanity': cmdSanity(); break;
+  case 'status':
+    cmdStatus(rest);
+    break;
+  case 'check':
+    cmdCheck(rest);
+    break;
+  case 'set':
+    cmdSet(rest);
+    break;
+  case 'next':
+    cmdNext();
+    break;
+  case 'sanity':
+    cmdSanity();
+    break;
   default:
     console.log(`uj-tracker — UJ Pack production progress
 
