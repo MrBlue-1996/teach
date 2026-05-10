@@ -15,6 +15,7 @@ import {
   Lock,
   AlertTriangle,
   Star,
+  BookOpen,
 } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
@@ -312,7 +313,7 @@ export default function KitchenDashboardPage() {
           ================================================================ */}
       <section className="mb-4">
         <h2 className="mb-4 text-xl font-bold uppercase tracking-wide">Quick Actions</h2>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Link
             href={`/kitchen/challenges/${(() => {
               const randomChallenge = challenges[Math.floor(Math.random() * challenges.length)];
@@ -336,6 +337,13 @@ export default function KitchenDashboardPage() {
             <button className="btn-action btn-ghost flex w-full items-center justify-center gap-3">
               <QrCode className="h-6 w-6" />
               QR Validate
+            </button>
+          </Link>
+
+          <Link href="/kitchen/recipes">
+            <button className="btn-action btn-ghost flex w-full items-center justify-center gap-3">
+              <BookOpen className="h-6 w-6" />
+              Recipe Book
             </button>
           </Link>
         </div>

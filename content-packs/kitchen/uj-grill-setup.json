@@ -245,6 +245,14 @@
         "target": "Raw and cooked tongs physically separated",
         "tolerance": "zero shared tongs",
         "consequence": "Cross-contamination from raw chicken tongs to cooked fajita strips. Salmonella on a finished plate."
+      },
+      {
+        "id": "ccp-uj-gs-grill-temp",
+        "stepId": "ugs7",
+        "type": "temperature",
+        "target": "Mesquite ember bed at 400°F+ before service",
+        "tolerance": "zero tickets fired on cold grill",
+        "consequence": "Grill below 400°F means proteins steam instead of sear. Chicken cooked on a cold grill can enter the danger zone before reaching safe internal temp. Fajitas come out pallid, not charred — immediate send-back."
       }
     ]
   }

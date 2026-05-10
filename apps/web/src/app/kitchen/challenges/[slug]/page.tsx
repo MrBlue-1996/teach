@@ -305,19 +305,35 @@ function SimpleSolveView({
   config: ChallengeConfig;
   ch: ReturnType<typeof useChallenge>;
 }) {
+  const [recipeOpen, setRecipeOpen] = useState(false);
+
   return (
-    <section className="kitchen-card">
-      <header className="generic-solve__head">
-        <h2>{config.title}</h2>
-        <RushTimer remainingMs={ch.timeRemainingMs} totalMs={config.timeLimitSeconds * 1000} />
-      </header>
-      <p>{config.briefing}</p>
-      <div className="generic-solve__actions">
-        <button type="button" className="btn-action btn-primary" onClick={ch.endSolve}>
-          Submit
-        </button>
-      </div>
-    </section>
+    <div className="flex flex-col gap-4">
+      <section className="kitchen-card">
+        <header className="generic-solve__head">
+          <h2>{config.title}</h2>
+          <RushTimer remainingMs={ch.timeRemainingMs} totalMs={config.timeLimitSeconds * 1000} />
+        </header>
+        <p>{config.briefing}</p>
+        <div className="generic-solve__actions">
+          {config.expertRecipe && (
+            <button
+              type="button"
+              className="btn-action btn-ghost"
+              onClick={() => setRecipeOpen((o) => !o)}
+              aria-expanded={recipeOpen}
+            >
+              {recipeOpen ? 'Hide recipe' : 'Show recipe'}
+            </button>
+          )}
+          <button type="button" className="btn-action btn-primary" onClick={ch.endSolve}>
+            Submit
+          </button>
+        </div>
+      </section>
+
+      {recipeOpen && config.expertRecipe && <RecipeCard recipe={config.expertRecipe} />}
+    </div>
   );
 }
 

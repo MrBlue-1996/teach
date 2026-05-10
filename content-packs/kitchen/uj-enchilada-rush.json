@@ -19,7 +19,9 @@
     "platingStandard": "Two enchiladas per plate, seam-side down, sauce ladled evenly, cheese melted and bubbly, garnished with sour cream drizzle and cilantro.",
     "idealSequence": [
       "wash_hands",
+      "check_ticket_modifiers",
       "heat_sauce",
+      "match_sauce_to_ticket",
       "soften_tortilla",
       "fill_and_roll",
       "place_seam_down",
@@ -39,8 +41,17 @@
         "tools": ["sink", "gloves"]
       },
       {
-        "id": "ue2",
+        "id": "ue1b",
         "order": 2,
+        "instruction": "Read all tickets before touching food. Flag allergen modifiers and any impossible combinations.",
+        "whyExplanation": "Ticket 403 orders gluten-free with a flour tortilla — that is physically impossible and a health violation. Catching it here costs you 15 seconds. Firing it costs you a lawsuit and a sick guest.",
+        "timeSeconds": 15,
+        "isCCP": true,
+        "tools": []
+      },
+      {
+        "id": "ue2",
+        "order": 3,
         "instruction": "Heat salsa carne to 180°F in sauce pot. Stir to prevent scorching.",
         "whyExplanation": "Cold sauce on a hot enchilada drops the plate temp into the danger zone. Scorched sauce tastes bitter and gets sent back.",
         "timeSeconds": 30,
@@ -50,8 +61,17 @@
         "tempRange": { "min": 170, "max": 195 }
       },
       {
+        "id": "ue2b",
+        "order": 4,
+        "instruction": "Match each ticket's sauce: salsa carne (tk-401), hatch chile verde (tk-402), combo sauces (tk-404). Note: hatch chile sauce contains dairy — any dairy-free modifier on an enchilada verde is an allergen conflict.",
+        "whyExplanation": "Creamy hatch chile sauce is made with heavy cream. A guest with a dairy allergy on an enchilada verde will have a reaction. Every sauce has an allergen profile. Match sauce to ticket modifier before rolling anything.",
+        "timeSeconds": 15,
+        "isCCP": true,
+        "tools": []
+      },
+      {
         "id": "ue3",
-        "order": 3,
+        "order": 5,
         "instruction": "Soften corn tortilla on flat top or in hot oil for 5 seconds per side.",
         "whyExplanation": "A cold corn tortilla cracks when you roll it. Cracked tortilla = filling leaks out in the oven. Wasted plate.",
         "timeSeconds": 15,
@@ -60,7 +80,7 @@
       },
       {
         "id": "ue4",
-        "order": 4,
+        "order": 6,
         "instruction": "Fill with 2 oz cheese blend and diced onion. Roll tight, seam down.",
         "whyExplanation": "Loose roll means the enchilada unravels in the oven. Seam down traps the filling and presents clean to the guest.",
         "timeSeconds": 20,
@@ -69,7 +89,7 @@
       },
       {
         "id": "ue5",
-        "order": 5,
+        "order": 7,
         "instruction": "Ladle 3 oz sauce over each enchilada. Top with 1 oz shredded cheese.",
         "whyExplanation": "Under-saucing dries out the tortilla. Over-saucing drowns the filling. Consistency is what separates a cook from a professional.",
         "timeSeconds": 15,
@@ -78,7 +98,7 @@
       },
       {
         "id": "ue6",
-        "order": 6,
+        "order": 8,
         "instruction": "Bake at 400°F for 8-10 minutes until cheese is bubbly and edges crisp.",
         "whyExplanation": "Under 8 minutes and the cheese isn't melted through. Over 10 and the tortilla edges burn. Watch the oven, don't set-and-forget.",
         "timeSeconds": 540,
@@ -89,7 +109,7 @@
       },
       {
         "id": "ue7",
-        "order": 7,
+        "order": 9,
         "instruction": "Garnish with sour cream drizzle and fresh cilantro. Plate with rice and beans.",
         "whyExplanation": "Garnish goes on AFTER the oven — cilantro wilts and sour cream splits under heat. Plate completeness is what expo checks.",
         "timeSeconds": 20,
@@ -121,6 +141,14 @@
         "target": "Oven at 375-425°F",
         "tolerance": "+/- 25°F",
         "consequence": "Low oven = raw cheese center. High oven = burned tortilla edges, remakes at $3+ each."
+      },
+      {
+        "id": "ccp-uj-allergen-check",
+        "stepId": "ue1b",
+        "type": "allergen",
+        "target": "All ticket modifiers read and allergen conflicts flagged before rolling",
+        "tolerance": "zero missed allergen flags",
+        "consequence": "Firing an impossible allergen order can trigger anaphylaxis. Flour tortilla served as gluten-free = celiac reaction. Hatch chile on dairy-free = allergic reaction."
       }
     ]
   },
