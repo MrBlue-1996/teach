@@ -42,7 +42,11 @@ export function StatCard({
     <Card className={cn('card-hover', className)}>
       <CardContent className="flex items-center gap-4 p-4">
         <div
-          className={cn('flex h-12 w-12 items-center justify-center rounded-full', colorMap[color])}
+          className={cn(
+            'flex h-12 w-12 items-center justify-center rounded-full',
+            // eslint-disable-next-line security/detect-object-injection
+            colorMap[color]
+          )}
         >
           <Icon className="h-6 w-6" />
         </div>
@@ -51,7 +55,15 @@ export function StatCard({
           <div className="flex items-center gap-2">
             <p className="text-sm text-muted-foreground">{label}</p>
             {change && (
-              <span className={cn('text-xs font-medium', trendColors[trend])}>{change}</span>
+              <span
+                className={cn(
+                  'text-xs font-medium',
+                  // eslint-disable-next-line security/detect-object-injection
+                  trendColors[trend]
+                )}
+              >
+                {change}
+              </span>
             )}
           </div>
         </div>

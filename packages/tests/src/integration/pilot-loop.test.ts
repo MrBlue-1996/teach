@@ -30,6 +30,7 @@ async function api(
   token?: string
 ): Promise<Response> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  // eslint-disable-next-line security/detect-possible-timing-attacks
   if (token !== undefined) headers['Authorization'] = `Bearer ${token}`;
   return fetch(`${BASE_URL}${path}`, {
     method,

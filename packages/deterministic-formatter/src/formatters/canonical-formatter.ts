@@ -314,6 +314,7 @@ export function checkParity(
     divergences.push(`Hint count differs: ${a.hints.length} vs ${b.hints.length}`);
   } else {
     a.hints.forEach((hint, i) => {
+      // eslint-disable-next-line security/detect-object-injection
       if (hint !== b.hints[i]) {
         divergences.push(`Hint ${i + 1} differs`);
       }

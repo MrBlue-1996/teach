@@ -301,6 +301,8 @@ function PackEditor({
     draft: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
     archived: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
   };
+  // eslint-disable-next-line security/detect-object-injection
+  const statusColorClass = statusColors[status] ?? statusColors['draft'];
 
   return (
     <Card className="overflow-hidden">
@@ -323,7 +325,7 @@ function PackEditor({
           <p className="text-xs text-muted-foreground truncate">{initialPack.slug}</p>
         </div>
         <span
-          className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${statusColors[status] ?? statusColors['draft']}`}
+          className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${statusColorClass}`}
         >
           {status}
         </span>

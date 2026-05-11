@@ -80,6 +80,7 @@ const createInitialDomainScores = (): Record<string, number> => {
     'labor_cost' as MasteryDomain,
   ];
   for (const d of domains) {
+    // eslint-disable-next-line security/detect-object-injection
     scores[d] = 100;
   }
   return scores;

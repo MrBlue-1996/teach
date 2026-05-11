@@ -100,6 +100,7 @@ function expectedPackIdFromSourcePath(sourcePath: string): string | null {
 }
 
 function getRecordValue(record: Record<string, unknown>, key: string): unknown {
+  // eslint-disable-next-line security/detect-object-injection
   return record[key];
 }
 
@@ -430,6 +431,7 @@ export class ContentPackValidator {
         'assessments',
         'ticketFlows',
       ] as const) {
+        // eslint-disable-next-line security/detect-object-injection
         const entries = pack.assetCatalog[catalogName];
         for (const entry of entries) {
           const seenInCatalog = globalAssetIds.get(entry.id);
@@ -592,6 +594,7 @@ export class ContentPackValidator {
 
       // Check hints are not empty
       for (let i = 0; i < block.hints.length; i++) {
+        // eslint-disable-next-line security/detect-object-injection
         const hint = block.hints[i];
         if (hint?.trim().length === 0) {
           errors.push({
@@ -632,6 +635,7 @@ export class ContentPackValidator {
         }
 
         for (let i = 0; i < block.hints.length; i++) {
+          // eslint-disable-next-line security/detect-object-injection
           const hint = block.hints[i];
           if (hint !== undefined && hint.length > maxResponseChars) {
             errors.push({
@@ -653,6 +657,7 @@ export class ContentPackValidator {
         }
 
         for (let i = 0; i < block.surfaceVariants.length; i++) {
+          // eslint-disable-next-line security/detect-object-injection
           const variant = block.surfaceVariants[i];
           const data = variant?.data;
           if (!isRecord(data)) {

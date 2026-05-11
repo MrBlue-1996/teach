@@ -31,6 +31,7 @@ export function ImagePlaceholder({
     <div
       className={cn(
         'relative flex items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-muted to-muted/50 border border-dashed border-border/50',
+        // eslint-disable-next-line security/detect-object-injection
         aspectClasses[aspectRatio],
         className
       )}

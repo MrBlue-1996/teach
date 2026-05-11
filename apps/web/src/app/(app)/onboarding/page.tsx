@@ -69,6 +69,7 @@ export default function OnboardingPage() {
     return true;
   }, [displayName, stepIndex]);
 
+  // eslint-disable-next-line security/detect-object-injection
   const activeStep = steps[stepIndex];
 
   const goNext = () => {

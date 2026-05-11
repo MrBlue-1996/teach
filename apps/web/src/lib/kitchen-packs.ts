@@ -26,6 +26,8 @@ const PACKS: Record<string, ChallengeConfig> = {
 };
 
 export function getPack(slug: string): ChallengeConfig | null {
+  if (!Object.hasOwn(PACKS, slug)) return null;
+  // eslint-disable-next-line security/detect-object-injection
   return PACKS[slug] ?? null;
 }
 

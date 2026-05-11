@@ -25,6 +25,8 @@ const ROUTES = [
 const PHONE_MODELS = Object.entries(PHONE_SPECS).map(([id, spec]) => ({
   id: id as PhoneModel,
   label: spec.label,
+  viewportWidth: spec.viewportWidth,
+  viewportHeight: spec.viewportHeight,
 }));
 
 export default function PhoneEmulatorPage() {
@@ -33,6 +35,8 @@ export default function PhoneEmulatorPage() {
   const [frameKey, setFrameKey] = useState(0);
 
   const currentRoute = ROUTES.find((r) => r.path === selectedRoute) ?? ROUTES[0]!;
+  // eslint-disable-next-line security/detect-object-injection
+  const selectedSpec = PHONE_SPECS[selectedModel];
 
   return (
     <div className="min-h-screen bg-[hsl(220,20%,5%)] text-[hsl(210,40%,95%)]">
@@ -64,7 +68,7 @@ export default function PhoneEmulatorPage() {
               Device
             </h2>
             <div className="flex flex-col gap-2">
-              {PHONE_MODELS.map(({ id, label }) => (
+              {PHONE_MODELS.map(({ id, label, viewportWidth, viewportHeight }) => (
                 <button
                   key={id}
                   type="button"
@@ -77,7 +81,7 @@ export default function PhoneEmulatorPage() {
                 >
                   {label}
                   <span className="ml-2 text-xs opacity-60">
-                    {PHONE_SPECS[id].viewportWidth}×{PHONE_SPECS[id].viewportHeight}
+                    {viewportWidth}×{viewportHeight}
                   </span>
                 </button>
               ))}
@@ -133,8 +137,8 @@ export default function PhoneEmulatorPage() {
         {/* Emulator canvas */}
         <main className="flex flex-1 flex-col items-center justify-center gap-6 overflow-auto p-8">
           <p className="text-xs text-[hsl(215,15%,40%)]">
-            {currentRoute.label} — {PHONE_SPECS[selectedModel].label} (
-            {PHONE_SPECS[selectedModel].viewportWidth}×{PHONE_SPECS[selectedModel].viewportHeight})
+            {currentRoute.label} — {selectedSpec.label} ({selectedSpec.viewportWidth}×
+            {selectedSpec.viewportHeight})
           </p>
 
           <PhoneFrame key={frameKey} model={selectedModel} src={selectedRoute} />
