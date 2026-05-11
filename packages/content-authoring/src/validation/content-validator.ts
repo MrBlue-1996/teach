@@ -100,6 +100,7 @@ function expectedPackIdFromSourcePath(sourcePath: string): string | null {
 }
 
 function getRecordValue(record: Record<string, unknown>, key: string): unknown {
+  if (!Object.hasOwn(record, key)) return undefined;
   // eslint-disable-next-line security/detect-object-injection
   return record[key];
 }

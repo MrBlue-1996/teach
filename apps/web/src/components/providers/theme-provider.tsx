@@ -1,3 +1,9 @@
+/**
+ * TopShelf Service LLC
+ * PROPRIETARY AND CONFIDENTIAL
+ * Copyright (c) 2026 TopShelf Service LLC. All Rights Reserved.
+ */
+
 'use client';
 
 import * as React from 'react';
