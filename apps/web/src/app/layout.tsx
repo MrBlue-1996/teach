@@ -12,11 +12,14 @@ import '@fontsource/montserrat/600.css';
 import '@fontsource/montserrat/700.css';
 import '@fontsource/montserrat/800.css';
 import { ThemeProvider } from '@/components/providers/theme-provider';
+import { PwaRegistrar } from '@/components/providers/pwa-registrar';
 import { Toaster } from '@/components/ui/toaster';
 import './globals.css';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://topshelfteaching.com'),
+  applicationName: 'Top Shelf Teaching',
+  manifest: '/manifest.json',
   title: {
     default: 'Top Shelf Teaching — The hardest part is done for you.',
     template: '%s | Top Shelf Teaching',
@@ -26,6 +29,22 @@ export const metadata: Metadata = {
   keywords: ['learning', 'IT certification', 'education', 'skills', 'training'],
   authors: [{ name: 'Top Shelf Service LLC' }],
   creator: 'Top Shelf Service LLC',
+  category: 'education',
+  formatDetection: {
+    telephone: false,
+  },
+  appleWebApp: {
+    capable: true,
+    title: 'TopShelf',
+    statusBarStyle: 'black-translucent',
+  },
+  icons: {
+    icon: [
+      { url: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
+    ],
+    apple: [{ url: '/icons/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
+  },
   openGraph: {
     type: 'website',
     locale: 'en_US',
@@ -52,6 +71,7 @@ export const viewport: Viewport = {
   ],
   width: 'device-width',
   initialScale: 1,
+  viewportFit: 'cover',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -64,6 +84,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           enableSystem
           disableTransitionOnChange
         >
+          <PwaRegistrar />
           <a href="#main-content" className="skip-link">
             Skip to main content
           </a>
