@@ -76,6 +76,11 @@ describe('learnerApi', () => {
       blocksCompleted: 3,
       skillEstimates: { variables: 0.8, functions: 0.5 },
       retentionHistory: [],
+      retentionQueue: {
+        dueTaskIds: ['block-4'],
+        dueCount: 1,
+        nextDueAt: '2024-01-22T00:00:00Z',
+      },
       inProbation: false,
     },
     recentActivity: [
@@ -158,6 +163,7 @@ describe('learnerApi', () => {
 
       expect(result.recentActivity).toHaveLength(1);
       expect(result.recentActivity[0]!.eventType).toBe('completed');
+      expect(result.progress.retentionQueue.dueCount).toBe(1);
     });
   });
 

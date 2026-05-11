@@ -652,6 +652,70 @@ describe('Learner Routes', () => {
       );
     });
 
+    it('should append a retention record for completed events using block retention config', async () => {
+      const now = new Date('2026-05-10T12:00:00.000Z');
+      vi.useFakeTimers();
+      vi.setSystemTime(now);
+
+      const setSpy = vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue(undefined),
+      });
+
+      mockDb.query.learnerStates.findFirst.mockResolvedValue({
+        ...mockLearnerState,
+        id: 'state-1',
+        contentPackId: 'pack-1',
+        retentionHistory: [],
+      });
+      mockDb.query.contentBlocks.findFirst.mockResolvedValue({
+        content: {
+          retention: {
+            reassessAfterDays: 5,
+            decayHalfLifeDays: 13,
+          },
+        },
+      });
+      mockDb.query.learningSessions.findFirst
+        .mockResolvedValueOnce({
+          ...mockSession,
+          startedAt: new Date('2026-05-10T11:00:00.000Z'),
+        })
+        .mockResolvedValueOnce({
+          ...mockSession,
+          startedAt: new Date('2026-05-10T11:00:00.000Z'),
+        });
+
+      mockDb.update.mockReturnValue({ set: setSpy });
+
+      const res = await app.request('/learner/session/session-1/event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          blockId: 'block-9',
+          eventType: 'completed',
+          correctness: 0.8,
+          timeSpentSeconds: 42,
+        }),
+      });
+
+      expect(res.status).toBe(200);
+      const learnerStateUpdate = setSpy.mock.calls[0]?.[0];
+      expect(learnerStateUpdate.retentionHistory).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            taskId: 'block-9',
+            pass: true,
+            latencyMs: 42000,
+            reassessAfterDays: 5,
+            decayHalfLifeDays: 13,
+            nextReassessAt: '2026-05-15T12:00:00.000Z',
+          }),
+        ])
+      );
+
+      vi.useRealTimers();
+    });
+
     it('should persist trigger state and elevated teaching mode after repeated struggle', async () => {
       const setSpy = vi.fn().mockReturnValue({
         where: vi.fn().mockResolvedValue(undefined),
@@ -994,7 +1058,51 @@ describe('Learner Routes', () => {
       expect(body.progress).toHaveProperty('blocksCompleted');
       expect(body.progress).toHaveProperty('skillEstimates');
       expect(body.progress).toHaveProperty('retentionHistory');
+      expect(body.progress).toHaveProperty('retentionQueue');
       expect(body.progress).toHaveProperty('inProbation');
+    });
+
+    it('should include due retention tasks when reassessment dates are in the past', async () => {
+      const now = new Date('2026-05-10T12:00:00.000Z');
+      vi.useFakeTimers();
+      vi.setSystemTime(now);
+
+      mockDb.query.learnerStates.findFirst.mockResolvedValue({
+        ...mockLearnerState,
+        retentionHistory: [
+          {
+            taskId: 'block-due',
+            date: '2026-05-01T12:00:00.000Z',
+            pass: true,
+            daysSinceOriginal: 0,
+            latencyMs: 42000,
+            reassessAfterDays: 5,
+            decayHalfLifeDays: 21,
+            nextReassessAt: '2026-05-06T12:00:00.000Z',
+          },
+          {
+            taskId: 'block-future',
+            date: '2026-05-08T12:00:00.000Z',
+            pass: true,
+            daysSinceOriginal: 0,
+            latencyMs: 15000,
+            reassessAfterDays: 10,
+            decayHalfLifeDays: 21,
+            nextReassessAt: '2026-05-18T12:00:00.000Z',
+          },
+        ],
+      });
+
+      const res = await app.request('/learner/progress/pack-1');
+      expect(res.status).toBe(200);
+      const body = await res.json();
+
+      expect(body.progress.retentionQueue.dueTaskIds).toContain('block-due');
+      expect(body.progress.retentionQueue.dueTaskIds).not.toContain('block-future');
+      expect(body.progress.retentionQueue.dueCount).toBe(1);
+      expect(body.progress.retentionQueue.nextDueAt).toBe('2026-05-18T12:00:00.000Z');
+
+      vi.useRealTimers();
     });
 
     it('should include recent activity events', async () => {

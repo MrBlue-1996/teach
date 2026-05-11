@@ -351,7 +351,7 @@ export default function KitchenDashboardPage() {
           <Link href="/kitchen/preview">
             <button className="btn-action btn-ghost flex w-full items-center justify-center gap-3">
               <Smartphone className="h-6 w-6" />
-              Phone Preview
+              Phone Emulator
             </button>
           </Link>
         </div>

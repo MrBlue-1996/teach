@@ -28,4 +28,23 @@ test.describe('Kitchen phone emulator', () => {
     await page.getByRole('button', { name: 'Show recipe' }).click();
     await expect(page.getByRole('heading', { name: 'Mesquite Grill Station Setup' })).toBeVisible();
   });
+
+  test('renders emulator route with selectable devices and challenge routes', async ({ page }) => {
+    await page.goto('/kitchen/preview');
+
+    await expect(page.getByRole('heading', { name: 'Phone Emulator' })).toBeVisible();
+    await expect(page.getByRole('button', { name: /iPhone 14/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Pixel 7/i })).toBeVisible();
+
+    await page.getByRole('button', { name: /Pixel 7/i }).click();
+    await page.getByRole('button', { name: /Recipe Book/i }).click();
+
+    const emulatorFrame = page.locator('iframe[title="Pixel 7 preview"]');
+    await expect(emulatorFrame).toHaveAttribute('src', '/kitchen/recipes');
+
+    const challengeRouteButton = page.getByRole('button', { name: /^Challenge:/ }).first();
+    await challengeRouteButton.scrollIntoViewIfNeeded();
+    await challengeRouteButton.click();
+    await expect(emulatorFrame).toHaveAttribute('src', /\/kitchen\/challenges\/.+/);
+  });
 });

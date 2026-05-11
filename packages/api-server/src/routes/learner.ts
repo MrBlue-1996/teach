@@ -54,6 +54,127 @@ const TeachRequestSchema = z.object({
   content: z.string().optional(),
 });
 
+const DEFAULT_RETENTION_REASSESS_DAYS = 7;
+const DEFAULT_RETENTION_DECAY_HALF_LIFE_DAYS = 21;
+const MAX_RETENTION_HISTORY_ENTRIES = 200;
+
+interface RetentionSchedule {
+  reassessAfterDays: number;
+  decayHalfLifeDays: number;
+}
+
+interface RetentionHistoryEntry {
+  taskId: string;
+  date: string;
+  pass: boolean;
+  daysSinceOriginal: number;
+  latencyMs: number;
+  reassessAfterDays?: number;
+  decayHalfLifeDays?: number;
+  nextReassessAt?: string;
+}
+
+function parseRetentionSchedule(content: unknown): RetentionSchedule {
+  const retention =
+    content !== null && typeof content === 'object'
+      ? (content as Record<string, unknown>)['retention']
+      : undefined;
+  const retentionObj =
+    retention !== null && typeof retention === 'object'
+      ? (retention as Record<string, unknown>)
+      : null;
+
+  const reassessAfterDays = retentionObj?.['reassessAfterDays'];
+  const decayHalfLifeDays = retentionObj?.['decayHalfLifeDays'];
+
+  const parsedReassess =
+    typeof reassessAfterDays === 'number' &&
+    Number.isInteger(reassessAfterDays) &&
+    reassessAfterDays >= 1 &&
+    reassessAfterDays <= 365
+      ? reassessAfterDays
+      : DEFAULT_RETENTION_REASSESS_DAYS;
+
+  const parsedHalfLife =
+    typeof decayHalfLifeDays === 'number' &&
+    Number.isInteger(decayHalfLifeDays) &&
+    decayHalfLifeDays >= 1 &&
+    decayHalfLifeDays <= 365
+      ? decayHalfLifeDays
+      : DEFAULT_RETENTION_DECAY_HALF_LIFE_DAYS;
+
+  return {
+    reassessAfterDays: parsedReassess,
+    decayHalfLifeDays: parsedHalfLife,
+  };
+}
+
+function parseRetentionHistory(raw: unknown): RetentionHistoryEntry[] {
+  if (!Array.isArray(raw)) return [];
+
+  return raw.filter((entry): entry is RetentionHistoryEntry => {
+    if (entry === null || typeof entry !== 'object') {
+      return false;
+    }
+
+    const record = entry as Record<string, unknown>;
+    return (
+      typeof record['taskId'] === 'string' &&
+      typeof record['date'] === 'string' &&
+      typeof record['pass'] === 'boolean' &&
+      typeof record['daysSinceOriginal'] === 'number' &&
+      typeof record['latencyMs'] === 'number'
+    );
+  });
+}
+
+function toReassessmentDate(baseDate: Date, days: number): Date {
+  const next = new Date(baseDate);
+  next.setUTCDate(next.getUTCDate() + days);
+  return next;
+}
+
+function buildRetentionQueue(
+  records: RetentionHistoryEntry[],
+  now: Date
+): {
+  dueTaskIds: string[];
+  dueCount: number;
+  nextDueAt: string | null;
+} {
+  const dueTaskIds = new Set<string>();
+  let nextDueAt: Date | null = null;
+
+  for (const record of records) {
+    const nextAtIso =
+      record.nextReassessAt ??
+      toReassessmentDate(
+        new Date(record.date),
+        record.reassessAfterDays ?? DEFAULT_RETENTION_REASSESS_DAYS
+      ).toISOString();
+
+    const nextAt = new Date(nextAtIso);
+    if (Number.isNaN(nextAt.getTime())) {
+      continue;
+    }
+
+    if (nextAt.getTime() <= now.getTime()) {
+      dueTaskIds.add(record.taskId);
+      continue;
+    }
+
+    if (nextDueAt === null || nextAt.getTime() < nextDueAt.getTime()) {
+      nextDueAt = nextAt;
+    }
+  }
+
+  return {
+    dueTaskIds: Array.from(dueTaskIds),
+    dueCount: dueTaskIds.size,
+    nextDueAt: nextDueAt?.toISOString() ?? null,
+  };
+}
+
 // =============================================================================
 // ROUTES
 // =============================================================================
@@ -297,6 +418,48 @@ export function createLearnerRoutes(): Hono {
     const sessionMetricUpdates: Record<string, unknown> = {};
 
     if (eventData.eventType === 'completed') {
+      const learnerState = await db.query.learnerStates.findFirst({
+        where: eq(learnerStates.id, session.learnerStateId),
+        columns: {
+          id: true,
+          contentPackId: true,
+          retentionHistory: true,
+        },
+      });
+
+      let updatedRetentionHistory: RetentionHistoryEntry[] | undefined;
+
+      if (learnerState) {
+        const block = await db.query.contentBlocks.findFirst({
+          where: and(
+            eq(contentBlocks.packId, learnerState.contentPackId),
+            eq(contentBlocks.blockId, eventData.blockId)
+          ),
+          columns: {
+            content: true,
+          },
+        });
+
+        const schedule = parseRetentionSchedule(block?.content);
+        const now = new Date();
+        const nextReassessAt = toReassessmentDate(now, schedule.reassessAfterDays).toISOString();
+        const retentionRecord: RetentionHistoryEntry = {
+          taskId: eventData.blockId,
+          date: now.toISOString(),
+          pass: (eventData.correctness ?? 0) >= 0.5,
+          daysSinceOriginal: 0,
+          latencyMs: Math.max(0, (eventData.timeSpentSeconds ?? 0) * 1000),
+          reassessAfterDays: schedule.reassessAfterDays,
+          decayHalfLifeDays: schedule.decayHalfLifeDays,
+          nextReassessAt,
+        };
+
+        const existingHistory = parseRetentionHistory(learnerState.retentionHistory);
+        updatedRetentionHistory = [...existingHistory, retentionRecord].slice(
+          -MAX_RETENTION_HISTORY_ENTRIES
+        );
+      }
+
       sessionMetricUpdates['blocksCompleted'] =
         sql`coalesce(${learningSessions.blocksCompleted}, 0) + 1`;
       sessionMetricUpdates['blocksAttempted'] =
@@ -321,6 +484,7 @@ export function createLearnerRoutes(): Hono {
           currentBlockId: eventData.blockId,
           lastActivityAt: new Date(),
           blocksCompleted: sql`coalesce(${learnerStates.blocksCompleted}, 0) + 1`,
+          ...(updatedRetentionHistory ? { retentionHistory: updatedRetentionHistory } : {}),
         })
         .where(eq(learnerStates.id, session.learnerStateId));
     }
@@ -517,6 +681,11 @@ export function createLearnerRoutes(): Hono {
       limit: 50,
     });
 
+    const retentionQueue = buildRetentionQueue(
+      parseRetentionHistory(state.retentionHistory),
+      new Date()
+    );
+
     return c.json({
       progress: {
         currentMode: state.currentMode,
@@ -525,6 +694,7 @@ export function createLearnerRoutes(): Hono {
         blocksCompleted: state.blocksCompleted,
         skillEstimates: state.skillEstimates,
         retentionHistory: state.retentionHistory,
+        retentionQueue,
         inProbation: state.inProbation,
       },
       recentActivity: recentEvents.map((e) => ({
@@ -704,18 +874,19 @@ export function createLearnerRoutes(): Hono {
     // Check for mode elevation
     const triggers = TriggerDetector.detectTriggers(context);
     const suggestedMode = TriggerDetector.suggestModeElevation(context.mode, triggers);
+    const elevatedMode = Math.max(response.mode as number, suggestedMode as number) as TeachingMode;
 
-    if (suggestedMode > context.mode) {
+    if ((elevatedMode as number) > (context.mode as number)) {
       await db
         .update(learningSessions)
-        .set({ teachingMode: suggestedMode, triggersFired: triggers })
+        .set({ teachingMode: elevatedMode, triggersFired: triggers })
         .where(eq(learningSessions.id, sessionId));
     }
 
     return c.json({
       ...response,
       triggers,
-      suggestedMode,
+      suggestedMode: elevatedMode,
       currentMode: context.mode,
     });
   });

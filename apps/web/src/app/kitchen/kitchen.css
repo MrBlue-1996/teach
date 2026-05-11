@@ -1259,6 +1259,32 @@
   letter-spacing: 1px;
 }
 
+.mastery-decay {
+  margin-top: 16px;
+  border-left: 4px solid transparent;
+}
+
+.mastery-decay h2 {
+  margin: 0 0 8px;
+  font-size: 20px;
+}
+
+.mastery-decay p {
+  margin: 0;
+}
+
+.mastery-decay--healthy {
+  border-left-color: var(--kitchen-safe, #22c55e);
+}
+
+.mastery-decay--watch {
+  border-left-color: var(--kitchen-caution, #f59e0b);
+}
+
+.mastery-decay--urgent {
+  border-left-color: var(--kitchen-danger, #ef4444);
+}
+
 /* QR page */
 .qr-card {
   max-width: 560px;

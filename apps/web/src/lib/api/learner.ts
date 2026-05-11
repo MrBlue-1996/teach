@@ -53,7 +53,21 @@ export interface LearnerProgress {
     totalTimeSpentSeconds: number;
     blocksCompleted: number;
     skillEstimates: unknown;
-    retentionHistory: unknown;
+    retentionHistory: {
+      taskId: string;
+      date: string;
+      pass: boolean;
+      daysSinceOriginal: number;
+      latencyMs: number;
+      reassessAfterDays?: number;
+      decayHalfLifeDays?: number;
+      nextReassessAt?: string;
+    }[];
+    retentionQueue: {
+      dueTaskIds: string[];
+      dueCount: number;
+      nextDueAt: string | null;
+    };
     inProbation: boolean;
   };
   recentActivity: {

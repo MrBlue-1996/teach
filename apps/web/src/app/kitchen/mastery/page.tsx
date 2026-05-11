@@ -1,8 +1,11 @@
 'use client';
 
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, ChefHat } from 'lucide-react';
 import { MasteryRing } from '@/components/kitchen/MasteryRing';
+import { learnerApi, type LearnerProgress } from '@/lib/api/learner';
+import { computeDecayAffordance, formatNextDueLabel } from '@/lib/mastery-decay';
 import { useChallengeStore } from '@/stores/challenge-store';
 
 const DOMAINS: { key: string; label: string; hidden?: boolean }[] = [
@@ -21,6 +24,53 @@ const DOMAINS: { key: string; label: string; hidden?: boolean }[] = [
 
 export default function MasteryPage() {
   const domainScores = useChallengeStore((s) => s.domainScores);
+  const [progress, setProgress] = useState<LearnerProgress | null>(null);
+
+  useEffect(() => {
+    let active = true;
+
+    void learnerApi
+      .getProgress('pack-uncle-julios-v1')
+      .then((data) => {
+        if (active) {
+          setProgress(data);
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setProgress(null);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const decay = useMemo(
+    () =>
+      computeDecayAffordance(
+        progress?.progress.retentionQueue,
+        progress?.progress.retentionHistory,
+        new Date()
+      ),
+    [progress]
+  );
+
+  const decayToneClass =
+    decay.status === 'urgent'
+      ? 'mastery-decay--urgent'
+      : decay.status === 'watch'
+        ? 'mastery-decay--watch'
+        : 'mastery-decay--healthy';
+
+  const decayTitle =
+    decay.status === 'urgent'
+      ? 'Retention is decaying'
+      : decay.status === 'watch'
+        ? 'Retention needs attention'
+        : 'Retention is stable';
+
   const hasData = Object.values(domainScores).some((v) => v !== 100);
 
   const overall = Math.round(
@@ -53,6 +103,18 @@ export default function MasteryPage() {
             you know.
           </p>
         </div>
+      </section>
+
+      <section
+        className={`kitchen-card mastery-decay ${decayToneClass}`}
+        aria-label="Retention status"
+      >
+        <h2>{decayTitle}</h2>
+        <p>
+          Due now: <strong>{decay.dueCount}</strong> · Decayed tasks:{' '}
+          <strong>{decay.staleCount}</strong>
+        </p>
+        <p className="mastery-hero__sub">{formatNextDueLabel(decay.nextDueAt, new Date())}</p>
       </section>
 
       <section className="mastery-grid" aria-label="Mastery domains">

@@ -19,12 +19,17 @@ export const PedagogyEngine = {
     const triggers = TriggerDetector.detectTriggers(context);
     context.triggers = triggers;
 
-    const shouldTeach = TriggerDetector.shouldTeach(context.mode, triggers);
+    const effectiveMode =
+      context.mode === TeachingMode.L0_SILENT
+        ? TeachingMode.L0_SILENT
+        : TriggerDetector.suggestModeElevation(context.mode, triggers);
+
+    const shouldTeach = TriggerDetector.shouldTeach(effectiveMode, triggers);
 
     if (!shouldTeach || teachingContent === undefined || teachingContent.length === 0) {
       return {
         shouldTeach: false,
-        mode: context.mode,
+        mode: effectiveMode,
         filtered: false,
       };
     }
@@ -37,7 +42,7 @@ export const PedagogyEngine = {
     if (!suitability.suitable) {
       return {
         shouldTeach: false,
-        mode: context.mode,
+        mode: effectiveMode,
         filtered: true,
         ...(suitability.reason !== undefined ? { filterReason: suitability.reason } : {}),
       };
@@ -50,8 +55,8 @@ export const PedagogyEngine = {
 
     return {
       shouldTeach: true,
-      content: this.formatTeachingContent(filtered, context.mode),
-      mode: context.mode,
+      content: this.formatTeachingContent(filtered, effectiveMode),
+      mode: effectiveMode,
       filtered: wasModified,
     };
   },

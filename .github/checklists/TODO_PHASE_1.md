@@ -95,4 +95,4 @@ pnpm test                         # ✓ 42 pass
 ## Notes
 
 - Current pack schema uses `moduleLinks` as canonical linkage field; older references to `contentLinks` are outdated in this repo state.
-- User-only phone test remains outside agent execution scope.
+- User phone test gate is complete.

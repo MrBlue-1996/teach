@@ -27,7 +27,7 @@ const PHONE_MODELS = Object.entries(PHONE_SPECS).map(([id, spec]) => ({
   label: spec.label,
 }));
 
-export default function PhonePreviewPage() {
+export default function PhoneEmulatorPage() {
   const [selectedRoute, setSelectedRoute] = useState(ROUTES[0]!.path);
   const [selectedModel, setSelectedModel] = useState<PhoneModel>('iphone-14');
   const [frameKey, setFrameKey] = useState(0);
@@ -47,7 +47,7 @@ export default function PhonePreviewPage() {
 
         <div className="flex items-center gap-2">
           <Smartphone size={18} className="text-[hsl(217,91%,60%)]" aria-hidden />
-          <h1 className="text-base font-bold">Phone Preview</h1>
+          <h1 className="text-base font-bold">Phone Emulator</h1>
         </div>
 
         <span className="ml-2 rounded bg-[hsl(217,91%,20%)] px-2 py-0.5 text-xs font-semibold uppercase tracking-widest text-[hsl(217,91%,70%)]">

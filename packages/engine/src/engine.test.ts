@@ -300,6 +300,30 @@ describe('PedagogyEngine', () => {
       expect(res.shouldTeach).toBe(false);
     });
 
+    it('elevates mode before formatting guidance when severe triggers fire', () => {
+      const ctx = makeContext({
+        mode: TeachingMode.L1_MINIMAL,
+        errorsEncountered: 5,
+        sessionStartTime: new Date(Date.now() - 10 * 60 * 1000),
+      });
+      const res = PedagogyEngine.processTeachingRequest(ctx, 'Check invariant assumptions first');
+
+      expect(res.shouldTeach).toBe(true);
+      expect(res.mode).toBe(TeachingMode.L3_ACTIVE);
+      expect(res.content).toContain('🎓 Teaching:');
+    });
+
+    it('returns elevated mode even when no teaching content is provided', () => {
+      const ctx = makeContext({
+        mode: TeachingMode.L1_MINIMAL,
+        errorsEncountered: 4,
+      });
+      const res = PedagogyEngine.processTeachingRequest(ctx);
+
+      expect(res.shouldTeach).toBe(false);
+      expect(res.mode).toBe(TeachingMode.L2_CONTEXTUAL);
+    });
+
     it('teaches on error threshold in CONTEXTUAL mode', () => {
       const ctx = makeContext({
         mode: TeachingMode.L2_CONTEXTUAL,
