@@ -20,6 +20,8 @@ export default tseslint.config(
       '**/.turbo/',
       '**/coverage/',
       '**/*.min.js',
+      'eslint.config.mjs',
+      '**/public/sw.js',
       '**/next.config.js',
       '**/postcss.config.js',
     ],
@@ -40,6 +42,7 @@ export default tseslint.config(
       parserOptions: {
         projectService: {
           allowDefaultProject: [
+            'eslint.config.mjs',
             'packages/engine/vitest.config.ts',
             'packages/api-server/vitest.config.ts',
             'packages/tests/vitest.config.ts',

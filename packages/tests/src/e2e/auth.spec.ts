@@ -90,7 +90,8 @@ test.describe('Auth page navigation', () => {
 
   test('signup page links to login', async ({ page }) => {
     await page.goto('/auth/signup');
-    const loginLink = page.getByRole('link', { name: /sign in/i });
+    const loginLink = page.locator('a[href="/auth/login"]').first();
+    await expect(loginLink).toBeVisible();
     await loginLink.click();
     await expect(page).toHaveURL(/\/auth\/login/);
   });
