@@ -34,7 +34,12 @@ type PackShape = {
 };
 
 function loadContentPack(filename: string): unknown {
+  // Validate filename to prevent path traversal
+  if (!/^[\w.-]+\.json$/.test(filename)) {
+    throw new Error(`Invalid content pack filename: ${filename}`);
+  }
   const filePath = join(CONTENT_PACKS_DIR, filename);
+  // eslint-disable-next-line security/detect-non-literal-fs-filename
   const raw = readFileSync(filePath, 'utf-8');
   return JSON.parse(raw);
 }

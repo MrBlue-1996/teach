@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "@hono/node-server": "^1.8.0",
-    "@hono/zod-validator": "^0.7.6",
+    "@hono/zod-validator": "^0.8.0",
     "@topshelf/auth": "workspace:*",
     "@topshelf/billing": "workspace:*",
     "@topshelf/config": "workspace:*",

@@ -57,6 +57,7 @@ export const ConstraintEngine = {
    * Get device constraints for a profile
    */
   getConstraints(profile: DeviceProfile): DeviceConstraints {
+    // eslint-disable-next-line security/detect-object-injection
     return DEVICE_PROFILES[profile];
   },
 

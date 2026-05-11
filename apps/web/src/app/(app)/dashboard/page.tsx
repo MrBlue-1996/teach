@@ -376,7 +376,9 @@ export default function DashboardPage() {
               />
               <div className="mt-3 grid grid-cols-7 gap-1">
                 {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, i) => {
-                  const height = [40, 65, 30, 80, 55, 20, 70][i] ?? 0;
+                  const heights = [40, 65, 30, 80, 55, 20, 70];
+                  // eslint-disable-next-line security/detect-object-injection
+                  const height = heights[i] ?? 0;
                   return (
                     <div key={day} className="flex flex-col items-center gap-1">
                       <div className="w-full rounded-sm bg-muted" style={{ height: 60 }}>
@@ -518,6 +520,7 @@ function computeStreak(sessions: LearningSession[]): number {
   let streak = 1;
   for (let i = 1; i < sortedDays.length; i++) {
     const prevDay = sortedDays[i - 1];
+    // eslint-disable-next-line security/detect-object-injection
     const currDay = sortedDays[i];
     if (!prevDay || !currDay) {
       break;

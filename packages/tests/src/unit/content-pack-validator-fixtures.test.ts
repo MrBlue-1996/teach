@@ -16,7 +16,12 @@ const __dirname = path.dirname(__filename);
 const fixtureRoot = path.resolve(__dirname, '../../../../tests/fixtures/content-packs');
 
 function loadFixture(fileName: string): unknown {
+  // Validate filename to prevent path traversal
+  if (!/^[\w.-]+\.json$/.test(fileName)) {
+    throw new Error(`Invalid fixture filename: ${fileName}`);
+  }
   const fixturePath = path.join(fixtureRoot, fileName);
+  // eslint-disable-next-line security/detect-non-literal-fs-filename
   return JSON.parse(readFileSync(fixturePath, 'utf8')) as unknown;
 }
 

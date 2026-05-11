@@ -41,6 +41,7 @@ function ResetPasswordContent() {
       return;
     }
 
+    // eslint-disable-next-line security/detect-possible-timing-attacks
     if (password !== confirm) {
       setError('Passwords do not match.');
       return;

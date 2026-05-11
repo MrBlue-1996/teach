@@ -130,7 +130,9 @@ export class ParityValidator {
 
     if (field === 'hints' || field === 'variantPrompts') {
       // Array comparison
+      // eslint-disable-next-line security/detect-object-injection
       const detArray = deterministic[field];
+      // eslint-disable-next-line security/detect-object-injection
       const llmArray = llm[field];
 
       if (detArray.length !== llmArray.length) {
@@ -145,7 +147,9 @@ export class ParityValidator {
 
       const minLength = Math.min(detArray.length, llmArray.length);
       for (let i = 0; i < minLength; i++) {
+        // eslint-disable-next-line security/detect-object-injection
         const detItem = detArray[i];
+        // eslint-disable-next-line security/detect-object-injection
         const llmItem = llmArray[i];
         if (detItem !== undefined && llmItem !== undefined) {
           const similarity = this.calculateSimilarity(detItem, llmItem);
@@ -162,7 +166,9 @@ export class ParityValidator {
       }
     } else {
       // String comparison
+      // eslint-disable-next-line security/detect-object-injection
       const detValue = deterministic[field];
+      // eslint-disable-next-line security/detect-object-injection
       const llmValue = llm[field];
       const similarity = this.calculateSimilarity(detValue, llmValue);
 
@@ -227,11 +233,13 @@ export class ParityValidator {
 
     // Initialize matrix
     for (let i = 0; i <= a.length; i++) {
+      // eslint-disable-next-line security/detect-object-injection
       matrix[i] = [i];
     }
     for (let j = 0; j <= b.length; j++) {
       const row = matrix[0];
       if (row !== undefined) {
+        // eslint-disable-next-line security/detect-object-injection
         row[j] = j;
       }
     }
@@ -240,10 +248,13 @@ export class ParityValidator {
     for (let i = 1; i <= a.length; i++) {
       for (let j = 1; j <= b.length; j++) {
         const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+        // eslint-disable-next-line security/detect-object-injection
         const row = matrix[i];
         const prevRow = matrix[i - 1];
         if (row !== undefined && prevRow !== undefined) {
+          // eslint-disable-next-line security/detect-object-injection
           row[j] = Math.min(
+            // eslint-disable-next-line security/detect-object-injection
             (prevRow[j] ?? 0) + 1, // deletion
             (row[j - 1] ?? 0) + 1, // insertion
             (prevRow[j - 1] ?? 0) + cost // substitution

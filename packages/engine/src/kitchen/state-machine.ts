@@ -61,6 +61,7 @@ export class ChallengeMachine {
   private createInitialState(config: ChallengeConfig): ChallengeState {
     const domainScores: Record<MasteryDomain, number> = {} as Record<MasteryDomain, number>;
     for (const domain of Object.values(MasteryDomain)) {
+      // eslint-disable-next-line security/detect-object-injection
       domainScores[domain] = 100; // Start at 100, deducted for infractions
     }
 

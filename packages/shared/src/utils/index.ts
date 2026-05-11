@@ -124,12 +124,14 @@ export function median(values: readonly number[]): number {
   const mid = Math.floor(sorted.length / 2);
   if (sorted.length % 2 === 0) {
     const left = sorted[mid - 1];
+    // eslint-disable-next-line security/detect-object-injection
     const right = sorted[mid];
     if (left === undefined || right === undefined) {
       return 0;
     }
     return (left + right) / 2;
   }
+  // eslint-disable-next-line security/detect-object-injection
   return sorted[mid] ?? 0;
 }
 
@@ -194,7 +196,9 @@ export function compareSemver(a: string, b: string): -1 | 0 | 1 {
   const partsB = b.split('-')[0]?.split('.').map(Number) ?? [];
 
   for (let i = 0; i < 3; i++) {
+    // eslint-disable-next-line security/detect-object-injection
     const partA = partsA[i] ?? 0;
+    // eslint-disable-next-line security/detect-object-injection
     const partB = partsB[i] ?? 0;
     if (partA < partB) {
       return -1;
@@ -219,6 +223,7 @@ export function calculateWeightedScore(
   let weightedSum = 0;
 
   for (const [key, weight] of Object.entries(weights)) {
+    // eslint-disable-next-line security/detect-object-injection
     const component = components[key];
     if (component !== undefined && weight > 0) {
       weightedSum += component * weight;
@@ -332,6 +337,7 @@ export function deepFreeze<T>(obj: T): Readonly<T> {
   Object.freeze(obj);
 
   for (const key of Object.keys(obj)) {
+    // eslint-disable-next-line security/detect-object-injection
     const value = (obj as Record<string, unknown>)[key];
     if (value !== null && typeof value === 'object' && !Object.isFrozen(value)) {
       deepFreeze(value);

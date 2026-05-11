@@ -63,6 +63,7 @@ interface PhoneFrameProps {
 }
 
 export function PhoneFrame({ model = 'iphone-14', src, className }: PhoneFrameProps) {
+  // eslint-disable-next-line security/detect-object-injection
   const spec = PHONE_SPECS[model];
 
   const scaleW = Math.min(1, (spec.frameWidth - 24) / spec.viewportWidth);
