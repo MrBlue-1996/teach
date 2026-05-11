@@ -30,7 +30,7 @@
     "@topshelf/engine": "workspace:*",
     "@topshelf/observability": "workspace:*",
     "@topshelf/shared": "workspace:*",
-    "hono": "^4.0.0",
+    "hono": "^4.12.18",
     "ioredis": "^5.10.1",
     "zod": "^3.22.4"
   },
