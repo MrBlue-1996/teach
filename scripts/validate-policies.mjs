@@ -7,7 +7,7 @@
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
-import { promotionPolicySchema } from '../packages/shared/src/schemas/policy.schema.js';
+import { promotionPolicySchema } from '../packages/shared/src/schemas/policy.schema.ts';
 
 function formatIssuePath(path) {
   return path.length > 0 ? path.join('.') : '(root)';
