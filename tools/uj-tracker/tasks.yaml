@@ -1,6 +1,6 @@
 # UJ Pack Production Tracker — Single Source of Truth
 #
-# This file is read by `bin/uj-tracker` (Node script) to produce
+# This file is read by `tools/uj-tracker/bin/uj-tracker.mjs` to produce
 # progress reports. Edit task `status` here, run the tracker, get a
 # human-readable dashboard back.
 #
@@ -27,14 +27,14 @@ sanity_gate:
     If Phase 0 + Phase 1 are not "done" by week 4 from project start,
     three options on the table: (1) cut scope, (2) hire help,
     (3) pause until summer. Don't bleed Phase 1 across 4 months.
-  start_date: null # set this when you commit to the bet (e.g. 2026-05-15)
+  start_date: null # set this when you commit to the bet, e.g. 2026-05-15
   weeks_to_p1_done: 4
 
 cross_cutting:
   - id: X1
-    title: Apply v0.1.2 content pack to repo
+    title: Apply v0.1.2 Uncle Julio's content pack to repo
     agent: claude-code
-    skill: /mnt/skills/user/topshelf-content-pack-authoring/SKILL.md
+    skill: .agents/skills/topshelf-content-pack-authoring/SKILL.md
     status: pending
     blocked_on: null
     gates:
@@ -43,19 +43,19 @@ cross_cutting:
         branch: feat/uj-pack-v0.1.2-merge
       - description: PR merged
         check: manual
-      - description: validate-packs OK on uj v1
+      - description: validate-packs OK on UJ teaching pack
         check: command
         command: pnpm validate:content-packs
-        cwd: ~/repos/teach
-      - description: Final gate green
+        cwd: .
+      - description: Final repo gate green
         check: command
         command: pnpm test && pnpm format:check && pnpm lint && pnpm typecheck && pnpm build
-        cwd: ~/repos/teach
+        cwd: .
 
   - id: X2
-    title: Authoring backlog (continuous, 1 block/week)
+    title: Authoring backlog continuous weekly block
     agent: you
-    skill: /mnt/skills/user/topshelf-content-pack-authoring/SKILL.md
+    skill: .agents/skills/topshelf-content-pack-authoring/SKILL.md
     status: in-progress
     blocked_on: null
     cadence: weekly
@@ -70,36 +70,36 @@ cross_cutting:
     status: pending
     blocked_on: null
     gates:
-      - description: Decision memo exists (yes/no/maybe)
+      - description: Decision memo exists yes/no/maybe
         check: file_exists
-        path: ~/notes/sun-holdings-auth-decision.md
+        path: docs/decisions/sun-holdings-auth-decision.md
 
 phases:
   - id: P0
     title: Inventory & Decisions
     sequence: 1
-    goal: STATE_OF_THE_REPO.md merged + 4 decisions written down
+    goal: STATE_OF_THE_REPO.md merged + architecture decisions written down
     batches:
       - id: P0.1
-        title: Read & report (parallel)
+        title: Read & report
         parallelism: 5
         tasks:
           - id: P0.1.1
             title: Repo structure inventory
             agent: claude-code
             skill: null
-            status: pending
+            status: done
             blocked_on: null
             gates:
               - description: STATE_OF_THE_REPO.md Section 1 written
                 check: file_exists
-                path: ~/repos/teach/STATE_OF_THE_REPO.md
+                path: STATE_OF_THE_REPO.md
 
           - id: P0.1.2
             title: Auth & data flow inventory
             agent: claude-code
             skill: null
-            status: pending
+            status: done
             blocked_on: null
             gates:
               - description: STATE_OF_THE_REPO.md Section 2 written
@@ -109,17 +109,17 @@ phases:
             title: Challenge surface forensics
             agent: claude-code
             skill: null
-            status: pending
+            status: done
             blocked_on: null
             gates:
-              - description: STATE_OF_THE_REPO.md Section 3 written with screenshots
+              - description: STATE_OF_THE_REPO.md Section 3 written
                 check: manual
 
           - id: P0.1.4
             title: Deployment & ops inventory
             agent: claude-code
             skill: null
-            status: pending
+            status: done
             blocked_on: null
             gates:
               - description: STATE_OF_THE_REPO.md Section 4 written
@@ -129,63 +129,67 @@ phases:
             title: Run the app on your phone
             agent: you
             skill: null
-            status: pending
-            blocked_on: null
+            status: review
+            blocked_on: Patrick must confirm real-device behavior
             gates:
-              - description: STATE_OF_THE_REPO.md Section 5 with phone screenshots
+              - description: Phone screenshots or written real-device result captured
                 check: manual
 
       - id: P0.2
-        title: Decide (sequential)
+        title: Decide
         parallelism: 1
         depends_on: [P0.1]
         tasks:
           - id: P0.2.1
-            title: Hosting decision (Vercel vs Firebase Hosting vs CF Pages)
+            title: Hosting decision Vercel vs Cloudflare Pages vs other
             agent: you
             skill: null
             status: pending
             blocked_on: null
             gates:
-              - description: Decision in STATE_OF_THE_REPO.md + custom domain reserved
-                check: manual
+              - description: Decision documented with rationale
+                check: file_exists
+                path: docs/decisions/hosting-decision.md
 
           - id: P0.2.2
-            title: Auth confirmation (Firebase Auth, magic link vs email+pw vs SMS)
+            title: Auth confirmation custom JWT + Drizzle/Postgres + Supabase browser client
             agent: you
             skill: null
             status: pending
             blocked_on: null
             gates:
-              - description: Decision documented
-                check: manual
+              - description: Decision documented; no Firebase or Firestore references remain in active plan
+                check: file_exists
+                path: docs/decisions/auth-data-decision.md
 
           - id: P0.2.3
-            title: PWA strategy (next-pwa vs hand-rolled SW, offline scope)
+            title: PWA strategy next-pwa vs hand-rolled service worker, offline scope
             agent: you
             skill: null
             status: pending
             blocked_on: null
             gates:
               - description: Decision documented
-                check: manual
+                check: file_exists
+                path: docs/decisions/pwa-strategy.md
 
           - id: P0.2.4
-            title: Pack delivery strategy (bundle vs CDN — v1 should bundle)
+            title: Pack delivery strategy static bundle vs dynamic registry
             agent: you
             skill: null
             status: pending
             blocked_on: null
             gates:
-              - description: Decision documented
-                check: manual
+              - description: Decision documented; v0.1 default is static bundle
+                check: file_exists
+                path: docs/decisions/pack-delivery-strategy.md
 
     phase_gate:
       - description: STATE_OF_THE_REPO.md merged to main
         check: manual
-      - description: All 4 decisions recorded with rationale
+      - description: Required architecture decisions recorded with rationale
         check: manual
-      - description: Custom domain reserved
+      - description: Real-device phone check completed or explicitly deferred
         check: manual
 
   - id: P1
@@ -195,106 +199,115 @@ phases:
     goal: One user, one block, end-to-end on real phone with persisted progress
     batches:
       - id: P1.1
-        title: PWA shell (parallel)
+        title: PWA shell
         parallelism: 2
         tasks:
           - id: P1.1.1
             title: PWA manifest + icons
             agent: claude-code
-            skill: /mnt/skills/user/top-shelf-ui/SKILL.md
+            skill: .agents/skills/top-shelf-ui/SKILL.md
             status: pending
+            blocked_on: null
             gates:
-              - description: Lighthouse Installable check passes
+              - description: Lighthouse installable check passes
                 check: manual
 
           - id: P1.1.2
-            title: Service worker (app shell caching)
+            title: Service worker app shell caching
             agent: claude-code
             skill: null
             status: pending
+            blocked_on: null
             gates:
               - description: App shows cached shell when offline
                 check: manual
 
       - id: P1.2
-        title: Auth (parallel)
+        title: Auth
         parallelism: 2
         tasks:
           - id: P1.2.1
-            title: Firebase Auth wiring (email/password)
+            title: Custom JWT auth wiring validation
             agent: claude-code
             skill: null
             status: pending
+            blocked_on: null
             gates:
-              - description: Sign up, log out, log back in, refresh — still signed in
+              - description: Sign up, log out, log back in, refresh — still signed in or session recovers correctly
                 check: manual
 
           - id: P1.2.2
-            title: Login UI (mobile-first, brand-consistent)
+            title: Login UI mobile-first, brand-consistent
             agent: claude-code
-            skill: /mnt/skills/user/top-shelf-ui/SKILL.md
+            skill: .agents/skills/top-shelf-ui/SKILL.md
             status: pending
+            blocked_on: null
             gates:
-              - description: Looks right on 320px viewport on real phone
+              - description: Looks right on 320px viewport and real phone
                 check: manual
 
       - id: P1.3
-        title: Data layer (parallel)
+        title: Data layer
         parallelism: 2
         tasks:
           - id: P1.3.1
-            title: Firestore schema for users + progress
+            title: Drizzle/Postgres users + learner progress schema validation
             agent: claude-code
             skill: null
             status: pending
+            blocked_on: null
             gates:
-              - description: Rules tests pass; cannot read other user's progress
+              - description: API tests prove user cannot read another user's progress
                 check: manual
 
           - id: P1.3.2
             title: Pack reader hook
             agent: claude-code
-            skill: /mnt/skills/user/topshelf-content-pack-authoring/SKILL.md
+            skill: .agents/skills/topshelf-content-pack-authoring/SKILL.md
             status: pending
+            blocked_on: null
             gates:
-              - description: Invalid pack JSON fails build, not runtime
+              - description: Invalid pack JSON fails build or validation, not runtime
                 check: manual
 
       - id: P1.4
-        title: Challenge surface (sequential after P1.3)
+        title: Challenge surface
         parallelism: 1
         depends_on: [P1.3]
         tasks:
           - id: P1.4.1
-            title: Block list (cook home screen)
+            title: Block list cook home screen
             agent: claude-code
-            skill: /mnt/skills/user/top-shelf-ui/SKILL.md
+            skill: .agents/skills/top-shelf-ui/SKILL.md
             status: pending
+            blocked_on: null
             gates:
               - description: Real device, looks right
                 check: manual
 
           - id: P1.4.2
-            title: Block detail + challenge surface (text-only, no stimulus)
+            title: Block detail + challenge surface text-only no stimulus
             agent: claude-code
-            skill: /mnt/skills/user/top-shelf-ui/SKILL.md
+            skill: .agents/skills/top-shelf-ui/SKILL.md
             status: pending
+            blocked_on: null
             gates:
               - description: tb-uj-orientation-safety end-to-end on real phone
                 check: manual
 
       - id: P1.5
-        title: Deploy (sequential, end of phase)
+        title: Deploy
         parallelism: 1
         depends_on: [P1.4]
         tasks:
           - id: P1.5.1
-            title: Vercel deploy with custom domain + SSL
+            title: Production deploy with custom domain + SSL
             agent: you
             skill: null
             status: pending
+            blocked_on: null
             gates:
-              - description: Live URL, install banner appears on phone
+              - description: Live URL, install banner appears on phone after PWA is implemented
                 check: manual
 
     phase_gate:
@@ -314,14 +327,15 @@ phases:
     goal: All 6 stimulus kinds render correctly. All 8 blocks doable.
     batches:
       - id: P2.1
-        title: Six renderers (parallel — 6 agents)
+        title: Six renderers
         parallelism: 6
         tasks:
           - id: P2.1.1
             title: TicketStimulus renderer
             agent: claude-code
-            skill: /mnt/skills/user/top-shelf-ui/SKILL.md
+            skill: .agents/skills/top-shelf-ui/SKILL.md
             status: pending
+            blocked_on: null
             gates:
               - description: tb-uj-ticket-flow-basics ticket renders on phone
                 check: manual
@@ -329,8 +343,9 @@ phases:
           - id: P2.1.2
             title: StationStateStimulus renderer
             agent: claude-code
-            skill: /mnt/skills/user/top-shelf-ui/SKILL.md
+            skill: .agents/skills/top-shelf-ui/SKILL.md
             status: pending
+            blocked_on: null
             gates:
               - description: tb-uj-cleaning-reset and tb-uj-tools-color-barriers render on phone
                 check: manual
@@ -338,8 +353,9 @@ phases:
           - id: P2.1.3
             title: HuddleNotesStimulus renderer
             agent: claude-code
-            skill: /mnt/skills/user/top-shelf-ui/SKILL.md
+            skill: .agents/skills/top-shelf-ui/SKILL.md
             status: pending
+            blocked_on: null
             gates:
               - description: tb-uj-line-readiness huddle card renders on phone
                 check: manual
@@ -347,49 +363,54 @@ phases:
           - id: P2.1.4
             title: MenuBoardStimulus renderer
             agent: claude-code
-            skill: /mnt/skills/user/top-shelf-ui/SKILL.md
+            skill: .agents/skills/top-shelf-ui/SKILL.md
             status: pending
+            blocked_on: null
             gates:
               - description: 86s called out red, features visible, on phone
                 check: manual
 
           - id: P2.1.5
-            title: StepBankStimulus renderer (most complex)
+            title: StepBankStimulus renderer
             agent: claude-code
-            skill: /mnt/skills/user/top-shelf-ui/SKILL.md
+            skill: .agents/skills/top-shelf-ui/SKILL.md
             status: pending
+            blocked_on: null
             gates:
-              - description: Drag all 8 steps on real phone with damp fingers
+              - description: Drag all 8 steps on real phone with damp-finger tolerance considered
                 check: manual
 
           - id: P2.1.6
             title: PlainTextStimulus renderer
             agent: claude-code
-            skill: /mnt/skills/user/top-shelf-ui/SKILL.md
+            skill: .agents/skills/top-shelf-ui/SKILL.md
             status: pending
+            blocked_on: null
             gates:
               - description: Renders on phone, monospace honored
                 check: manual
 
       - id: P2.2
-        title: Discriminator + integration (sequential)
+        title: Discriminator + integration
         parallelism: 1
         depends_on: [P2.1]
         tasks:
           - id: P2.2.1
             title: Discriminator router
             agent: claude-code
-            skill: /mnt/skills/user/top-shelf-ui/SKILL.md
+            skill: .agents/skills/top-shelf-ui/SKILL.md
             status: pending
+            blocked_on: null
             gates:
-              - description: TS exhaustive switch verified
+              - description: TypeScript exhaustive switch verified
                 check: manual
 
           - id: P2.2.2
             title: Wire stimulus into challenge surface
             agent: claude-code
-            skill: /mnt/skills/user/top-shelf-ui/SKILL.md
+            skill: .agents/skills/top-shelf-ui/SKILL.md
             status: pending
+            blocked_on: null
             gates:
               - description: All 6 blocks with stimulus work end-to-end on phone
                 check: manual
@@ -404,6 +425,7 @@ phases:
             agent: you
             skill: null
             status: pending
+            blocked_on: null
             gates:
               - description: Friction log captured, P0 vs deferred decided
                 check: manual
@@ -423,83 +445,101 @@ phases:
     goal: Pedagogy works. Modes elevate. Re-prompts schedule.
     batches:
       - id: P3.1
-        title: Client-side triggers (parallel)
+        title: Client-side triggers
         parallelism: 3
         tasks:
           - id: P3.1.1
             title: stuck_time timer
             agent: claude-code
+            skill: null
             status: pending
+            blocked_on: null
             gates:
               - description: Past threshold → hint surfaces
                 check: manual
+
           - id: P3.1.2
             title: repeated_errors counter
             agent: claude-code
+            skill: null
             status: pending
+            blocked_on: null
             gates:
               - description: Wrong twice → guided breakdown surfaces
                 check: manual
+
           - id: P3.1.3
             title: help_requested button
             agent: claude-code
-            skill: /mnt/skills/user/top-shelf-ui/SKILL.md
+            skill: .agents/skills/top-shelf-ui/SKILL.md
             status: pending
+            blocked_on: null
             gates:
               - description: Tap help → explanation visible
                 check: manual
 
       - id: P3.2
-        title: Mode state machine (sequential after P3.1)
+        title: Mode state machine
         parallelism: 1
         depends_on: [P3.1]
         tasks:
           - id: P3.2.1
             title: Mode elevation logic L0→L1→L2→L3→L4
             agent: claude-code
+            skill: null
             status: pending
+            blocked_on: null
             gates:
               - description: Transitions reproducible from trigger fixtures
                 check: manual
+
           - id: P3.2.2
             title: Mode-specific UI surfaces
             agent: claude-code
-            skill: /mnt/skills/user/top-shelf-ui/SKILL.md
+            skill: .agents/skills/top-shelf-ui/SKILL.md
             status: pending
+            blocked_on: null
             gates:
               - description: All 5 modes look right on phone
                 check: manual
 
       - id: P3.3
-        title: Retention scheduler (sequential)
+        title: Retention scheduler
         parallelism: 1
         depends_on: [P3.2]
         tasks:
           - id: P3.3.1
             title: Server-side reassessment trigger
             agent: claude-code
+            skill: null
             status: pending
+            blocked_on: null
             gates:
               - description: Simulated time travel test → block reappears
                 check: manual
+
           - id: P3.3.2
             title: Decay surface affordance
             agent: claude-code
-            skill: /mnt/skills/user/top-shelf-ui/SKILL.md
+            skill: .agents/skills/top-shelf-ui/SKILL.md
             status: pending
+            blocked_on: null
             gates:
               - description: You are seeing this again UI present
                 check: manual
+
           - id: P3.3.3
             title: idle_drop and frequency_decline
             agent: claude-code
+            skill: null
             status: deferred
+            blocked_on: v0.2 scope unless Phase 3 has slack
             gates:
-              - description: Defer to v0.2 if Phase 3 running long
+              - description: Defer to v0.2 if Phase 3 runs long
                 check: manual
 
     phase_gate:
-      - description: All 5 trigger types work (or 3 + 2 deferred)
+      - description: All 5 trigger types work or 3 work + 2 explicitly deferred
         check: manual
       - description: Mode elevation visible
         check: manual
@@ -513,63 +553,75 @@ phases:
     goal: Credential loop closes. Manager signs off cooks at their tenant.
     batches:
       - id: P4.1
-        title: Auth claims (sequential, blocking)
+        title: Auth claims and tenant isolation
         parallelism: 1
         tasks:
           - id: P4.1.1
-            title: Custom claims structure (role + tenantId)
+            title: JWT claims structure role + tenantId / organizationId
             agent: claude-code
+            skill: null
             status: pending
+            blocked_on: null
             gates:
               - description: Claims show in decoded JWT for cook + manager
                 check: manual
+
           - id: P4.1.2
-            title: Firestore rules with tenant isolation
+            title: Tenant isolation tests for API + database queries
             agent: claude-code
+            skill: null
             status: pending
+            blocked_on: null
             gates:
               - description: Manager A cannot read cook progress at tenant B
                 check: manual
 
       - id: P4.2
-        title: Manager surfaces (parallel after P4.1)
+        title: Manager surfaces
         parallelism: 3
         depends_on: [P4.1]
         tasks:
           - id: P4.2.1
-            title: Manager home (cook list)
+            title: Manager home cook list
             agent: claude-code
-            skill: /mnt/skills/user/top-shelf-ui/SKILL.md
+            skill: .agents/skills/top-shelf-ui/SKILL.md
             status: pending
+            blocked_on: null
             gates:
               - description: Real phone, looks right
                 check: manual
+
           - id: P4.2.2
             title: Cook detail + sign-off
             agent: claude-code
-            skill: /mnt/skills/user/top-shelf-ui/SKILL.md
+            skill: .agents/skills/top-shelf-ui/SKILL.md
             status: pending
+            blocked_on: null
             gates:
-              - description: Sign-off completes in <30s start to finish
+              - description: Sign-off completes in under 30 seconds start to finish
                 check: manual
+
           - id: P4.2.3
             title: Cook sees badge after signoff
             agent: claude-code
-            skill: /mnt/skills/user/top-shelf-ui/SKILL.md
+            skill: .agents/skills/top-shelf-ui/SKILL.md
             status: pending
+            blocked_on: null
             gates:
-              - description: Real-time visible on cook's phone
+              - description: Visible on cook's phone after refresh or realtime update
                 check: manual
 
       - id: P4.3
-        title: Admin onboarding (sequential, you only)
+        title: Admin onboarding
         parallelism: 1
         depends_on: [P4.2]
         tasks:
           - id: P4.3.1
             title: Admin tool to create tenant + bind manager
             agent: you
+            skill: null
             status: pending
+            blocked_on: null
             gates:
               - description: Onboard a tenant in under 5 minutes
                 check: manual
@@ -577,7 +629,7 @@ phases:
     phase_gate:
       - description: Two tenants exist; isolation verified
         check: manual
-      - description: Sign-off loop <30s
+      - description: Sign-off loop under 30 seconds
         check: manual
 
   - id: P5
@@ -587,116 +639,145 @@ phases:
     goal: Demo → real product.
     batches:
       - id: P5.1
-        title: Monitoring (parallel)
+        title: Monitoring
         parallelism: 2
         tasks:
           - id: P5.1.1
             title: Sentry wiring
             agent: claude-code
+            skill: null
             status: pending
+            blocked_on: null
             gates:
               - description: Intentional throw shows in Sentry dashboard
                 check: manual
+
           - id: P5.1.2
             title: Analytics for stuck patterns
             agent: claude-code
+            skill: null
             status: pending
+            blocked_on: null
             gates:
               - description: Admin dashboard populates from a week of usage
                 check: manual
 
       - id: P5.2
-        title: Legal (sequential, mostly you)
+        title: Legal
         parallelism: 1
         tasks:
           - id: P5.2.1
             title: Privacy policy draft
             agent: you
+            skill: null
             status: pending
+            blocked_on: null
             gates:
-              - description: /legal/privacy live, attorney-reviewed
+              - description: /legal/privacy live, attorney-reviewed before outside rollout
                 check: manual
+
           - id: P5.2.2
             title: Terms of service draft
             agent: you
+            skill: null
             status: pending
+            blocked_on: null
             gates:
-              - description: /legal/terms live, attorney-reviewed
+              - description: /legal/terms live, attorney-reviewed before outside rollout
                 check: manual
+
           - id: P5.2.3
             title: Footer links + signup checkboxes
             agent: claude-code
-            skill: /mnt/skills/user/top-shelf-ui/SKILL.md
+            skill: .agents/skills/top-shelf-ui/SKILL.md
             status: pending
+            blocked_on: null
             gates:
-              - description: Cannot sign up without accepting
+              - description: Cannot sign up without accepting required terms
                 check: manual
 
       - id: P5.3
-        title: Accessibility (parallel)
+        title: Accessibility
         parallelism: 3
         tasks:
           - id: P5.3.1
             title: axe-core in CI
             agent: claude-code
+            skill: null
             status: pending
+            blocked_on: null
             gates:
               - description: GitHub Action runs axe-core on every PR
                 check: manual
+
           - id: P5.3.2
             title: Manual screen reader pass
             agent: you
+            skill: null
             status: pending
+            blocked_on: null
             gates:
               - description: Every screen navigable by VoiceOver/TalkBack
                 check: manual
+
           - id: P5.3.3
             title: Contrast + tap-target audit
             agent: claude-code
-            skill: /mnt/skills/user/top-shelf-ui/SKILL.md
+            skill: .agents/skills/top-shelf-ui/SKILL.md
             status: pending
+            blocked_on: null
             gates:
               - description: WCAG 2.2 AA pass via axe + manual
                 check: manual
 
       - id: P5.4
-        title: Performance (parallel)
+        title: Performance
         parallelism: 2
         tasks:
           - id: P5.4.1
             title: Lighthouse CI in pipeline
             agent: claude-code
+            skill: null
             status: pending
+            blocked_on: null
             gates:
               - description: Main holds Perf 90+, A11y 100, BP 100, PWA installable
                 check: manual
+
           - id: P5.4.2
             title: Bundle size audit
             agent: claude-code
+            skill: null
             status: pending
+            blocked_on: null
             gates:
-              - description: Initial JS bundle <200KB gzipped
+              - description: Initial JS bundle target documented and enforced
                 check: manual
 
       - id: P5.5
-        title: Operational (sequential)
+        title: Operational
         parallelism: 1
         tasks:
           - id: P5.5.1
             title: Backup verification
             agent: claude-code
+            skill: null
             status: pending
+            blocked_on: null
             gates:
               - description: Test restore works
                 check: manual
+
           - id: P5.5.2
             title: RUNBOOK.md
             agent: you
+            skill: null
             status: pending
+            blocked_on: null
             gates:
-              - description: Doc exists covering every failure mode
+              - description: Doc exists covering every major failure mode
                 check: file_exists
-                path: ~/repos/teach/RUNBOOK.md
+                path: RUNBOOK.md
 
     phase_gate:
       - description: Lighthouse all green
@@ -723,34 +804,44 @@ phases:
           - id: P6.1.1
             title: Identify 3 pilot cooks at UJ Arlington
             agent: you
+            skill: null
             status: pending
+            blocked_on: Authorization and consent required
             gates:
               - description: 3 names with permission
                 check: manual
+
           - id: P6.1.2
             title: Onboard manager + cooks on real phones
             agent: you
+            skill: null
             status: pending
+            blocked_on: Authorization and legal/privacy readiness required
             gates:
               - description: All 4 logged in, first block started
                 check: manual
 
       - id: P6.2
-        title: Observe (4 weeks, weekly)
+        title: Observe
         parallelism: 1
         cadence: weekly
         tasks:
           - id: P6.2.1
-            title: Weekly observation review (Sundays)
+            title: Weekly observation review Sundays
             agent: you
+            skill: null
             status: pending
+            blocked_on: null
             gates:
               - description: 4 weekly summaries written
                 check: manual
+
           - id: P6.2.2
             title: Bug triage + 48h turnaround
             agent: claude-code
+            skill: null
             status: pending
+            blocked_on: null
             gates:
               - description: No critical bug open longer than a week
                 check: manual
@@ -763,7 +854,9 @@ phases:
           - id: P6.3.1
             title: Pilot retro
             agent: you
+            skill: null
             status: pending
+            blocked_on: null
             gates:
               - description: Go/no-go on broader rollout
                 check: manual
@@ -773,5 +866,5 @@ phases:
         check: manual
       - description: Retro doc written
         check: manual
-      - description: Decision made (scale, revise, or pivot)
+      - description: Decision made scale, revise, or pivot
         check: manual

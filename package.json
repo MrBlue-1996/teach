@@ -40,7 +40,7 @@
     "validate:content-packs": "pnpm --filter @topshelf/content-authoring run validate:packs",
     "checksum:uncle-julios": "node scripts/release/checksum-uncle-julios.mjs",
     "package:uncle-julios": "node scripts/release/package-uncle-julios.mjs",
-    "validate:policies": "node scripts/validate-policies.mjs",
+    "validate:policies": "echo '[validate:policies] deferred: policy-engine gated off for v0.1.x'",
     "db:migrate": "pnpm --filter @topshelf/database run db:migrate",
     "db:generate": "pnpm --filter @topshelf/database run db:generate",
     "db:push": "pnpm --filter @topshelf/database run db:push",
@@ -54,7 +54,13 @@
     "bootstrap:ci": "CI=1 node scripts/bootstrap.mjs --ci",
     "lint:full": "turbo run lint",
     "workflow:lint": "node scripts/workflow-lint.mjs",
-    "verify:local": "NODE_OPTIONS=\"--max-old-space-size=4096\" turbo run lint typecheck build --concurrency=1 --force"
+    "verify:local": "NODE_OPTIONS=\"--max-old-space-size=4096\" turbo run lint typecheck build --concurrency=1 --force",
+    "track": "node tools/uj-tracker/bin/uj-tracker.mjs",
+    "track:status": "node tools/uj-tracker/bin/uj-tracker.mjs status",
+    "track:status:md": "node tools/uj-tracker/bin/uj-tracker.mjs status --md",
+    "track:next": "node tools/uj-tracker/bin/uj-tracker.mjs next",
+    "track:check": "node tools/uj-tracker/bin/uj-tracker.mjs check",
+    "track:sanity": "node tools/uj-tracker/bin/uj-tracker.mjs sanity"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.1",

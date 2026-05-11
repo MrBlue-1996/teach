@@ -7,7 +7,9 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Kitchen golden path', () => {
-  test('runs the rush challenge through solve, teach, and mastery views', async ({ page }) => {
+  test('runs the rush challenge through solve, teach, verify, and mastery views', async ({
+    page,
+  }) => {
     await page.goto('/kitchen');
 
     await expect(page.getByRole('heading', { name: 'TopShelf Kitchen' })).toBeVisible();
@@ -18,6 +20,7 @@ test.describe('Kitchen golden path', () => {
       page.waitForURL(/\/kitchen\/challenges\/uj-fajita-rush/, { timeout: 15_000 }),
       page.getByRole('link', { name: /Quick Challenge/i }).click(),
     ]);
+
     await expect(
       page.getByRole('heading', { level: 1, name: "Uncle Julio's: Fajita Rush" })
     ).toBeVisible();
@@ -37,6 +40,7 @@ test.describe('Kitchen golden path', () => {
 
     await page.getByRole('button', { name: 'Show me the right way' }).click();
     await expect(page.getByRole('heading', { name: 'The expert standard' })).toBeVisible();
+
     await expect(
       page.getByRole('heading', { name: 'Mesquite-Grilled Chicken Fajitas' })
     ).toBeVisible();
@@ -44,7 +48,11 @@ test.describe('Kitchen golden path', () => {
     await page.getByRole('button', { name: /Why\?/ }).first().click();
     await expect(page.getByText(/prevent cross-contamination from raw chicken/i)).toBeVisible();
 
-    await page.getByRole('button', { name: 'Skip to mastery' }).click();
+    await page.getByRole('button', { name: 'Prove it — verify run' }).click();
+    await expect(page.getByRole('timer')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Complete verification' })).toBeVisible();
+
+    await page.getByRole('button', { name: 'Complete verification' }).click();
     await expect(page.getByRole('heading', { name: 'Mastery scored' })).toBeVisible();
 
     await page.getByRole('button', { name: 'Return to kitchen' }).click();

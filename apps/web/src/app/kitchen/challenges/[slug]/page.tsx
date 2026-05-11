@@ -230,8 +230,12 @@ function RushHourView({
         <div className="rush-layout__counter">
           <strong>{ch.ticketsCompleted}</strong> / {ch.ticketsTotal} plates
         </div>
-        <button type="button" className="btn-action btn-caution" onClick={ch.endSolve}>
-          End rush
+        <button
+          type="button"
+          className={ch.isVerification ? 'btn-action btn-primary' : 'btn-action btn-caution'}
+          onClick={ch.isVerification ? ch.toMastery : ch.endSolve}
+        >
+          {ch.isVerification ? 'Complete verification' : 'End rush'}
         </button>
       </aside>
 
@@ -292,6 +296,11 @@ function TempCheckView({
         target: { min: s.min, max: s.max },
       });
     }
+    if (ch.isVerification) {
+      ch.toMastery();
+      return;
+    }
+
     ch.endSolve();
   };
 
@@ -352,8 +361,12 @@ function SimpleSolveView({
               {recipeOpen ? 'Hide recipe' : 'Show recipe'}
             </button>
           )}
-          <button type="button" className="btn-action btn-primary" onClick={ch.endSolve}>
-            Submit
+          <button
+            type="button"
+            className="btn-action btn-primary"
+            onClick={ch.isVerification ? ch.toMastery : ch.endSolve}
+          >
+            {ch.isVerification ? 'Complete verification' : 'Submit'}
           </button>
         </div>
       </section>
