@@ -1,78 +1,75 @@
 ---
 description: 'Blackboard communication protocol for all specialized agents. Teaches agents to read shared state before working and write updates after completing work.'
 applyTo: '.github/agents/**'
+lastUpdated: '2026-05-11'
 ---
 
 # Agent Communication Protocol
 
-You participate in a **blackboard architecture** for inter-agent coordination. Before starting work and after finishing, you interact with shared state files.
+This repository uses a blackboard model. Agents must coordinate through shared state files so work remains aligned and auditable.
 
-## Before Starting Work
+## Required Read Order Before Work
 
-1. **Read the board**: `.github/state/board.md` — check what other agents have done that affects your task
-2. **Read decisions**: `.github/state/decisions.md` — check for architectural decisions you must follow
-3. **Check blockers**: `.github/state/blockers.md` — see if anyone needs something from you
+1. `.github/state/queue.md`
+2. `.github/state/board.md`
+3. `.github/state/decisions.md`
+4. `.github/state/blockers.md`
 
-## After Completing Work
+## Required Updates After Work
 
-1. **Update your section** in `.github/state/board.md` — append a timestamped entry under your heading:
+1. Append a timestamped update under your section in `.github/state/board.md`
+2. Add `[OPEN]` blocker entries in `.github/state/blockers.md` if you depend on another agent
+3. Mark blockers `[RESOLVED]` when completed
+4. Record architecture decisions in `.github/state/decisions.md` when behavior/contract changes are made
 
-   ```markdown
-   ### your-agent-name
+## Board Update Standard
 
-   - **[2026-04-13]** Completed: <what you did>. Files changed: <list>. Other agents should know: <key details>.
-   ```
+Each board entry must include:
 
-2. **If you need something from another agent**, add to `.github/state/blockers.md`:
+- Date
+- Tags
+- What changed
+- Files changed
+- What downstream agents must know
 
-   ```markdown
-   ## [OPEN] From: your-name → To: target-agent
+Example:
 
-   **Need**: <specific thing>
-   **Why**: <what's blocked>
-   **Filed**: 2026-04-13
-   ```
+```markdown
+- **[2026-05-11]** `api` `contracts` Completed: Added learner teach endpoint validation and response envelope alignment. Files: `packages/api-server/src/routes/learner.ts`. Downstream: web client should expect `data.teachingResponse`.
+```
 
-3. **If you made an architectural decision**, add to `.github/state/decisions.md`:
+## Blocker Standard
 
-   ```markdown
-   ## Decision: <title>
+Use this format:
 
-   **Date**: 2026-04-13
-   **By**: your-name
-   **Decision**: <what>
-   **Reason**: <why>
-   **Affects**: <which agents>
-   ```
+```markdown
+## [OPEN] From: api-engineer -> To: db-engineer
+
+**Need**: Add index on `learningSessions(userId, createdAt)`.
+**Why**: Endpoint latency regression under session history query.
+**Filed**: 2026-05-11
+```
+
+When resolved, update header to `[RESOLVED]` and add resolution note.
 
 ## Rules
 
-- NEVER delete or overwrite another agent's entries — only append
-- Keep updates concise — other agents need to scan quickly
-- Include file paths in updates so other agents know where to look
-- If a blocker targets you, resolve it and mark it `[RESOLVED]`
+- Append only. Never edit or remove another agent's historical entries.
+- Keep updates concise and concrete.
+- Include explicit file paths for all material changes.
+- Resolve blockers proactively before starting dependent work.
 
-## Tags & Hotspots
+## Tags And Hotspots
 
-Tasks in `queue.md` are tagged with metadata indicating which integration boundaries they touch:
+If a task includes tags, read the corresponding hotspots before coding.
 
-| Tag         | Meaning                   | Must-read files                                                 |
-| ----------- | ------------------------- | --------------------------------------------------------------- |
-| `schema`    | Database schema change    | `packages/database/src/schema/index.ts`                         |
-| `types`     | Type/interface change     | `packages/engine/src/types.ts`, `packages/shared/src/types/`    |
-| `api`       | API endpoint/contract     | `packages/api-server/src/routes/learner.ts`                     |
-| `contracts` | Cross-boundary agreement  | Both the API route AND the web client (`apps/web/src/lib/api/`) |
-| `enums`     | Enum taxonomy change      | See board.md "Key Enums" — two separate taxonomies exist        |
-| `config`    | Environment/config change | `packages/config/src/index.ts`, `.env.example`                  |
-| `infra`     | Infrastructure change     | `infrastructure/docker/docker-compose.yml`                      |
-| `content`   | Content data change       | `content-packs/`, `content/web-fundamentals/`                   |
-| `policy`    | Promotion/pedagogy rules  | `governance/policies/promotion_policy_config.json`              |
-| `pedagogy`  | Teaching logic change     | `packages/engine/src/pedagogy-engine.ts`                        |
-
-**When your task has a tag, you MUST read the hotspot files for that tag in `board.md` before making changes.**
-
-When writing your board update, include which tags your changes affect:
-
-```markdown
-- **[2026-04-13]** `schema` `types` Completed: Added triggersFired column. Files: `schema/index.ts`. Other agents: new JSONB column, use `TriggerType[]` shape.
-```
+- `schema`: `packages/database/src/schema/index.ts`
+- `types`: `packages/engine/src/types.ts`, `packages/shared/src/types/`
+- `api`: `packages/api-server/src/routes/learner.ts`
+- `contracts`: API route and `apps/web/src/lib/api/`
+- `enums`: see taxonomy notes in board
+- `config`: `packages/config/src/index.ts`, `.env.example`
+- `infra`: `infrastructure/docker/docker-compose.yml`
+- `content`: `content-packs/`, `content/web-fundamentals/`
+- `policy`: `governance/policies/promotion_policy_config.json`
+- `pedagogy`: `packages/engine/src/pedagogy-engine.ts`
