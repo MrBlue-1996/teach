@@ -35,8 +35,8 @@ cross_cutting:
     title: Apply v0.1.2 Uncle Julio's content pack to repo
     agent: claude-code
     skill: .agents/skills/topshelf-content-pack-authoring/SKILL.md
-    status: pending
-    blocked_on: null
+    status: blocked
+    blocked_on: Missing authorized/local UJ v0.1.2 source artifact or branch; current manifest is 0.1.1 and local zip source is 0.1.0.
     gates:
       - description: Branch exists
         check: git_branch
@@ -67,8 +67,8 @@ cross_cutting:
     title: Sun Holdings / UJ authorization conversation
     agent: you
     skill: null
-    status: pending
-    blocked_on: null
+    status: review
+    blocked_on: Authorization remains pending; decision memo exists and records current scope.
     gates:
       - description: Decision memo exists yes/no/maybe
         check: file_exists
@@ -144,7 +144,7 @@ phases:
             title: Hosting decision Vercel vs Cloudflare Pages vs other
             agent: you
             skill: null
-            status: pending
+            status: done
             blocked_on: null
             gates:
               - description: Decision documented with rationale
@@ -155,7 +155,7 @@ phases:
             title: Auth confirmation custom JWT + Drizzle/Postgres + Supabase browser client
             agent: you
             skill: null
-            status: pending
+            status: done
             blocked_on: null
             gates:
               - description: Decision documented; no Firebase or Firestore references remain in active plan
@@ -166,7 +166,7 @@ phases:
             title: PWA strategy next-pwa vs hand-rolled service worker, offline scope
             agent: you
             skill: null
-            status: pending
+            status: done
             blocked_on: null
             gates:
               - description: Decision documented
@@ -177,7 +177,7 @@ phases:
             title: Pack delivery strategy static bundle vs dynamic registry
             agent: you
             skill: null
-            status: pending
+            status: done
             blocked_on: null
             gates:
               - description: Decision documented; v0.1 default is static bundle
@@ -206,7 +206,7 @@ phases:
             title: PWA manifest + icons
             agent: claude-code
             skill: .agents/skills/top-shelf-ui/SKILL.md
-            status: pending
+            status: review
             blocked_on: null
             gates:
               - description: Lighthouse installable check passes
@@ -216,7 +216,7 @@ phases:
             title: Service worker app shell caching
             agent: claude-code
             skill: null
-            status: pending
+            status: review
             blocked_on: null
             gates:
               - description: App shows cached shell when offline
@@ -230,7 +230,7 @@ phases:
             title: Custom JWT auth wiring validation
             agent: claude-code
             skill: null
-            status: pending
+            status: review
             blocked_on: null
             gates:
               - description: Sign up, log out, log back in, refresh — still signed in or session recovers correctly
@@ -254,7 +254,7 @@ phases:
             title: Drizzle/Postgres users + learner progress schema validation
             agent: claude-code
             skill: null
-            status: pending
+            status: review
             blocked_on: null
             gates:
               - description: API tests prove user cannot read another user's progress
@@ -264,7 +264,7 @@ phases:
             title: Pack reader hook
             agent: claude-code
             skill: .agents/skills/topshelf-content-pack-authoring/SKILL.md
-            status: pending
+            status: review
             blocked_on: null
             gates:
               - description: Invalid pack JSON fails build or validation, not runtime
@@ -279,7 +279,7 @@ phases:
             title: Block list cook home screen
             agent: claude-code
             skill: .agents/skills/top-shelf-ui/SKILL.md
-            status: pending
+            status: review
             blocked_on: null
             gates:
               - description: Real device, looks right
@@ -289,7 +289,7 @@ phases:
             title: Block detail + challenge surface text-only no stimulus
             agent: claude-code
             skill: .agents/skills/top-shelf-ui/SKILL.md
-            status: pending
+            status: review
             blocked_on: null
             gates:
               - description: tb-uj-orientation-safety end-to-end on real phone
@@ -772,7 +772,7 @@ phases:
             title: RUNBOOK.md
             agent: you
             skill: null
-            status: pending
+            status: done
             blocked_on: null
             gates:
               - description: Doc exists covering every major failure mode
