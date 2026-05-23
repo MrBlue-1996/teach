@@ -652,6 +652,105 @@ describe('Learner Routes', () => {
       );
     });
 
+    it('should persist one completed block through the current user session and learner state', async () => {
+      const insertValuesSpy = vi.fn().mockReturnValue({
+        returning: vi.fn().mockResolvedValue([
+          {
+            id: 'event-one-block',
+            blockId: 'block-1',
+            eventType: 'completed',
+          },
+        ]),
+      });
+      const whereSpy = vi.fn().mockResolvedValue(undefined);
+      const setSpy = vi.fn().mockReturnValue({ where: whereSpy });
+
+      mockDb.query.learningSessions.findFirst
+        .mockResolvedValueOnce({
+          ...mockSession,
+          userId: 'user-test-1',
+          learnerStateId: 'state-1',
+          status: 'active',
+        })
+        .mockResolvedValueOnce({
+          ...mockSession,
+          userId: 'user-test-1',
+          learnerStateId: 'state-1',
+          status: 'active',
+          blocksCompleted: 1,
+          blocksAttempted: 1,
+          problemsSolved: 1,
+          errorsEncountered: 0,
+        });
+      mockDb.query.learnerStates.findFirst.mockResolvedValue({
+        ...mockLearnerState,
+        id: 'state-1',
+        userId: 'user-test-1',
+      });
+      mockDb.insert.mockReturnValue({ values: insertValuesSpy });
+      mockDb.update.mockReturnValue({ set: setSpy });
+
+      const res = await app.request('/learner/session/session-1/event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          blockId: 'block-1',
+          eventType: 'completed',
+          correctness: 1,
+          timeSpentSeconds: 30,
+        }),
+      });
+
+      expect(res.status).toBe(200);
+      expect(mockDb.query.learningSessions.findFirst).toHaveBeenNthCalledWith(
+        1,
+        expect.objectContaining({
+          where: expect.arrayContaining([
+            ['id', 'session-1'],
+            ['userId', 'user-test-1'],
+            ['status', 'active'],
+          ]),
+        })
+      );
+      expect(insertValuesSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userId: 'user-test-1',
+          learnerStateId: 'state-1',
+          blockId: 'block-1',
+          eventType: 'completed',
+          correctness: 1,
+          timeSpentSeconds: 30,
+        })
+      );
+      expect(setSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          currentBlockId: 'block-1',
+          blocksCompleted: expect.objectContaining({
+            values: expect.arrayContaining(['blocksCompleted']),
+          }),
+        })
+      );
+      expect(whereSpy).toHaveBeenCalledWith(['id', 'state-1']);
+    });
+
+    it('should not record progress when the active session is not owned by the current user', async () => {
+      mockDb.query.learningSessions.findFirst.mockResolvedValue(null);
+
+      const res = await app.request('/learner/session/session-other-user/event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          blockId: 'block-1',
+          eventType: 'completed',
+          correctness: 1,
+        }),
+      });
+
+      expect(res.status).toBe(404);
+      expect(mockDb.insert).not.toHaveBeenCalled();
+      expect(mockDb.update).not.toHaveBeenCalled();
+    });
+
     it('should append a retention record for completed events using block retention config', async () => {
       const now = new Date('2026-05-10T12:00:00.000Z');
       vi.useFakeTimers();

@@ -18,6 +18,8 @@ import {
   BookOpen,
   Smartphone,
 } from 'lucide-react';
+import { ChallengeType } from '@topshelf/engine';
+import { listPacks, type KitchenChallengeConfig } from '@/lib/kitchen-packs';
 
 // ---------------------------------------------------------------------------
 // Mock data — self-contained, no external store/engine imports
@@ -45,50 +47,46 @@ interface ChallengeCard {
   difficultyColor: string;
 }
 
-const CHALLENGES: ChallengeCard[] = [
-  {
-    slug: 'uj-fajita-rush',
-    title: 'UJ: Fajita Rush',
-    icon: Flame,
-    difficulty: 'Hard',
-    difficultyColor: 'text-[hsl(var(--kitchen-danger))]',
-  },
-  {
-    slug: 'uj-enchilada-rush',
-    title: 'UJ: Enchilada Line',
-    icon: Timer,
-    difficulty: 'Expert',
-    difficultyColor: 'text-[hsl(var(--kitchen-danger-bright,0_84%_60%))]',
-  },
-  {
-    slug: 'uj-line-temps',
-    title: 'UJ: Line Temp Log',
-    icon: Thermometer,
-    difficulty: 'Medium',
-    difficultyColor: 'text-[hsl(var(--kitchen-caution))]',
-  },
-  {
-    slug: 'uj-grill-setup',
-    title: 'UJ: Grill Station Mise',
-    icon: ClipboardList,
-    difficulty: 'Medium',
-    difficultyColor: 'text-[hsl(var(--kitchen-caution))]',
-  },
-  {
-    slug: 'uj-queso-scale',
-    title: 'UJ: Scale the Queso',
-    icon: Calculator,
-    difficulty: 'Hard',
-    difficultyColor: 'text-[hsl(var(--kitchen-danger))]',
-  },
-  {
-    slug: 'uj-allergy-order',
-    title: 'UJ: The Allergy Table',
-    icon: AlertTriangle,
-    difficulty: 'Expert',
-    difficultyColor: 'text-[hsl(var(--kitchen-danger-bright,0_84%_60%))]',
-  },
-];
+const CHALLENGE_ICONS: Record<ChallengeType, React.ElementType> = {
+  [ChallengeType.RUSH_HOUR]: Flame,
+  [ChallengeType.GHOST_RECIPE]: Calculator,
+  [ChallengeType.STATION_SETUP]: ClipboardList,
+  [ChallengeType.TEMP_CHECK]: Thermometer,
+  [ChallengeType.INVENTORY_SCRAMBLE]: Shuffle,
+  [ChallengeType.LABOR_PREP]: Timer,
+  [ChallengeType.HAZARD_SCAN]: AlertTriangle,
+  [ChallengeType.MOCK_IMPOSSIBLE]: AlertTriangle,
+};
+
+function getDifficulty(
+  level: KitchenChallengeConfig['difficultyLevel']
+): ChallengeCard['difficulty'] {
+  if (level >= 4) return 'Expert';
+  if (level === 3) return 'Hard';
+  if (level === 2) return 'Medium';
+  return 'Easy';
+}
+
+function getDifficultyColor(level: KitchenChallengeConfig['difficultyLevel']) {
+  if (level >= 4) return 'text-[hsl(var(--kitchen-danger-bright,0_84%_60%))]';
+  if (level === 3) return 'text-[hsl(var(--kitchen-danger))]';
+  if (level === 2) return 'text-[hsl(var(--kitchen-caution))]';
+  return 'text-[hsl(var(--kitchen-safe))]';
+}
+
+function toChallengeCard(pack: KitchenChallengeConfig): ChallengeCard {
+  const icon = CHALLENGE_ICONS[pack.type] ?? Zap;
+
+  return {
+    slug: pack.slug,
+    title: pack.title,
+    icon,
+    difficulty: getDifficulty(pack.difficultyLevel),
+    difficultyColor: getDifficultyColor(pack.difficultyLevel),
+  };
+}
+
+const CHALLENGES: ChallengeCard[] = listPacks().map(toChallengeCard);
 
 interface MasteryDomain {
   label: string;
@@ -315,16 +313,11 @@ export default function KitchenDashboardPage() {
       <section className="mb-4">
         <h2 className="mb-4 text-xl font-bold uppercase tracking-wide">Quick Actions</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Link
-            href={`/kitchen/challenges/${(() => {
-              const randomChallenge = challenges[Math.floor(Math.random() * challenges.length)];
-              return randomChallenge?.slug ?? 'uj-fajita-rush';
-            })()}`}
-          >
-            <button className="btn-action btn-primary flex w-full items-center justify-center gap-3">
+          <Link href={`/kitchen/challenges/${challenges[0]?.slug ?? 'uj-fajita-rush'}`}>
+            <span className="btn-action btn-primary flex w-full items-center justify-center gap-3">
               <Shuffle className="h-6 w-6" />
-              Start Random Challenge
-            </button>
+              Start Challenge
+            </span>
           </Link>
 
           <Link href="/kitchen/mastery">

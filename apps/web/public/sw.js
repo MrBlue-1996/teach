@@ -10,7 +10,7 @@
  * - avoid caching auth tokens, API responses, protected mutations, or tenant-private data
  */
 
-const VERSION = 'pwa-shell-v1';
+const VERSION = 'pwa-shell-v2';
 const APP_SHELL_CACHE = `topshelf-app-shell-${VERSION}`;
 const STATIC_CACHE = `topshelf-static-${VERSION}`;
 
@@ -70,12 +70,12 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  if (isPrivateOrDynamic(url.pathname)) {
+  if (request.mode === 'navigate') {
+    event.respondWith(handleNavigation(request, url));
     return;
   }
 
-  if (request.mode === 'navigate') {
-    event.respondWith(handleNavigation(request, url));
+  if (isPrivateOrDynamic(url.pathname)) {
     return;
   }
 
@@ -118,7 +118,7 @@ async function handleNavigation(request, url) {
   try {
     const response = await fetch(request);
 
-    if (response.ok && isAllowedNavigation(url.pathname)) {
+    if (response.ok && isAllowedNavigation(url.pathname) && !isPrivateOrDynamic(url.pathname)) {
       await cache.put(request, response.clone());
     }
 

@@ -13,9 +13,9 @@ export const metadata = {
 
 export default function OfflinePage() {
   return (
-    <main id="main-content" className="min-h-screen bg-[#050507] px-6 py-10 text-[#F3F4F6]">
+    <main id="main-content" className="min-h-screen bg-background px-6 py-10 text-foreground">
       <section className="mx-auto flex min-h-[70vh] max-w-2xl flex-col justify-center">
-        <p className="mb-3 text-sm font-semibold uppercase tracking-[0.24em] text-[#22C55E]">
+        <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-primary">
           Offline mode
         </p>
 
@@ -23,15 +23,15 @@ export default function OfflinePage() {
           Connection dropped. Training state is protected.
         </h1>
 
-        <p className="mt-5 text-lg leading-8 text-slate-300">
+        <p className="mt-5 text-lg leading-8 text-muted-foreground">
           The app shell is available, but protected actions like saved progress, manager sign-off,
           and account updates require a network connection. Reconnect before assuming any new work
           has been saved.
         </p>
 
-        <div className="mt-8 rounded-2xl border border-slate-700 bg-[#181A1F] p-5 shadow-lg">
-          <h2 className="text-lg font-semibold text-white">Safe next steps</h2>
-          <ul className="mt-4 space-y-3 text-sm leading-6 text-slate-300">
+        <div className="mt-8 rounded-lg border border-border bg-card p-5 shadow-lg">
+          <h2 className="text-lg font-semibold text-card-foreground">Safe next steps</h2>
+          <ul className="mt-4 space-y-3 text-sm leading-6 text-muted-foreground">
             <li>Reconnect to Wi-Fi or mobile data.</li>
             <li>Return to the kitchen dashboard after the connection is restored.</li>
             <li>Do not treat offline actions as saved until the app confirms them online.</li>
@@ -41,14 +41,14 @@ export default function OfflinePage() {
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
           <Link
             href="/kitchen"
-            className="inline-flex items-center justify-center rounded-xl bg-[#22C55E] px-5 py-3 text-sm font-bold text-[#050507] transition hover:opacity-90"
+            className="inline-flex min-h-11 items-center justify-center rounded-lg bg-primary px-5 py-3 text-sm font-bold text-primary-foreground transition hover:opacity-90"
           >
             Return to kitchen
           </Link>
 
           <Link
             href="/"
-            className="inline-flex items-center justify-center rounded-xl border border-slate-600 px-5 py-3 text-sm font-semibold text-[#F3F4F6] transition hover:bg-[#181A1F]"
+            className="inline-flex min-h-11 items-center justify-center rounded-lg border border-border px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-card"
           >
             Go home
           </Link>

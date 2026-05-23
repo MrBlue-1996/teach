@@ -18,7 +18,7 @@ const ROUTES = [
   { label: 'Mastery', path: '/kitchen/mastery' },
   ...listPacks().map((p) => ({
     label: `Challenge: ${p.title}`,
-    path: `/kitchen/challenges/${p.id}`,
+    path: `/kitchen/challenges/${p.slug}`,
   })),
 ];
 

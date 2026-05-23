@@ -91,6 +91,8 @@ Files touched by multiple agents. **Always check these before and after changes.
 
 ### api-engineer
 
+- **[2026-05-23]** `api` `auth` `contracts` Completed P1.2/P1.3 validation pass for walking skeleton auth/session isolation. Files: `packages/api-server/src/middleware/auth.test.ts`, `packages/api-server/src/routes/learner.test.ts`. Downstream: no API response or route contract changes; tests now pin custom JWT auth to an unrevoked, unexpired persisted session and verify one completed learner block is recorded only through the current user's active session/learner state.
+
 **[2026-04-25] Instructor routes**
 
 **Created `packages/api-server/src/routes/instructor.ts`:**
@@ -203,6 +205,8 @@ _No updates yet._
 
 ### frontend-engineer
 
+- **[2026-05-23]** `frontend` `pwa` `kitchen` Completed P1.1/P1.4 walking skeleton pass. Files: `apps/web/public/sw.js`, `apps/web/public/manifest.json`, `apps/web/src/app/layout.tsx`, `apps/web/src/app/offline/page.tsx`, `apps/web/src/lib/kitchen-packs.ts`, `apps/web/src/lib/kitchen-stimuli.ts`, `apps/web/src/app/kitchen/page.tsx`, `apps/web/src/app/kitchen/recipes/page.tsx`, `apps/web/src/app/kitchen/preview/page.tsx`. Downstream: no API/db/content contract changes; web now lists all local kitchen packs by slug, provides generic text stimuli for packs without custom solve UI, and serves the offline fallback for failed navigations without caching private routes.
+
 - 2026-04-13: Reworked the learn flow in `apps/web/src/app/learn/[courseId]/page.tsx` to use backend session/progress state more directly. The page now boots from `content/next`, starts or recovers a learner session, records `started` and `completed` events, advances to the next block only when the backend supports it, and surfaces support/device/recent-activity context in the UI.
 - 2026-04-13: Added the official Sisyphus trace asset at `apps/web/public/brand/topshelf-sisyphus-trace.svg` and used it as a restrained background accent in the learner flow.
 - 2026-04-13: Skip-to-next is still not backend-supported. `learner/session/:id/event` accepts `skipped`, but `content/next/:packId` only advances from `blocksCompleted`, so the UI now avoids promising skip progression.
@@ -211,7 +215,11 @@ _No updates yet._
 
 _No updates yet._
 
+- **[2026-05-23]** `content` `uj` `validation` Completed X1 content gate audit. No local v0.1.2 Uncle Julio's source artifact/branch was found; current teaching manifest remains `content-packs/content_pack_uncle_julios_v1.json` at `version: "0.1.1"` and the only local UJ source artifact is `zip/uj-pack-v0.1` with `version: "0.1.0"`. Added a unit regression that keeps the six shipped UJ kitchen challenge files registered consistently by filename, slug, id, and recipe linkage. Files changed: `packages/tests/src/unit/content-pack-json-validation.test.ts`, `.github/state/blockers.md`. Downstream: coordinator must provide authorized v0.1.2 source before content-engineer can apply pack updates; current UJ manifests validate cleanly.
+
 ### infra-engineer
+
+- **[2026-05-23]** `infra` `demo-ops` Completed P5.5 runbook and tracker gate support. Files: `RUNBOOK.md`, `docs/decisions/sun-holdings-auth-decision.md`, `package.json`. Downstream: demo ops gate is `pnpm run demo:ops:check`; Sun Holdings/UJ authorization remains pending and must block any real external pilot/onboarding.
 
 **[2026-04-22]** `infra` Completed todos #1 and #7 from the foundation sprint.
 

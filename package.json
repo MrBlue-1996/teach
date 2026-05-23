@@ -52,6 +52,7 @@
     "docker:down": "docker-compose -f infrastructure/docker/docker-compose.yml down",
     "bootstrap": "node scripts/bootstrap.mjs",
     "bootstrap:ci": "CI=1 node scripts/bootstrap.mjs --ci",
+    "demo:ops:check": "pnpm run workflow:lint && pnpm run format:check && pnpm run track:check X3 && pnpm run track:check P5",
     "lint:full": "turbo run lint",
     "workflow:lint": "node scripts/workflow-lint.mjs",
     "verify:local": "NODE_OPTIONS=\"--max-old-space-size=4096\" turbo run lint typecheck build --concurrency=1 --force",

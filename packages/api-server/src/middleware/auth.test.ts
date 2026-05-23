@@ -185,6 +185,34 @@ describe('Auth Middleware', () => {
       expect(body.message).toContain('Invalid or expired session');
     });
 
+    it('should reject expired persisted sessions even when the JWT is valid', async () => {
+      vi.mocked(verifyToken).mockResolvedValue(mockTokenPayload);
+      mockFindFirstSession.mockResolvedValue({
+        expiresAt: new Date(Date.now() - 60 * 1000),
+      });
+
+      app.use('*', authMiddleware());
+      app.get('/test', (c) => c.json({ ok: true }));
+
+      const res = await app.request('/test', {
+        headers: { Authorization: 'Bearer valid-token-expired-session' },
+      });
+
+      expect(res.status).toBe(401);
+      expect(mockFindFirstSession).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.arrayContaining([
+            ['userId', 'user-123'],
+            ['token', 'session-789'],
+            'revokedAt',
+          ]),
+          columns: { expiresAt: true },
+        })
+      );
+      const body = await res.json();
+      expect(body.message).toContain('Invalid or expired session');
+    });
+
     it('should handle non-Error exceptions gracefully', async () => {
       vi.mocked(verifyToken).mockRejectedValue('Something went wrong');
 

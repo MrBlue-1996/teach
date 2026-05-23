@@ -1,7 +1,7 @@
 {
   "name": "Top Shelf Teaching",
-  "short_name": "TopShelf",
-  "description": "Installable Top Shelf Teaching training app for focused, practical learning.",
+  "short_name": "Top Shelf",
+  "description": "Installable Top Shelf Teaching training app for focused practice.",
   "id": "/",
   "start_url": "/kitchen",
   "scope": "/",

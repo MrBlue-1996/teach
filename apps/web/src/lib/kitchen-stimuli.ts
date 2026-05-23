@@ -98,6 +98,24 @@ function getMappedStimulus(slug: string): ChallengeStimulus | null {
   }
 }
 
+function getGenericTextStimulus(config: ChallengeConfig): ChallengeStimulus {
+  const lines = [
+    config.briefing,
+    `Target: ${config.expertRecipe?.platingStandard ?? 'Finish the task before time runs out.'}`,
+  ];
+
+  if (config.expertRecipe?.criticalControlPoints.length) {
+    lines.push(
+      `Watch: ${config.expertRecipe.criticalControlPoints.map((point) => point.target).join(' | ')}`
+    );
+  }
+
+  return {
+    kind: 'plain_text',
+    lines,
+  };
+}
+
 export function getSolveStimulus(slug: string, config: ChallengeConfig): ChallengeStimulus | null {
   const configWithStimulus = config as KitchenConfigWithStimulus;
   if (configWithStimulus.stimulus) {
@@ -108,5 +126,5 @@ export function getSolveStimulus(slug: string, config: ChallengeConfig): Challen
     return asTicketStimulus(config);
   }
 
-  return getMappedStimulus(slug);
+  return getMappedStimulus(slug) ?? getGenericTextStimulus(config);
 }

@@ -25,17 +25,17 @@ export const metadata: Metadata = {
     template: '%s | Top Shelf Teaching',
   },
   description:
-    'Master IT skills the most effective way possible. AI-powered learning that adapts to you.',
+    'Focused practice for IT and kitchen training with clear feedback and steady progress.',
   keywords: ['learning', 'IT certification', 'education', 'skills', 'training'],
-  authors: [{ name: 'Top Shelf Service LLC' }],
-  creator: 'Top Shelf Service LLC',
+  authors: [{ name: 'Top Shelf Service LLC™' }],
+  creator: 'Top Shelf Service LLC™',
   category: 'education',
   formatDetection: {
     telephone: false,
   },
   appleWebApp: {
     capable: true,
-    title: 'TopShelf',
+    title: 'Top Shelf',
     statusBarStyle: 'black-translucent',
   },
   icons: {
@@ -51,12 +51,12 @@ export const metadata: Metadata = {
     url: 'https://topshelfteaching.com',
     siteName: 'Top Shelf Teaching',
     title: 'Top Shelf Teaching — The hardest part is done for you.',
-    description: 'Master IT skills the most effective way possible.',
+    description: 'Focused practice with clear feedback and steady progress.',
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Top Shelf Teaching',
-    description: 'Master IT skills the most effective way possible.',
+    description: 'Focused practice with clear feedback and steady progress.',
   },
   robots: {
     index: true,

@@ -19,7 +19,7 @@ export default function RecipeBookPage() {
   const packs = listPacks();
   const entries = packs
     .filter((p) => p.expertRecipe !== null && p.expertRecipe !== undefined)
-    .map((p) => ({ recipe: p.expertRecipe!, title: p.title, id: p.id }));
+    .map((p) => ({ recipe: p.expertRecipe!, title: p.title, slug: p.slug }));
 
   return (
     <main className="kitchen-page">
@@ -42,14 +42,14 @@ export default function RecipeBookPage() {
           </div>
         ) : (
           <div className="flex flex-col gap-8">
-            {entries.map(({ recipe, title, id }) => (
-              <section key={id} className="flex flex-col gap-3">
+            {entries.map(({ recipe, title, slug }) => (
+              <section key={slug} className="flex flex-col gap-3">
                 <div className="flex items-center justify-between">
                   <h2 className="text-sm font-semibold uppercase tracking-widest text-[hsl(var(--k-muted))]">
                     {title}
                   </h2>
                   <Link
-                    href={`/kitchen/challenges/${id}`}
+                    href={`/kitchen/challenges/${slug}`}
                     className="btn-action btn-ghost py-1 text-sm"
                   >
                     Challenge →
