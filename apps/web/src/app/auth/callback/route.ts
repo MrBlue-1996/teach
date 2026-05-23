@@ -100,6 +100,10 @@ export async function GET(request: NextRequest) {
   console.info('[auth/callback] exchangeCodeForSession done:', error?.message ?? 'ok');
 
   if (error || !data.user) {
+    if (error?.message?.includes('invalid flow state')) {
+      return NextResponse.redirect(new URL('/auth/login', origin));
+    }
+
     const loginUrl = new URL('/auth/login', origin);
     loginUrl.searchParams.set('error', error?.message ?? 'OAuth session exchange failed');
     return NextResponse.redirect(loginUrl);
@@ -116,6 +120,50 @@ export async function GET(request: NextRequest) {
   }
 
   const { firstName, lastName } = extractNameParts(supaUser.user_metadata);
+
+  const session = data.session;
+  const skipBackendOAuthBridgeInDev =
+    process.env.NODE_ENV !== 'production' &&
+    process.env.NEXT_PUBLIC_SKIP_BACKEND_OAUTH_BRIDGE !== 'false';
+
+  const createSupabaseFallbackResponse = (reason: string): NextResponse | null => {
+    if (!session?.access_token || !session?.refresh_token) {
+      return null;
+    }
+
+    const successResponse = NextResponse.redirect(new URL(redirectPath, origin));
+    const cookieOpts = {
+      path: '/',
+      maxAge: 60,
+      httpOnly: false,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax' as const,
+    };
+
+    const payload = {
+      accessToken: session.access_token,
+      refreshToken: session.refresh_token ?? '',
+      user: {
+        id: supaUser.id,
+        email,
+        role: 'learner',
+        ...(firstName ? { firstName } : {}),
+        ...(lastName ? { lastName } : {}),
+      },
+    };
+
+    successResponse.cookies.set('oauth_payload', JSON.stringify(payload), cookieOpts);
+    successResponse.cookies.set('oauth_warning', reason, cookieOpts);
+    return successResponse;
+  };
+
+  if (skipBackendOAuthBridgeInDev) {
+    const fallbackResponse = createSupabaseFallbackResponse('backend_bridge_skipped');
+    if (fallbackResponse) {
+      console.warn('[auth/callback] skipping backend bridge in development mode');
+      return fallbackResponse;
+    }
+  }
 
   // Bridge: call our custom backend to get JWT tokens
   console.info('[auth/callback] calling api-server /auth/oauth...');
@@ -171,6 +219,13 @@ export async function GET(request: NextRequest) {
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Failed to complete sign-in';
     console.error('[auth/callback] caught error:', message);
+
+    const fallbackResponse = createSupabaseFallbackResponse('backend_unavailable');
+    if (fallbackResponse) {
+      console.warn('[auth/callback] using Supabase session fallback payload');
+      return fallbackResponse;
+    }
+
     const loginUrl = new URL('/auth/login', origin);
     loginUrl.searchParams.set('error', message);
     return NextResponse.redirect(loginUrl);

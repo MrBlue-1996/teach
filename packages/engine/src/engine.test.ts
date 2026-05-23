@@ -168,6 +168,15 @@ describe('ConstraintEngine', () => {
       expect(result.reason).toMatch(/too large/i);
     });
 
+    it('accepts content exactly at the maximum response size', () => {
+      const exact = 'x'.repeat(100_000);
+      const result = ConstraintEngine.isSuggestionSuitable(
+        exact,
+        DeviceProfile.CHROMEBOOK_STANDARD
+      );
+      expect(result.suitable).toBe(true);
+    });
+
     it('rejects heavy frameworks on Chromebook', () => {
       const result = ConstraintEngine.isSuggestionSuitable(
         'Install React and use it here',
@@ -177,9 +186,26 @@ describe('ConstraintEngine', () => {
       expect(result.reason).toMatch(/react/i);
     });
 
+    it('rejects large asset keywords on Chromebook', () => {
+      const result = ConstraintEngine.isSuggestionSuitable(
+        'Use a HD VIDEO for the demo and a large image preview',
+        DeviceProfile.CHROMEBOOK_STANDARD
+      );
+      expect(result.suitable).toBe(false);
+      expect(result.reason).toMatch(/large assets/i);
+    });
+
     it('allows heavy frameworks on desktop high', () => {
       const result = ConstraintEngine.isSuggestionSuitable(
         'Install React and use it here',
+        DeviceProfile.DESKTOP_HIGH
+      );
+      expect(result.suitable).toBe(true);
+    });
+
+    it('allows large assets on desktop high', () => {
+      const result = ConstraintEngine.isSuggestionSuitable(
+        'Use a HD VIDEO for the demo and a large image preview',
         DeviceProfile.DESKTOP_HIGH
       );
       expect(result.suitable).toBe(true);
@@ -296,8 +322,38 @@ describe('PedagogyEngine', () => {
   describe('processTeachingRequest', () => {
     it('does not teach in SILENT mode', () => {
       const ctx = makeContext({ mode: TeachingMode.L0_SILENT, errorsEncountered: 10 });
+      const detectTriggersSpy = vi.spyOn(TriggerDetector, 'detectTriggers');
+      const suggestModeElevationSpy = vi.spyOn(TriggerDetector, 'suggestModeElevation');
+      const shouldTeachSpy = vi.spyOn(TriggerDetector, 'shouldTeach');
+      const isSuggestionSuitableSpy = vi.spyOn(ConstraintEngine, 'isSuggestionSuitable');
+      const filterSuggestionSpy = vi.spyOn(ConstraintEngine, 'filterSuggestion');
+
       const res = PedagogyEngine.processTeachingRequest(ctx, 'Here is a hint');
       expect(res.shouldTeach).toBe(false);
+      expect(detectTriggersSpy).toHaveBeenCalledTimes(1);
+      expect(ctx.triggers.length).toBeGreaterThan(0);
+      expect(suggestModeElevationSpy).not.toHaveBeenCalled();
+      expect(shouldTeachSpy).not.toHaveBeenCalled();
+      expect(isSuggestionSuitableSpy).not.toHaveBeenCalled();
+      expect(filterSuggestionSpy).not.toHaveBeenCalled();
+    });
+
+    it('returns early for non-tutorial contexts with no triggers', () => {
+      const ctx = makeContext({ mode: TeachingMode.L2_CONTEXTUAL });
+      const detectTriggersSpy = vi.spyOn(TriggerDetector, 'detectTriggers');
+      const suggestModeElevationSpy = vi.spyOn(TriggerDetector, 'suggestModeElevation');
+      const shouldTeachSpy = vi.spyOn(TriggerDetector, 'shouldTeach');
+      const isSuggestionSuitableSpy = vi.spyOn(ConstraintEngine, 'isSuggestionSuitable');
+      const filterSuggestionSpy = vi.spyOn(ConstraintEngine, 'filterSuggestion');
+
+      const res = PedagogyEngine.processTeachingRequest(ctx, 'Here is a hint');
+
+      expect(res.shouldTeach).toBe(false);
+      expect(detectTriggersSpy).toHaveBeenCalledTimes(1);
+      expect(suggestModeElevationSpy).not.toHaveBeenCalled();
+      expect(shouldTeachSpy).not.toHaveBeenCalled();
+      expect(isSuggestionSuitableSpy).not.toHaveBeenCalled();
+      expect(filterSuggestionSpy).not.toHaveBeenCalled();
     });
 
     it('elevates mode before formatting guidance when severe triggers fire', () => {
@@ -340,6 +396,20 @@ describe('PedagogyEngine', () => {
       const res = PedagogyEngine.processTeachingRequest(ctx, 'Step 1: open terminal');
       expect(res.shouldTeach).toBe(true);
       expect(res.content).toContain('📖 Tutorial:');
+    });
+
+    it('passes desktop high content through without filtering', () => {
+      const ctx = makeContext({
+        mode: TeachingMode.L4_TUTORIAL,
+        deviceProfile: DeviceProfile.DESKTOP_HIGH,
+        constraints: ConstraintEngine.getConstraints(DeviceProfile.DESKTOP_HIGH),
+      });
+
+      const res = PedagogyEngine.processTeachingRequest(ctx, 'A'.repeat(10_000));
+
+      expect(res.shouldTeach).toBe(true);
+      expect(res.filtered).toBe(false);
+      expect(res.content).toContain('A'.repeat(10_000));
     });
 
     it('does not teach without content even if triggered', () => {

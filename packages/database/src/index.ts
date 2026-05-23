@@ -31,6 +31,11 @@ let connection: DatabaseConnection | null = null;
  * Create a database connection string from config
  */
 function createConnectionString(config: DatabaseConfig): string {
+  const connectionUrl = process.env['DATABASE_URL'] ?? process.env['SUPABASE_DB_URL'];
+  if (connectionUrl !== undefined && connectionUrl.length > 0) {
+    return connectionUrl;
+  }
+
   const { host, port, database, username, password, ssl } = config;
   const sslParam = ssl ? '?sslmode=require' : '';
   return `postgres://${username}:${password}@${host}:${port}/${database}${sslParam}`;

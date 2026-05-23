@@ -9,6 +9,20 @@
 
 import { DeviceProfile, DeviceConstraints } from './types.js';
 
+const HEAVY_FRAMEWORKS = ['react', 'angular', 'vue', 'webpack', 'parcel'];
+const LARGE_ASSET_KEYWORDS = ['large image', 'video file', 'high-res', '4k', 'hd video'];
+
+const escapeRegex = (value: string): string => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const HEAVY_FRAMEWORKS_REGEX = new RegExp(
+  HEAVY_FRAMEWORKS.map(escapeRegex).join('|'),
+  'i'
+);
+const LARGE_ASSET_KEYWORDS_REGEX = new RegExp(
+  LARGE_ASSET_KEYWORDS.map(escapeRegex).join('|'),
+  'i'
+);
+
 const DEVICE_PROFILES: Record<DeviceProfile, DeviceConstraints> = {
   [DeviceProfile.CHROMEBOOK_LOW]: {
     maxMemoryMB: 2048,
@@ -68,7 +82,8 @@ export const ConstraintEngine = {
     suggestion: string,
     profile: DeviceProfile
   ): { suitable: boolean; reason?: string } {
-    const constraints = this.getConstraints(profile);
+    // eslint-disable-next-line security/detect-object-injection
+    const constraints = DEVICE_PROFILES[profile];
 
     if (suggestion.length > constraints.maxResponseSize) {
       return {
@@ -78,30 +93,22 @@ export const ConstraintEngine = {
     }
 
     if (!constraints.allowHeavyFrameworks) {
-      const heavyFrameworks = ['react', 'angular', 'vue', 'webpack', 'parcel'];
-      const lowerSuggestion = suggestion.toLowerCase();
-
-      for (const framework of heavyFrameworks) {
-        if (lowerSuggestion.includes(framework)) {
-          return {
-            suitable: false,
-            reason: `Heavy framework '${framework}' not suitable for ${profile}`,
-          };
-        }
+      const frameworkMatch = suggestion.match(HEAVY_FRAMEWORKS_REGEX);
+      if (frameworkMatch !== null) {
+        return {
+          suitable: false,
+          reason: `Heavy framework '${frameworkMatch[0]}' not suitable for ${profile}`,
+        };
       }
     }
 
     if (!constraints.allowLargeAssets) {
-      const largeAssetKeywords = ['large image', 'video file', 'high-res', '4k', 'hd video'];
-      const lowerSuggestion = suggestion.toLowerCase();
-
-      for (const keyword of largeAssetKeywords) {
-        if (lowerSuggestion.includes(keyword)) {
-          return {
-            suitable: false,
-            reason: `Large assets not suitable for ${profile}`,
-          };
-        }
+      const largeAssetMatch = suggestion.match(LARGE_ASSET_KEYWORDS_REGEX);
+      if (largeAssetMatch !== null) {
+        return {
+          suitable: false,
+          reason: `Large assets not suitable for ${profile}`,
+        };
       }
     }
 

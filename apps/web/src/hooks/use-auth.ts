@@ -14,6 +14,9 @@ interface AuthState {
 const AUTH_TOKEN_KEY = 'auth_token';
 const REFRESH_TOKEN_KEY = 'refresh_token';
 const USER_DATA_KEY = 'user_data';
+const SKIP_BACKEND_OAUTH_BRIDGE_IN_DEV =
+  process.env.NODE_ENV !== 'production' &&
+  process.env.NEXT_PUBLIC_SKIP_BACKEND_OAUTH_BRIDGE !== 'false';
 
 export function useAuth() {
   const router = useRouter();
@@ -73,6 +76,23 @@ export function useAuth() {
           setState({ user: null, isLoading: false, isAuthenticated: false });
         }
         return;
+      }
+
+      if (SKIP_BACKEND_OAUTH_BRIDGE_IN_DEV) {
+        const cachedUser = localStorage.getItem(USER_DATA_KEY);
+        if (cachedUser) {
+          try {
+            const parsedUser = JSON.parse(cachedUser) as User;
+            if (!cancelled) {
+              setAuthTokens(token, localStorage.getItem(REFRESH_TOKEN_KEY) ?? '');
+              setAuthUser(parsedUser);
+              setState({ user: parsedUser, isLoading: false, isAuthenticated: true });
+            }
+            return;
+          } catch {
+            // fall through to backend verification path.
+          }
+        }
       }
 
       try {

@@ -76,10 +76,19 @@ export async function apiRequest<T>(endpoint: string, options: RequestOptions = 
     headers.set('Authorization', `Bearer ${token}`);
   }
 
-  const response = await fetch(url, {
-    ...fetchOptions,
-    headers,
-  });
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      ...fetchOptions,
+      headers,
+    });
+  } catch {
+    throw new ApiError(
+      'Cannot reach the API service. Check NEXT_PUBLIC_API_URL and ensure the API server is running.',
+      0,
+      'NETWORK_ERROR'
+    );
+  }
 
   return handleResponse<T>(response);
 }

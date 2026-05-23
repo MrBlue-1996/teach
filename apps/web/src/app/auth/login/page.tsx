@@ -108,6 +108,7 @@ function LoginForm() {
             <Input
               name="email"
               type="email"
+              autoComplete="email"
               placeholder="Email"
               className="pl-10"
               value={formData.email}
@@ -121,6 +122,7 @@ function LoginForm() {
             <Input
               name="password"
               type="password"
+              autoComplete="current-password"
               placeholder="Password"
               className="pl-10"
               value={formData.password}

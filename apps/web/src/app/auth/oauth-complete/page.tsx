@@ -7,7 +7,6 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/auth-store';
 
 const AUTH_TOKEN_KEY = 'auth_token';
@@ -29,30 +28,63 @@ function deleteCookie(name: string, path: string) {
   document.cookie = `${name}=; path=${path}; max-age=0`;
 }
 
+function isOAuthPayload(
+  value: unknown
+): value is {
+  accessToken: string;
+  refreshToken: string;
+  user: { id: string; email: string; firstName?: string; lastName?: string; role: string };
+} {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+
+  const record = value as Record<string, unknown>;
+  const user = record['user'];
+  if (typeof user !== 'object' || user === null) {
+    return false;
+  }
+
+  const userRecord = user as Record<string, unknown>;
+  return (
+    typeof record['accessToken'] === 'string' &&
+    typeof record['refreshToken'] === 'string' &&
+    typeof userRecord['id'] === 'string' &&
+    typeof userRecord['email'] === 'string' &&
+    typeof userRecord['role'] === 'string'
+  );
+}
+
+function redirectTo(path: string): void {
+  window.location.replace(path);
+}
+
 export default function OAuthCompletePage() {
-  const router = useRouter();
-  const setAuthTokens = useAuthStore((store) => store.setTokens);
-  const setAuthUser = useAuthStore((store) => store.setUser);
   const processed = useRef(false);
 
   useEffect(() => {
-    if (processed.current) return;
+    if (processed.current) {
+      return;
+    }
+
     processed.current = true;
 
     const raw = getCookie('oauth_payload');
     deleteCookie('oauth_payload', '/auth/oauth-complete');
+    deleteCookie('oauth_warning', '/auth/oauth-complete');
 
     if (!raw) {
-      router.replace('/auth/login?error=OAuth+session+expired');
+      redirectTo('/auth/login?error=OAuth+session+expired');
       return;
     }
 
     try {
-      const data = JSON.parse(raw) as {
-        accessToken: string;
-        refreshToken: string;
-        user: { id: string; email: string; firstName?: string; lastName?: string; role: string };
-      };
+      const data: unknown = JSON.parse(raw);
+      if (!isOAuthPayload(data)) {
+        throw new Error('Invalid OAuth payload');
+      }
+
+      const { setTokens, setUser } = useAuthStore.getState();
 
       // Store tokens in localStorage (same keys as useAuth.saveAuthResponse)
       localStorage.setItem(AUTH_TOKEN_KEY, data.accessToken);
@@ -60,14 +92,14 @@ export default function OAuthCompletePage() {
       localStorage.setItem(USER_DATA_KEY, JSON.stringify(data.user));
 
       // Sync Zustand store
-      setAuthTokens(data.accessToken, data.refreshToken);
-      setAuthUser(data.user);
+      setTokens(data.accessToken, data.refreshToken);
+      setUser(data.user);
 
-      router.replace('/dashboard');
+      redirectTo('/dashboard');
     } catch {
-      router.replace('/auth/login?error=Failed+to+complete+sign-in');
+      redirectTo('/auth/login?error=Failed+to+complete+sign-in');
     }
-  }, [router, setAuthTokens, setAuthUser]);
+  }, []);
 
   return (
     <div className="flex min-h-[50vh] items-center justify-center">

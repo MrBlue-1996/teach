@@ -1,25 +1,28 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import {
   ArrowLeft,
   ArrowRight,
   Briefcase,
   Check,
   Loader2,
+  Monitor,
+  Moon,
   PackageOpen,
+  Sun,
   UserRound,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { authApi, type OnboardingTrainingRole } from '@/lib/api';
+import { ApiError, authApi, type OnboardingTrainingRole, type User } from '@/lib/api';
 import { cn } from '@/lib/utils';
-import { resourcePackOptions, withResourcePack, type ResourcePackId } from '@/lib/pack-resources';
+import { resourcePackOptions, type ResourcePackId } from '@/lib/pack-resources';
 import { onboardingTrainingRoles } from '@/lib/onboarding';
 import { useAuth } from '@/hooks/use-auth';
 import { useAuthStore } from '@/stores/auth-store';
+import { useTheme } from 'next-themes';
 
 const USER_DATA_KEY = 'user_data';
 
@@ -43,15 +46,26 @@ function getInitialDisplayName(user: ReturnType<typeof useAuth>['user']): string
 }
 
 export default function OnboardingPage() {
-  const router = useRouter();
   const { user, isLoading } = useAuth();
   const setAuthUser = useAuthStore((store) => store.setUser);
+  const { theme, setTheme } = useTheme();
   const [stepIndex, setStepIndex] = useState(0);
   const [displayName, setDisplayName] = useState('');
   const [contentPackId, setContentPackId] = useState<ResourcePackId>('uncle-julios');
   const [trainingRole, setTrainingRole] = useState<OnboardingTrainingRole>('learner');
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
+  const [themeReady, setThemeReady] = useState(false);
+
+  const themeOptions = [
+    { id: 'light' as const, label: 'Light', icon: Sun },
+    { id: 'dark' as const, label: 'Dark', icon: Moon },
+    { id: 'system' as const, label: 'System', icon: Monitor },
+  ];
+
+  useEffect(() => {
+    setThemeReady(true);
+  }, []);
 
   useEffect(() => {
     if (user !== null) {
@@ -106,11 +120,37 @@ export default function OnboardingPage() {
 
       localStorage.setItem(USER_DATA_KEY, JSON.stringify(response.user));
       setAuthUser(response.user);
-      router.replace(withResourcePack('/dashboard', contentPackId));
     } catch (err) {
+      const isNetworkError =
+        err instanceof ApiError
+          ? err.code === 'NETWORK_ERROR'
+          : err instanceof TypeError && /fetch/i.test(err.message);
+
+      // Allow local-dev click-through when API is unreachable.
+      if (isNetworkError && user !== null) {
+        const fallbackUser: User = {
+          ...user,
+          displayName: displayName.trim(),
+          metadata: {
+            ...(user.metadata ?? {}),
+            onboarding: {
+              displayName: displayName.trim(),
+              contentPackId,
+              trainingRole,
+              completedAt: new Date().toISOString(),
+            },
+          },
+        };
+
+        localStorage.setItem(USER_DATA_KEY, JSON.stringify(fallbackUser));
+        setAuthUser(fallbackUser);
+        return;
+      }
+
       setError(err instanceof Error ? err.message : 'Failed to save onboarding.');
-      setSaving(false);
     }
+
+    setSaving(false);
   };
 
   if (isLoading || user === null || activeStep === undefined) {
@@ -221,27 +261,67 @@ export default function OnboardingPage() {
           )}
 
           {stepIndex === 2 && (
-            <div className="grid gap-3 sm:grid-cols-2">
-              {onboardingTrainingRoles.map((role) => {
-                const isSelected = role.id === trainingRole;
+            <div className="space-y-6">
+              <div className="space-y-3">
+                <p className="text-sm font-medium">Training role</p>
+                <p className="text-xs text-muted-foreground">
+                  This picks your default learning path. It does not grant admin permissions.
+                </p>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {onboardingTrainingRoles.map((role) => {
+                    const isSelected = role.id === trainingRole;
 
-                return (
-                  <button
-                    key={role.id}
-                    type="button"
-                    onClick={() => setTrainingRole(role.id)}
-                    className={cn(
-                      'flex h-16 items-center justify-between rounded-md border px-4 text-left transition-colors',
-                      isSelected
-                        ? 'border-primary bg-primary/5 text-foreground'
-                        : 'bg-background text-muted-foreground hover:bg-muted/50'
-                    )}
-                  >
-                    <span className="font-medium">{role.label}</span>
-                    {isSelected && <Check className="h-4 w-4 text-primary" />}
-                  </button>
-                );
-              })}
+                    return (
+                      <button
+                        key={role.id}
+                        type="button"
+                        onClick={() => setTrainingRole(role.id)}
+                        className={cn(
+                          'flex h-16 items-center justify-between rounded-md border px-4 text-left transition-colors',
+                          isSelected
+                            ? 'border-primary bg-primary/5 text-foreground'
+                            : 'bg-background text-muted-foreground hover:bg-muted/50'
+                        )}
+                      >
+                        <span className="font-medium">{role.label}</span>
+                        {isSelected && <Check className="h-4 w-4 text-primary" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <p className="text-sm font-medium">Appearance</p>
+                <p className="text-xs text-muted-foreground">
+                  Choose Light, Dark, or System to follow your device setting.
+                </p>
+                <div className="grid grid-cols-3 gap-3">
+                  {themeOptions.map((option) => {
+                    const OptionIcon = option.icon;
+                    const isSelected = theme === option.id;
+
+                    return (
+                      <button
+                        key={option.id}
+                        type="button"
+                        onClick={() => setTheme(option.id)}
+                        disabled={!themeReady}
+                        className={cn(
+                          'flex min-h-11 items-center justify-center gap-2 rounded-md border px-3 py-2 text-sm font-medium transition-colors',
+                          isSelected
+                            ? 'border-primary bg-primary/5 text-foreground'
+                            : 'bg-background text-muted-foreground hover:bg-muted/50',
+                          !themeReady && 'opacity-70'
+                        )}
+                      >
+                        <OptionIcon className="h-4 w-4" />
+                        {option.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           )}
 

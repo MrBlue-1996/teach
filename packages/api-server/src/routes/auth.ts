@@ -266,6 +266,35 @@ export function createAuthRoutes(): Hono {
       throw unauthorized('Invalid email or password');
     }
 
+    if (!user.emailVerified) {
+      // Re-issue verification token on every unverified sign-in attempt.
+      const rawVerifyToken = generateSecureToken(32);
+      const verifyTokenHash = createHash('sha256').update(rawVerifyToken).digest('hex');
+      const verifyExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+      await db
+        .update(emailVerificationTokens)
+        .set({ usedAt: new Date() })
+        .where(and(eq(emailVerificationTokens.userId, user.id), isNull(emailVerificationTokens.usedAt)));
+
+      await db.insert(emailVerificationTokens).values({
+        userId: user.id,
+        tokenHash: verifyTokenHash,
+        expiresAt: verifyExpiresAt,
+      });
+
+      const appUrl = process.env['APP_URL'] ?? 'https://app.topshelfteaching.com';
+      const verifyUrl = `${appUrl}/auth/verify-email?token=${rawVerifyToken}`;
+      const emailSvc = getEmailService();
+      void emailSvc.sendTemplate(
+        EMAIL_TEMPLATES.VERIFY_EMAIL,
+        { email: user.email },
+        { firstName: user.firstName ?? undefined, verifyUrl }
+      );
+
+      throw unauthorized('Email not verified. We sent a new verification link.');
+    }
+
     // Update last login
     await db.update(users).set({ lastLoginAt: new Date() }).where(eq(users.id, user.id));
 

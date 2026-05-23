@@ -82,16 +82,23 @@ async function ensureMigrationTable(client) {
 }
 
 async function main() {
-  const client = postgres({
-    host: process.env.DB_HOST,
-    port: Number(process.env.DB_PORT),
-    database: process.env.DB_NAME,
-    username: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    ssl: false,
-    prepare: false,
-    max: 1,
-  });
+  const connectionUrl = process.env.DATABASE_URL ?? process.env.SUPABASE_DB_URL;
+  const client =
+    connectionUrl !== undefined && connectionUrl.length > 0
+      ? postgres(connectionUrl, {
+          prepare: false,
+          max: 1,
+        })
+      : postgres({
+          host: process.env.DB_HOST,
+          port: Number(process.env.DB_PORT),
+          database: process.env.DB_NAME,
+          username: process.env.DB_USER,
+          password: process.env.DB_PASSWORD,
+          ssl: false,
+          prepare: false,
+          max: 1,
+        });
 
   try {
     await ensureMigrationTable(client);

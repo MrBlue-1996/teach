@@ -19,14 +19,36 @@ export const PedagogyEngine = {
     const triggers = TriggerDetector.detectTriggers(context);
     context.triggers = triggers;
 
-    const effectiveMode =
-      context.mode === TeachingMode.L0_SILENT
-        ? TeachingMode.L0_SILENT
-        : TriggerDetector.suggestModeElevation(context.mode, triggers);
+    if (context.mode === TeachingMode.L0_SILENT) {
+      return {
+        shouldTeach: false,
+        mode: TeachingMode.L0_SILENT,
+        filtered: false,
+      };
+    }
+
+    // For non-tutorial modes, no triggers means no-teach and no elevation.
+    if (triggers.length === 0 && context.mode !== TeachingMode.L4_TUTORIAL) {
+      return {
+        shouldTeach: false,
+        mode: context.mode,
+        filtered: false,
+      };
+    }
+
+    const effectiveMode = TriggerDetector.suggestModeElevation(context.mode, triggers);
+
+    if (teachingContent === undefined || teachingContent.length === 0) {
+      return {
+        shouldTeach: false,
+        mode: effectiveMode,
+        filtered: false,
+      };
+    }
 
     const shouldTeach = TriggerDetector.shouldTeach(effectiveMode, triggers);
 
-    if (!shouldTeach || teachingContent === undefined || teachingContent.length === 0) {
+    if (!shouldTeach) {
       return {
         shouldTeach: false,
         mode: effectiveMode,

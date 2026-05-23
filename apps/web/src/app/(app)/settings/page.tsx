@@ -28,6 +28,7 @@ import {
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
 import { authApi, learnerApi } from '@/lib/api';
+import { useTheme } from 'next-themes';
 
 type TabType =
   | 'profile'
@@ -40,10 +41,12 @@ type TabType =
 
 export default function SettingsPage() {
   const { user } = useAuth();
+  const { theme, setTheme } = useTheme();
   const [activeTab, setActiveTab] = useState<TabType>('profile');
   const [isLoading, setIsLoading] = useState(false);
   const [saved, setSaved] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [themeReady, setThemeReady] = useState(false);
 
   // Password change form state
   const [passwordForm, setPasswordForm] = useState({
@@ -120,6 +123,16 @@ export default function SettingsPage() {
         // Keep defaults
       });
   }, []);
+
+  useEffect(() => {
+    setThemeReady(true);
+  }, []);
+
+  useEffect(() => {
+    if (theme === 'light' || theme === 'dark' || theme === 'system') {
+      setAppearance((prev) => ({ ...prev, theme }));
+    }
+  }, [theme]);
 
   const handleSave = async () => {
     setIsLoading(true);
@@ -421,12 +434,17 @@ export default function SettingsPage() {
                     ].map((theme) => (
                       <button
                         key={theme.id}
-                        onClick={() => setAppearance({ ...appearance, theme: theme.id })}
+                        onClick={() => {
+                          setAppearance({ ...appearance, theme: theme.id });
+                          setTheme(theme.id);
+                        }}
+                        disabled={!themeReady}
                         className={cn(
                           'flex flex-col items-center gap-2 rounded-lg border-2 p-4 transition-colors',
                           appearance.theme === theme.id
                             ? 'border-primary bg-primary/5'
-                            : 'border-transparent bg-muted hover:bg-muted/80'
+                            : 'border-transparent bg-muted hover:bg-muted/80',
+                          !themeReady && 'opacity-70'
                         )}
                       >
                         <theme.icon className="h-6 w-6" />
