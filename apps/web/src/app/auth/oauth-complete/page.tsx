@@ -8,6 +8,7 @@
 
 import { useEffect, useRef } from 'react';
 import { useAuthStore } from '@/stores/auth-store';
+import type { User } from '@/lib/api';
 
 const AUTH_TOKEN_KEY = 'auth_token';
 const REFRESH_TOKEN_KEY = 'refresh_token';
@@ -28,9 +29,7 @@ function deleteCookie(name: string, path: string) {
   document.cookie = `${name}=; path=${path}; max-age=0`;
 }
 
-function isOAuthPayload(
-  value: unknown
-): value is {
+function isOAuthPayload(value: unknown): value is {
   accessToken: string;
   refreshToken: string;
   user: { id: string; email: string; firstName?: string; lastName?: string; role: string };
@@ -59,6 +58,30 @@ function redirectTo(path: string): void {
   window.location.replace(path);
 }
 
+function mergeWithCachedUser(dataUser: User): User {
+  const rawCachedUser = localStorage.getItem(USER_DATA_KEY);
+  if (!rawCachedUser) {
+    return dataUser;
+  }
+
+  try {
+    const parsed = JSON.parse(rawCachedUser) as User;
+
+    const sameUser = parsed.id === dataUser.id || parsed.email === dataUser.email;
+    if (!sameUser) {
+      return dataUser;
+    }
+
+    return {
+      ...dataUser,
+      ...(parsed.displayName !== undefined ? { displayName: parsed.displayName } : {}),
+      ...(parsed.metadata?.onboarding ? { metadata: parsed.metadata } : {}),
+    };
+  } catch {
+    return dataUser;
+  }
+}
+
 export default function OAuthCompletePage() {
   const processed = useRef(false);
 
@@ -85,15 +108,16 @@ export default function OAuthCompletePage() {
       }
 
       const { setTokens, setUser } = useAuthStore.getState();
+      const mergedUser = mergeWithCachedUser(data.user);
 
       // Store tokens in localStorage (same keys as useAuth.saveAuthResponse)
       localStorage.setItem(AUTH_TOKEN_KEY, data.accessToken);
       localStorage.setItem(REFRESH_TOKEN_KEY, data.refreshToken);
-      localStorage.setItem(USER_DATA_KEY, JSON.stringify(data.user));
+      localStorage.setItem(USER_DATA_KEY, JSON.stringify(mergedUser));
 
       // Sync Zustand store
       setTokens(data.accessToken, data.refreshToken);
-      setUser(data.user);
+      setUser(mergedUser);
 
       redirectTo('/dashboard');
     } catch {

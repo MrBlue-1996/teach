@@ -304,6 +304,7 @@ describe('Auth Routes', () => {
         id: 'user-1',
         email: 'user@example.com',
         passwordHash: '$2b$04$hashedpassword',
+        emailVerified: true,
         firstName: 'John',
         lastName: 'Doe',
         role: 'learner',

@@ -14,14 +14,8 @@ const LARGE_ASSET_KEYWORDS = ['large image', 'video file', 'high-res', '4k', 'hd
 
 const escapeRegex = (value: string): string => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-const HEAVY_FRAMEWORKS_REGEX = new RegExp(
-  HEAVY_FRAMEWORKS.map(escapeRegex).join('|'),
-  'i'
-);
-const LARGE_ASSET_KEYWORDS_REGEX = new RegExp(
-  LARGE_ASSET_KEYWORDS.map(escapeRegex).join('|'),
-  'i'
-);
+const HEAVY_FRAMEWORKS_REGEX = new RegExp(HEAVY_FRAMEWORKS.map(escapeRegex).join('|'), 'i');
+const LARGE_ASSET_KEYWORDS_REGEX = new RegExp(LARGE_ASSET_KEYWORDS.map(escapeRegex).join('|'), 'i');
 
 const DEVICE_PROFILES: Record<DeviceProfile, DeviceConstraints> = {
   [DeviceProfile.CHROMEBOOK_LOW]: {

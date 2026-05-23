@@ -18,6 +18,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { ApiError, authApi, type OnboardingTrainingRole, type User } from '@/lib/api';
 import { cn } from '@/lib/utils';
+import { withResourcePack } from '@/lib/pack-resources';
 import { resourcePackOptions, type ResourcePackId } from '@/lib/pack-resources';
 import { onboardingTrainingRoles } from '@/lib/onboarding';
 import { useAuth } from '@/hooks/use-auth';
@@ -25,6 +26,9 @@ import { useAuthStore } from '@/stores/auth-store';
 import { useTheme } from 'next-themes';
 
 const USER_DATA_KEY = 'user_data';
+const SKIP_BACKEND_OAUTH_BRIDGE_IN_DEV =
+  process.env.NODE_ENV !== 'production' &&
+  process.env.NEXT_PUBLIC_SKIP_BACKEND_OAUTH_BRIDGE !== 'false';
 
 const steps = [
   { id: 'identity', label: 'Identity', icon: UserRound },
@@ -120,14 +124,21 @@ export default function OnboardingPage() {
 
       localStorage.setItem(USER_DATA_KEY, JSON.stringify(response.user));
       setAuthUser(response.user);
+      window.location.replace(withResourcePack('/dashboard', contentPackId));
+      return;
     } catch (err) {
+      const isDevBridgeAuthError =
+        SKIP_BACKEND_OAUTH_BRIDGE_IN_DEV &&
+        err instanceof ApiError &&
+        err.status === 401 &&
+        err.code === 'AUTHENTICATION_ERROR';
       const isNetworkError =
         err instanceof ApiError
           ? err.code === 'NETWORK_ERROR'
           : err instanceof TypeError && /fetch/i.test(err.message);
 
       // Allow local-dev click-through when API is unreachable.
-      if (isNetworkError && user !== null) {
+      if ((isNetworkError || isDevBridgeAuthError) && user !== null) {
         const fallbackUser: User = {
           ...user,
           displayName: displayName.trim(),
@@ -144,6 +155,7 @@ export default function OnboardingPage() {
 
         localStorage.setItem(USER_DATA_KEY, JSON.stringify(fallbackUser));
         setAuthUser(fallbackUser);
+        window.location.replace(withResourcePack('/dashboard', contentPackId));
         return;
       }
 
