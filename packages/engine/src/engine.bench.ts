@@ -63,6 +63,8 @@ describe('TriggerDetector', () => {
     TriggerDetector.detectTriggers(freshCtx({ errorsEncountered: 5 }));
   });
 
+  const ctxErrors = freshCtx({ errorsEncountered: 5 });
+
   bench('detectTriggers — STUCK + TIME_THRESHOLD fire', () => {
     TriggerDetector.detectTriggers(
       freshCtx({
@@ -73,7 +75,7 @@ describe('TriggerDetector', () => {
   });
 
   bench('shouldTeach — L0_SILENT (always false, early exit)', () => {
-    TriggerDetector.shouldTeach(TeachingMode.L0_SILENT, CTX_ERRORS.triggers);
+    TriggerDetector.shouldTeach(TeachingMode.L0_SILENT, ctxErrors.triggers);
   });
 
   bench('shouldTeach — L2_CONTEXTUAL with ERROR_REPEATED trigger', () => {
@@ -158,7 +160,10 @@ describe('ConstraintEngine', () => {
 
 describe('PedagogyEngine.processTeachingRequest', () => {
   bench('pipeline — L0_SILENT (early exit, no teach)', () => {
-    PedagogyEngine.processTeachingRequest(freshCtx({ mode: TeachingMode.L0_SILENT }), CONTENT_SHORT);
+    PedagogyEngine.processTeachingRequest(
+      freshCtx({ mode: TeachingMode.L0_SILENT }),
+      CONTENT_SHORT
+    );
   });
 
   bench('pipeline — L2_CONTEXTUAL, no triggers (no teach)', () => {
@@ -170,11 +175,17 @@ describe('PedagogyEngine.processTeachingRequest', () => {
   });
 
   bench('pipeline — L4_TUTORIAL, always teaches, short content', () => {
-    PedagogyEngine.processTeachingRequest(freshCtx({ mode: TeachingMode.L4_TUTORIAL }), CONTENT_SHORT);
+    PedagogyEngine.processTeachingRequest(
+      freshCtx({ mode: TeachingMode.L4_TUTORIAL }),
+      CONTENT_SHORT
+    );
   });
 
   bench('pipeline — L4_TUTORIAL, medium content, CHROMEBOOK_STANDARD', () => {
-    PedagogyEngine.processTeachingRequest(freshCtx({ mode: TeachingMode.L4_TUTORIAL }), CONTENT_MEDIUM);
+    PedagogyEngine.processTeachingRequest(
+      freshCtx({ mode: TeachingMode.L4_TUTORIAL }),
+      CONTENT_MEDIUM
+    );
   });
 
   bench('pipeline — L4_TUTORIAL, over-limit content (truncated)', () => {

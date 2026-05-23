@@ -266,7 +266,7 @@ export function createAuthRoutes(): Hono {
       throw unauthorized('Invalid email or password');
     }
 
-    if (!user.emailVerified) {
+    if (user.emailVerified !== true) {
       // Re-issue verification token on every unverified sign-in attempt.
       const rawVerifyToken = generateSecureToken(32);
       const verifyTokenHash = createHash('sha256').update(rawVerifyToken).digest('hex');
@@ -275,7 +275,9 @@ export function createAuthRoutes(): Hono {
       await db
         .update(emailVerificationTokens)
         .set({ usedAt: new Date() })
-        .where(and(eq(emailVerificationTokens.userId, user.id), isNull(emailVerificationTokens.usedAt)));
+        .where(
+          and(eq(emailVerificationTokens.userId, user.id), isNull(emailVerificationTokens.usedAt))
+        );
 
       await db.insert(emailVerificationTokens).values({
         userId: user.id,
