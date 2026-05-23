@@ -24,14 +24,36 @@ import { useChallengeStore } from '@/stores/challenge-store';
 const TICK_MS = 500;
 
 export function useChallenge(config: ChallengeConfig | null) {
-  const store = useChallengeStore();
+  const phase = useChallengeStore((state) => state.phase);
+  const timeRemainingMs = useChallengeStore((state) => state.timeRemainingMs);
+  const ticketsCompleted = useChallengeStore((state) => state.ticketsCompleted);
+  const ticketsTotal = useChallengeStore((state) => state.ticketsTotal);
+  const events = useChallengeStore((state) => state.events);
+  const infractions = useChallengeStore((state) => state.infractions);
+  const consequencePayload = useChallengeStore((state) => state.consequencePayload);
+  const overallGrade = useChallengeStore((state) => state.overallGrade);
+  const isVerification = useChallengeStore((state) => state.isVerification);
+  const lastHandwashAt = useChallengeStore((state) => state.lastHandwashAt);
+  const isTimerRunning = useChallengeStore((state) => state.isTimerRunning);
+  const initChallenge = useChallengeStore((state) => state.initChallenge);
+  const setPhase = useChallengeStore((state) => state.setPhase);
+  const addEvent = useChallengeStore((state) => state.addEvent);
+  const addInfraction = useChallengeStore((state) => state.addInfraction);
+  const addWasteToStore = useChallengeStore((state) => state.addWaste);
+  const recordHandwashInStore = useChallengeStore((state) => state.recordHandwash);
+  const completeTicketInStore = useChallengeStore((state) => state.completeTicket);
+  const tick = useChallengeStore((state) => state.tick);
+  const setConsequencePayload = useChallengeStore((state) => state.setConsequencePayload);
+  const setOverallGrade = useChallengeStore((state) => state.setOverallGrade);
+  const setIsVerification = useChallengeStore((state) => state.setIsVerification);
+  const incrementFailures = useChallengeStore((state) => state.incrementFailures);
+  const startTimer = useChallengeStore((state) => state.startTimer);
+  const stopTimer = useChallengeStore((state) => state.stopTimer);
 
   const machineRef = useRef<ChallengeMachine | null>(null);
   const validatorRef = useRef<ShadowValidator | null>(null);
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const lastTickRef = useRef<number>(Date.now());
-
-  const initChallenge = store.initChallenge;
 
   // Initialize engine once per config id
   useEffect(() => {
@@ -50,8 +72,7 @@ export function useChallenge(config: ChallengeConfig | null) {
   // Tick timer during SOLVE / VERIFY
   useEffect(() => {
     const isActive =
-      store.isTimerRunning &&
-      (store.phase === ChallengePhase.SOLVE || store.phase === ChallengePhase.VERIFY);
+      isTimerRunning && (phase === ChallengePhase.SOLVE || phase === ChallengePhase.VERIFY);
 
     if (!isActive) {
       if (tickRef.current) {
@@ -72,27 +93,27 @@ export function useChallenge(config: ChallengeConfig | null) {
       if (!machine || !validator) return;
 
       machine.tick(delta);
-      store.tick(delta);
+      tick(delta);
 
       // Periodic sanitation / spoilage checks
       const periodic = validator.runPeriodicChecks(machine.getState());
       for (const inf of periodic) {
         machine.addInfraction(inf);
-        store.addInfraction(inf);
+        addInfraction(inf);
       }
 
       // Auto-transition when timer hits zero
       const currentState = machine.getState();
       if (currentState.timeRemainingMs === 0) {
-        store.stopTimer();
+        stopTimer();
         // Sync phase from machine — it may have auto-transitioned
         if (currentState.phase === ChallengePhase.CONSEQUENCE) {
           const consequence = machine.buildConsequence();
-          store.setConsequencePayload(consequence);
-          store.setOverallGrade(consequence.overallGrade);
-          store.setPhase(ChallengePhase.CONSEQUENCE);
+          setConsequencePayload(consequence);
+          setOverallGrade(consequence.overallGrade);
+          setPhase(ChallengePhase.CONSEQUENCE);
         } else if (currentState.phase === ChallengePhase.COOLDOWN) {
-          store.setPhase(ChallengePhase.COOLDOWN);
+          setPhase(ChallengePhase.COOLDOWN);
         }
       }
     }, TICK_MS);
@@ -103,7 +124,16 @@ export function useChallenge(config: ChallengeConfig | null) {
         tickRef.current = null;
       }
     };
-  }, [store.isTimerRunning, store.phase, store]);
+  }, [
+    addInfraction,
+    isTimerRunning,
+    phase,
+    setConsequencePayload,
+    setOverallGrade,
+    setPhase,
+    stopTimer,
+    tick,
+  ]);
 
   // --- Actions exposed to the UI ---
 
@@ -114,113 +144,113 @@ export function useChallenge(config: ChallengeConfig | null) {
       if (!machine || !validator) return;
 
       const event: ChallengeEvent = machine.recordEvent(type, data);
-      store.addEvent(event);
+      addEvent(event);
 
       const infractions = validator.evaluate(event, machine.getState());
       for (const inf of infractions) {
         machine.addInfraction(inf);
-        store.addInfraction(inf);
+        addInfraction(inf);
       }
     },
-    [store]
+    [addEvent, addInfraction]
   );
 
   const start = useCallback(() => {
     const machine = machineRef.current;
     if (!machine) return;
     machine.startSolve();
-    store.setPhase(ChallengePhase.SOLVE);
-    store.startTimer();
-  }, [store]);
+    setPhase(ChallengePhase.SOLVE);
+    startTimer();
+  }, [setPhase, startTimer]);
 
   const endSolve = useCallback(() => {
     const machine = machineRef.current;
     if (!machine) return;
     const nextState = machine.endSolve();
-    store.stopTimer();
+    stopTimer();
     if (nextState.phase === ChallengePhase.COOLDOWN) {
-      store.setPhase(ChallengePhase.COOLDOWN);
-      store.incrementFailures();
+      setPhase(ChallengePhase.COOLDOWN);
+      incrementFailures();
       return;
     }
     const consequence = machine.buildConsequence();
-    store.setConsequencePayload(consequence);
-    store.setOverallGrade(consequence.overallGrade);
-    store.setPhase(ChallengePhase.CONSEQUENCE);
-  }, [store]);
+    setConsequencePayload(consequence);
+    setOverallGrade(consequence.overallGrade);
+    setPhase(ChallengePhase.CONSEQUENCE);
+  }, [incrementFailures, setConsequencePayload, setOverallGrade, setPhase, stopTimer]);
 
   const toTeach = useCallback(() => {
     const machine = machineRef.current;
     if (!machine) return;
     machine.enterTeach();
-    store.setPhase(ChallengePhase.TEACH);
-  }, [store]);
+    setPhase(ChallengePhase.TEACH);
+  }, [setPhase]);
 
   const toVerify = useCallback(() => {
     const machine = machineRef.current;
     if (!machine) return;
     machine.enterVerify();
-    store.setPhase(ChallengePhase.VERIFY);
-    store.setIsVerification(true);
-    store.startTimer();
-  }, [store]);
+    setPhase(ChallengePhase.VERIFY);
+    setIsVerification(true);
+    startTimer();
+  }, [setIsVerification, setPhase, startTimer]);
 
   const toMastery = useCallback(() => {
     const machine = machineRef.current;
     if (!machine) return;
     machine.completeMastery();
-    store.setPhase(ChallengePhase.MASTERY);
-    store.stopTimer();
-  }, [store]);
+    setPhase(ChallengePhase.MASTERY);
+    stopTimer();
+  }, [setPhase, stopTimer]);
 
   const finish = useCallback(() => {
     const machine = machineRef.current;
     if (!machine) return;
     machine.complete();
-    store.setPhase(ChallengePhase.COMPLETED);
-  }, [store]);
+    setPhase(ChallengePhase.COMPLETED);
+  }, [setPhase]);
 
   const recordHandwash = useCallback(() => {
     const machine = machineRef.current;
     if (!machine) return;
     machine.recordHandwash();
-    store.recordHandwash();
-  }, [store]);
+    recordHandwashInStore();
+  }, [recordHandwashInStore]);
 
   const completeTicket = useCallback(
     (ticketId: string) => {
       const machine = machineRef.current;
       if (!machine) return;
       machine.completeTicket(ticketId);
-      store.completeTicket();
+      completeTicketInStore();
     },
-    [store]
+    [completeTicketInStore]
   );
 
   const addWaste = useCallback(
     (cost: number) => {
       machineRef.current?.addWaste(cost);
-      store.addWaste(cost);
+      addWasteToStore(cost);
     },
-    [store]
+    [addWasteToStore]
   );
 
   const handsDirty = useMemo(() => {
     return machineRef.current?.areHandsDirty(Date.now()) ?? false;
-  }, [store.lastHandwashAt, store.timeRemainingMs]); // re-evaluate on tick
+  }, [lastHandwashAt, timeRemainingMs]); // re-evaluate on tick
 
   return {
-    phase: store.phase,
-    timeRemainingMs: store.timeRemainingMs,
-    ticketsCompleted: store.ticketsCompleted,
-    ticketsTotal: store.ticketsTotal,
-    events: store.events,
-    infractions: store.infractions,
-    infractionCount: store.infractions.length,
-    consequence: store.consequencePayload,
-    grade: store.overallGrade,
-    isVerification: store.isVerification,
-    lastHandwashAt: store.lastHandwashAt,
+    phase,
+    timeRemainingMs,
+    ticketsCompleted,
+    ticketsTotal,
+    events,
+    infractions,
+    infractionCount: infractions.length,
+    consequence: consequencePayload,
+    grade: overallGrade,
+    isVerification,
+    lastHandwashAt,
     handsDirty,
     logEvent,
     start,

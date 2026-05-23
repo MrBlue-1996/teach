@@ -9,6 +9,7 @@ const path = require('node:path');
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  outputFileTracingRoot: path.resolve(__dirname, '../..'),
   transpilePackages: ['@topshelf/engine'],
   images: {
     domains: ['avatars.githubusercontent.com', 'lh3.googleusercontent.com'],
