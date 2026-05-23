@@ -1,0 +1,99 @@
+# Claude Scope Guide
+
+This file is scoped to this directory. Source of truth: CLAUDE.md in the same folder.
+
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## App: `apps/web`
+
+Next.js 14 App Router frontend for TopShelf Teaching. Talks to `@topshelf/api-server` via REST. Uses Zustand for auth and challenge state.
+
+```bash
+pnpm dev        # Next.js dev server
+pnpm build      # production build
+pnpm test       # Vitest (unit/hook tests)
+pnpm typecheck
+```
+
+## Routing
+
+```
+src/app/
+  (app)/            # protected route group — dashboard, content, learn, settings, profile
+  (legal)/          # public — privacy, terms, contact, support
+  auth/             # public — login, signup, verify-email, forgot-password, reset-password, oauth-complete
+  kitchen/          # kitchen simulation domain
+```
+
+Route protection is enforced via middleware or layout-level auth checks using `useAuthStore`. The `(app)` group redirects unauthenticated users to `/auth/login`.
+
+## Auth Pattern
+
+`useAuthStore` (Zustand + `localStorage` persistence) is the client-side auth source of truth:
+
+```ts
+import { useAuthStore } from '@/stores/auth-store';
+const { user, accessToken, isAuthenticated, setAuthFromResponse, logout } = useAuthStore();
+```
+
+`setAuthFromResponse(response)` hydrates user + tokens from login/refresh API responses. `isAuthenticated()` returns false if either token or user is missing — check this before protected API calls.
+
+Tokens are injected into every `api.*` call automatically by `src/lib/api/client.ts` (reads `accessToken` from the store). Do not manually add `Authorization` headers in route components.
+
+## API Layer
+
+```ts
+import { learnerApi } from '@/lib/api/learner';
+import { contentApi } from '@/lib/api/content';
+import { badgeApi } from '@/lib/api/badge';
+// etc.
+```
+
+Each module wraps `api.get/post/put/patch/delete` from `src/lib/api/client.ts`. Return type is always `Promise<T>` where `T` is the typed response shape. All route → backend contracts are documented in comments at the top of each `src/lib/api/*.ts` file.
+
+**`learnerApi` endpoints:**
+
+| Method                                  | Description                                             |
+| --------------------------------------- | ------------------------------------------------------- |
+| `getStats()`                            | Aggregate stats: time, blocks, mastery, packs, sessions |
+| `getStates()`                           | All per-pack learner states                             |
+| `getState(packId)`                      | Single learner state detail                             |
+| `getProgress(packId)`                   | State + last 50 events                                  |
+| `getWeeklyGoal()`                       | Weekly time target + completion                         |
+| `updateWeeklyGoal(minutes)`             | Update weekly target                                    |
+| `startSession(packId, deviceInfo?)`     | Start session, returns sessionId                        |
+| `recordEvent(sessionId, event)`         | Record progress event                                   |
+| `endSession(sessionId)`                 | End session                                             |
+| `getTeachingGuidance(sessionId, opts?)` | Engine-backed teaching response                         |
+| `getRecentSessions(limit?)`             | Session list                                            |
+
+## Stores
+
+```
+src/stores/
+  auth-store.ts       # user, accessToken, refreshToken, hydration, logout
+  challenge-store.ts  # kitchen challenge state (active challenge, phase, score)
+```
+
+Do not store server-fetched data in Zustand — use `useState`/`useEffect` or a data-fetching hook. Stores are for session-level client state only.
+
+## Kitchen UI Components
+
+```
+src/components/kitchen/
+  DirtyHandTimer     # compliance countdown
+  MasteryRing        # circular mastery progress indicator
+  RecipeCard         # step-by-step recipe display
+  TicketQueue        # order ticket management
+  TempGauge          # temperature compliance indicator
+  SafetyAlert        # food safety trigger display
+  GradeBadge         # session grade badge
+```
+
+These components receive data from `challenge-store` and render kitchen domain state. They do not call the API directly — the kitchen route pages orchestrate data flow.
+
+## Environment Variables
+
+`NEXT_PUBLIC_API_URL` — API base URL injected into `src/lib/api/client.ts`. Must be set in `.env.local` for local development. Production value set via deployment config.

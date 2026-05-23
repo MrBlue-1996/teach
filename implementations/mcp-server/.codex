@@ -1,0 +1,34 @@
+# Codex Scope Guide
+
+This file is scoped to this directory. Source of truth: CLAUDE.md in the same folder.
+
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Implementation: `mcp-server`
+
+Model Context Protocol server prototype. **Not production-ready.** Standalone Express.js server that exposes the teaching engine over HTTP for manual testing and integration experiments.
+
+```bash
+pnpm start    # http://localhost:3000 — /mvp for the click-through UI
+pnpm test
+pnpm build    # tsc → dist/
+```
+
+## What It Does
+
+- Stores `TeachingContext` in an in-memory `Map<sessionId, TeachingContext>` — **state is lost on restart**
+- Wraps `@topshelf/engine` (PedagogyEngine, TriggerDetector, ConstraintEngine)
+- `/mvp` — browser UI for manually exercising the teaching decision loop without a client app
+- Not wired into `api-server`; operates independently on its own port
+
+## Status
+
+Phase 2. Not included in `pnpm dev` or `pnpm test` runs from the root. The active session lifecycle is fully implemented in `packages/api-server` — use that for production work. This prototype is useful only for isolated engine experimentation.
+
+Integration blockers before this can be promoted:
+
+- Needs `@topshelf/policy-engine` and `@topshelf/nlp` (both gated in `packages/_future/`)
+- Needs persistence layer (currently in-memory only)
+- Needs to be wired into `api-server` route delegation or replace it
