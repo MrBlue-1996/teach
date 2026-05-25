@@ -13,7 +13,9 @@ test.describe('Kitchen golden path', () => {
     await page.goto('/kitchen');
 
     await expect(page.getByRole('heading', { name: 'TopShelf Kitchen' })).toBeVisible();
-    await expect(page.getByRole('link', { name: /UJ: Fajita Rush/i })).toBeVisible();
+    await expect(
+      page.locator('a[href="/kitchen/challenges/uj-fajita-rush"]').first()
+    ).toBeVisible();
     await expect(page.getByText(/Rush Hour Simulator/i)).toHaveCount(0);
 
     await Promise.all([
