@@ -8,7 +8,7 @@ metadata:
 
 # Image Stimulus & Asset Pipeline
 
-This skill closes the image gap. Equipment, station, tool, and recipe imagery exists as `.placeholder` webp files under [apps/web/public/kitchen/](../../../../apps/web/public/kitchen/) but no stimulus kind references them. Adding `kind: 'image'` to the discriminated union and a manifest unlocks "identify this", "what's wrong here?", and "spot the hazard" prompts.
+This skill closes the image gap. Equipment, station, tool, and recipe imagery exists as `.placeholder` webp files under [apps/web/public/kitchen/](../../../apps/web/public/kitchen/) but no stimulus kind references them. Adding `kind: 'image'` to the discriminated union and a manifest unlocks "identify this", "what's wrong here?", and "spot the hazard" prompts.
 
 ## Scope and non-scope
 
@@ -105,10 +105,10 @@ When real images arrive (B-IMG-01 unblock), swap the `path` and flip `sourceData
 
 ## What to read before coding
 
-1. [stimulus-renderer-integration/SKILL.md](.agents/skills/stimulus-renderer-integration/SKILL.md) — how the discriminated union closes, how to add a new kind.
-2. [apps/web/src/components/kitchen/stimuli/types.ts](apps/web/src/components/kitchen/stimuli/types.ts) — existing types.
-3. [packages/shared/src/schemas/content.schema.ts:172-179](packages/shared/src/schemas/content.schema.ts#L172-L179) — `challengeStimulusSchema` discriminated union.
-4. [apps/web/public/kitchen/](apps/web/public/kitchen/) — current placeholder files.
+1. [stimulus-renderer-integration/SKILL.md](../stimulus-renderer-integration/SKILL.md) — how the discriminated union closes, how to add a new kind.
+2. [apps/web/src/components/kitchen/stimuli/types.ts](../../../apps/web/src/components/kitchen/stimuli/types.ts) — existing types.
+3. [packages/shared/src/schemas/content.schema.ts](../../../packages/shared/src/schemas/content.schema.ts) — `challengeStimulusSchema` discriminated union.
+4. [apps/web/public/kitchen/](../../../apps/web/public/kitchen/) — current placeholder files.
 
 ## Adding the kind — exact steps
 
@@ -116,7 +116,7 @@ When real images arrive (B-IMG-01 unblock), swap the `path` and flip `sourceData
 2. Add `imageStimulusSchema` (Zod, `.strict()`) to `packages/shared/src/schemas/content.schema.ts`. Add it to the `challengeStimulusSchema` discriminated union.
 3. Create `apps/web/src/components/kitchen/stimuli/ImageStimulus.tsx`. Implements the renderer per the contract above.
 4. Update `apps/web/src/components/kitchen/stimuli/StimulusRenderer.tsx` — add `case 'image': return <ImageStimulus stimulus={stimulus} />;`.
-5. Update `parseStimulus` type guard in [learn/[courseId]/page.tsx](<apps/web/src/app/(app)/learn/[courseId]/page.tsx>) to handle the `image` case.
+5. Update `parseStimulus` type guard in [learn/[courseId]/page.tsx](<../../../apps/web/src/app/(app)/learn/[courseId]/page.tsx>) to handle the `image` case.
 6. Create `apps/web/public/kitchen/manifest.json` with entries for every existing placeholder.
 7. Create demo SVGs under `apps/web/public/kitchen/_demo/`.
 8. Add a `loadKitchenManifest()` helper in `apps/web/src/lib/kitchen-packs.ts` (or similar) so the renderer can resolve `imageRef` → URL.
