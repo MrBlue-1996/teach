@@ -274,6 +274,33 @@ const AppConfigSchema = z.object({
 
 export type AppConfig = z.infer<typeof AppConfigSchema>;
 
+function parseDatabaseConnectionUrl(connectionUrl: string | undefined): Partial<DatabaseConfig> {
+  if (connectionUrl === undefined || connectionUrl.length === 0) {
+    return {};
+  }
+
+  try {
+    const parsed = new URL(connectionUrl);
+    const database = parsed.pathname.replace(/^\/+/, '');
+    const sslMode = parsed.searchParams.get('sslmode');
+    const ssl =
+      sslMode !== null
+        ? sslMode !== 'disable' && sslMode !== 'allow' && sslMode !== 'prefer'
+        : undefined;
+
+    return {
+      ...(parsed.hostname.length > 0 ? { host: parsed.hostname } : {}),
+      ...(parsed.port.length > 0 ? { port: Number(parsed.port) } : {}),
+      ...(database.length > 0 ? { database: database.split('/')[0] ?? database } : {}),
+      ...(parsed.username.length > 0 ? { username: decodeURIComponent(parsed.username) } : {}),
+      ...(parsed.password.length > 0 ? { password: decodeURIComponent(parsed.password) } : {}),
+      ...(ssl !== undefined ? { ssl } : {}),
+    };
+  } catch {
+    return {};
+  }
+}
+
 // =============================================================================
 // CONFIGURATION LOADER
 // =============================================================================
@@ -304,17 +331,23 @@ export class ConfigurationManager {
       return this.config;
     }
 
+    const dbFromConnectionUrl = parseDatabaseConnectionUrl(
+      process.env.DATABASE_URL ?? process.env.SUPABASE_DB_URL
+    );
+
     const rawConfig = {
       environment: process.env.NODE_ENV ?? 'development',
       serviceName: process.env.SERVICE_NAME,
       version: process.env.APP_VERSION,
       database: {
-        host: process.env.DB_HOST,
-        port: process.env.DB_PORT,
-        database: process.env.DB_NAME,
-        username: process.env.DB_USER,
-        password: process.env.DB_PASSWORD,
-        ssl: process.env.DB_SSL === 'true',
+        host: dbFromConnectionUrl.host ?? process.env.DB_HOST,
+        port: dbFromConnectionUrl.port ?? process.env.DB_PORT,
+        database: dbFromConnectionUrl.database ?? process.env.DB_NAME,
+        username: dbFromConnectionUrl.username ?? process.env.DB_USER,
+        password: dbFromConnectionUrl.password ?? process.env.DB_PASSWORD,
+        ssl:
+          dbFromConnectionUrl.ssl ??
+          (process.env.DB_SSL !== undefined ? process.env.DB_SSL === 'true' : undefined),
         poolMin: process.env.DB_POOL_MIN,
         poolMax: process.env.DB_POOL_MAX,
         connectionTimeoutMs: process.env.DB_CONNECTION_TIMEOUT,
@@ -477,7 +510,7 @@ export class ConfigurationManager {
    */
   getSafeForLogging(): Record<string, unknown> {
     const config = this.get();
-    return this.redactSensitive(config as unknown as Record<string, unknown>);
+    return this.redactSensitive(config);
   }
 
   /**

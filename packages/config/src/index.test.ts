@@ -14,6 +14,8 @@ describe('ConfigurationManager', () => {
   let originalEnv: NodeJS.ProcessEnv;
 
   const optionalEnvOverrideKeys = [
+    'DATABASE_URL',
+    'SUPABASE_DB_URL',
     'DB_HOST',
     'DB_PORT',
     'DB_SSL',
@@ -167,6 +169,25 @@ describe('ConfigurationManager', () => {
       delete process.env.DB_NAME;
 
       expect(() => loadConfig()).toThrow('Configuration validation failed');
+    });
+
+    it('should load when database credentials are provided via DATABASE_URL', async () => {
+      clearOptionalEnvOverrides();
+      process.env.DATABASE_URL =
+        'postgres://url_user:url_password@db.example.supabase.co:5432/url_database?sslmode=require';
+      process.env.JWT_SECRET = 'a-very-long-jwt-secret-that-is-at-least-32-characters';
+      process.env.SESSION_SECRET = 'a-very-long-session-secret-that-is-at-least-32-chars';
+      process.env.STORAGE_PROVIDER = 'local';
+
+      const { loadConfig } = await loadFreshConfig();
+      const config = loadConfig();
+
+      expect(config.database.host).toBe('db.example.supabase.co');
+      expect(config.database.port).toBe(5432);
+      expect(config.database.database).toBe('url_database');
+      expect(config.database.username).toBe('url_user');
+      expect(config.database.password).toBe('url_password');
+      expect(config.database.ssl).toBe(true);
     });
 
     it('should throw when JWT secret is too short', async () => {
