@@ -1,6 +1,6 @@
 ---
 name: image-stimulus-asset-pipeline
-description: Adds the `image` stimulus kind to the discriminated union and the asset-manifest pipeline that catalogs imagery under apps/web/public/kitchen. Use when adding image-based challenges, authoring an image manifest, replacing placeholders with licensed assets, or validating pack image references. Triggers on "image stimulus", "recipe image", "equipment photo", "identify hazard in image", "swap placeholder image", "image manifest". Do NOT use to add the `recipe` stimulus (a separate kind) — see the recipe-stimulus integration task.
+description: Adds the `image` stimulus kind to the discriminated union and the asset-manifest pipeline that catalogs imagery under apps/web/public/kitchen. Use when adding image-based challenges, authoring an image manifest, replacing placeholders with licensed assets, or validating pack image references. Triggers on "image stimulus", "recipe image", "equipment photo", "identify hazard in image", "swap placeholder image", "image manifest". Do NOT use to add the `recipe` stimulus (a separate kind) — see `stimulus-renderer-integration`.
 metadata:
   author: topshelf
   version: '0.1.0'
@@ -22,7 +22,7 @@ In scope:
 
 Out of scope:
 
-- The `recipe` stimulus (separate kind, separate skill)
+- The `recipe` stimulus (separate kind, separate skill; see `stimulus-renderer-integration`)
 - Image upload UI (admin tooling, future)
 - CDN/transform pipeline (future — for v0.1.x serve from `/public/kitchen/`)
 

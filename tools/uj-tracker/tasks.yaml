@@ -206,7 +206,7 @@ phases:
             title: PWA manifest + icons
             agent: claude-code
             skill: .agents/skills/top-shelf-ui/SKILL.md
-            status: review
+            status: done
             blocked_on: null
             gates:
               - description: Lighthouse installable check passes
@@ -216,7 +216,7 @@ phases:
             title: Service worker app shell caching
             agent: claude-code
             skill: null
-            status: review
+            status: done
             blocked_on: null
             gates:
               - description: App shows cached shell when offline
@@ -230,7 +230,7 @@ phases:
             title: Custom JWT auth wiring validation
             agent: claude-code
             skill: null
-            status: review
+            status: done
             blocked_on: null
             gates:
               - description: Sign up, log out, log back in, refresh — still signed in or session recovers correctly
@@ -240,7 +240,7 @@ phases:
             title: Login UI mobile-first, brand-consistent
             agent: claude-code
             skill: .agents/skills/top-shelf-ui/SKILL.md
-            status: pending
+            status: done
             blocked_on: null
             gates:
               - description: Looks right on 320px viewport and real phone
@@ -254,7 +254,7 @@ phases:
             title: Drizzle/Postgres users + learner progress schema validation
             agent: claude-code
             skill: null
-            status: review
+            status: done
             blocked_on: null
             gates:
               - description: API tests prove user cannot read another user's progress
@@ -264,7 +264,7 @@ phases:
             title: Pack reader hook
             agent: claude-code
             skill: .agents/skills/topshelf-content-pack-authoring/SKILL.md
-            status: review
+            status: done
             blocked_on: null
             gates:
               - description: Invalid pack JSON fails build or validation, not runtime
@@ -279,7 +279,7 @@ phases:
             title: Block list cook home screen
             agent: claude-code
             skill: .agents/skills/top-shelf-ui/SKILL.md
-            status: review
+            status: done
             blocked_on: null
             gates:
               - description: Real device, looks right
@@ -289,7 +289,7 @@ phases:
             title: Block detail + challenge surface text-only no stimulus
             agent: claude-code
             skill: .agents/skills/top-shelf-ui/SKILL.md
-            status: review
+            status: done
             blocked_on: null
             gates:
               - description: tb-uj-orientation-safety end-to-end on real phone
@@ -334,7 +334,7 @@ phases:
             title: TicketStimulus renderer
             agent: claude-code
             skill: .agents/skills/top-shelf-ui/SKILL.md
-            status: pending
+            status: done
             blocked_on: null
             gates:
               - description: tb-uj-ticket-flow-basics ticket renders on phone
@@ -344,7 +344,7 @@ phases:
             title: StationStateStimulus renderer
             agent: claude-code
             skill: .agents/skills/top-shelf-ui/SKILL.md
-            status: pending
+            status: done
             blocked_on: null
             gates:
               - description: tb-uj-cleaning-reset and tb-uj-tools-color-barriers render on phone
@@ -354,7 +354,7 @@ phases:
             title: HuddleNotesStimulus renderer
             agent: claude-code
             skill: .agents/skills/top-shelf-ui/SKILL.md
-            status: pending
+            status: done
             blocked_on: null
             gates:
               - description: tb-uj-line-readiness huddle card renders on phone
@@ -364,7 +364,7 @@ phases:
             title: MenuBoardStimulus renderer
             agent: claude-code
             skill: .agents/skills/top-shelf-ui/SKILL.md
-            status: pending
+            status: done
             blocked_on: null
             gates:
               - description: 86s called out red, features visible, on phone
@@ -374,7 +374,7 @@ phases:
             title: StepBankStimulus renderer
             agent: claude-code
             skill: .agents/skills/top-shelf-ui/SKILL.md
-            status: pending
+            status: done
             blocked_on: null
             gates:
               - description: Drag all 8 steps on real phone with damp-finger tolerance considered
@@ -384,7 +384,7 @@ phases:
             title: PlainTextStimulus renderer
             agent: claude-code
             skill: .agents/skills/top-shelf-ui/SKILL.md
-            status: pending
+            status: done
             blocked_on: null
             gates:
               - description: Renders on phone, monospace honored
@@ -399,7 +399,7 @@ phases:
             title: Discriminator router
             agent: claude-code
             skill: .agents/skills/top-shelf-ui/SKILL.md
-            status: pending
+            status: done
             blocked_on: null
             gates:
               - description: TypeScript exhaustive switch verified
@@ -409,7 +409,7 @@ phases:
             title: Wire stimulus into challenge surface
             agent: claude-code
             skill: .agents/skills/top-shelf-ui/SKILL.md
-            status: pending
+            status: done
             blocked_on: null
             gates:
               - description: All 6 blocks with stimulus work end-to-end on phone
@@ -487,7 +487,7 @@ phases:
             title: Mode elevation logic L0→L1→L2→L3→L4
             agent: claude-code
             skill: null
-            status: pending
+            status: done
             blocked_on: null
             gates:
               - description: Transitions reproducible from trigger fixtures
@@ -512,7 +512,7 @@ phases:
             title: Server-side reassessment trigger
             agent: claude-code
             skill: null
-            status: pending
+            status: done
             blocked_on: null
             gates:
               - description: Simulated time travel test → block reappears
@@ -522,7 +522,7 @@ phases:
             title: Decay surface affordance
             agent: claude-code
             skill: .agents/skills/top-shelf-ui/SKILL.md
-            status: pending
+            status: done
             blocked_on: null
             gates:
               - description: You are seeing this again UI present
