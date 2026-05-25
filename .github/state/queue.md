@@ -14,11 +14,14 @@ Current ad hoc batch:
 - [x] Record progress and gaps in `.agents/progress.md`.
 - [x] Restore blackboard support files expected by `agent-comms.instructions.md`.
 - [~] Close low-conflict protocol/code gaps from `.agents/progress.md`.
+  - [x] Add stimulus synthesis heuristic coverage for `menu_board`, `plain_text`, and image no-synthesis.
+  - [x] Add `synth-stimulus` CLI coverage for dry-run, write, and recursive directory backfill.
+  - [x] Add direct route coverage for `GET /learner/retention/queue`.
 
 ## Ready Next
 
-- [ ] Add route/UI tests for retention queue and dashboard review card.
-- [ ] Add CLI tests for `synth-stimulus` dry-run/write/backfill behavior.
+- [ ] Add dashboard review-card render coverage or extract a testable card component.
+- [ ] Decide whether `synth-stimulus --backfill` should support glob input or update the skill wording to match recursive directory behavior.
 - [ ] Run production PWA audit and record real-device results.
 - [ ] Decide whether local `.agents/skills/**` should be represented in `skills-lock.json`.
 

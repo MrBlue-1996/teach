@@ -73,6 +73,20 @@ describe('synthesizeStimulus', () => {
     }
   });
 
+  it('drafts a menu_board from special or feature language', () => {
+    const result = synthesizeStimulus({
+      blockId: 'tb-menu',
+      content: 'Special: roasted poblano tacos. Feature: agua fresca flight.',
+    });
+    expect(result.synthesized).toBe(true);
+    if (result.synthesized) {
+      expect(result.kind).toBe('menu_board');
+      if (result.stimulus.kind === 'menu_board') {
+        expect(result.stimulus.features).toEqual(['roasted poblano tacos', 'agua fresca flight']);
+      }
+    }
+  });
+
   it('drafts step_bank from numbered solution steps', () => {
     const result = synthesizeStimulus({
       blockId: 'tb-5',
@@ -82,6 +96,31 @@ describe('synthesizeStimulus', () => {
     expect(result.synthesized).toBe(true);
     if (result.synthesized) {
       expect(['step_bank', 'recipe']).toContain(result.kind);
+    }
+  });
+
+  it('drafts plain_text for temperature-log prompts', () => {
+    const result = synthesizeStimulus({
+      blockId: 'tb-plain',
+      content: 'Temperature log\n38F\n41F\n39F',
+    });
+    expect(result.synthesized).toBe(true);
+    if (result.synthesized) {
+      expect(result.kind).toBe('plain_text');
+      if (result.stimulus.kind === 'plain_text') {
+        expect(result.stimulus.lines).toEqual(['Temperature log', '38F', '41F', '39F']);
+      }
+    }
+  });
+
+  it('does not synthesize image stimuli without an author-provided imageRef', () => {
+    const result = synthesizeStimulus({
+      blockId: 'tb-image',
+      content: 'Spot the hazard in the image and explain what is wrong with the photo.',
+    });
+    expect(result.synthesized).toBe(false);
+    if (!result.synthesized) {
+      expect(result.reason).toMatch(/no heuristic/);
     }
   });
 

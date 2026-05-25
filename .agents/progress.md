@@ -64,11 +64,9 @@ Skill: `.agents/skills/stimulus-synthesis-from-prompts/SKILL.md`
 - [x] Heuristic library exists.
 - [x] `synth-stimulus` CLI exists.
 - [x] Drafted outputs validate against `challengeStimulusSchema`.
-- [x] Tests cover existing-stimulus skip, no-text skip, ticket, recipe, huddle notes, station state, step-bank-ish synthesis, no-match, and review envelope.
-- [~] Tests do not yet cover every documented kind/path.
+- [x] Tests cover existing-stimulus skip, no-text skip, ticket, recipe, huddle notes, station state, menu board, plain text, step-bank-ish synthesis, image no-synthesis, no-match, and review envelope.
+- [x] CLI tests cover `--dry-run`, `--write`, and current recursive `--backfill <dir>` behavior.
 - [~] `--backfill` behavior differs from the skill's documented glob wording.
-- [ ] Add tests for `menu_board`, `plain_text`, and image no-synthesis/skip behavior.
-- [ ] Add CLI tests for `--dry-run`, `--write`, and backfill.
 - [ ] Resolve validator severity mismatch: synthesis skill says missing artifact stimuli should warn, while current validator emits errors in some paths.
 
 Evidence:
@@ -76,6 +74,7 @@ Evidence:
 - `packages/content-authoring/src/heuristics/stimulus-synth.ts`
 - `packages/content-authoring/src/heuristics/stimulus-synth.test.ts`
 - `packages/content-authoring/src/cli/synth-stimulus.ts`
+- `packages/content-authoring/src/cli/synth-stimulus.test.ts`
 - `packages/content-authoring/src/validation/content-validator.ts`
 
 ## TopShelf Content Pack Authoring
@@ -172,10 +171,10 @@ Skill: `.agents/skills/spaced-retrieval-scheduler/SKILL.md`
 - [x] Scheduler tests cover math and queue cap.
 - [x] Completion events update retention history.
 - [x] `GET /learner/retention/queue` endpoint exists.
+- [x] Direct route tests cover empty and aggregated due retention queues.
 - [x] Web API client calls the retention queue endpoint.
 - [~] Retention is stored in `learnerStates.retentionHistory` JSON, not a dedicated `retention_records` table.
 - [~] Dashboard review card exists, but route target is not clearly first due block.
-- [ ] Add direct route test for `GET /learner/retention/queue`.
 - [ ] Add dashboard render tests for healthy/watch/urgent states.
 - [ ] Decide whether JSON retention history is acceptable or migrate to indexed retention table.
 - [ ] Route review CTA directly to `dueTaskIds[0]` if the product contract still requires it.

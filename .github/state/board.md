@@ -93,6 +93,8 @@ Files touched by multiple agents. **Always check these before and after changes.
 
 ### api-engineer
 
+- **[2026-05-25]** `api` `retention` Added direct HTTP route coverage for `GET /learner/retention/queue`. Files: `packages/api-server/src/routes/learner.test.ts`. Tests now pin empty-queue behavior, aggregation across multiple learner states, oldest-first due ordering, `nextDueAt`, and the retention-history-only query shape. Verification: rebuilt `@topshelf/engine` so API tests resolve current runtime exports, then `pnpm --filter @topshelf/api-server test -- src/routes/learner.test.ts` passed (312/312 due package-level Vitest matching).
+
 - **[2026-05-23]** `api` `auth` `contracts` Completed P1.2/P1.3 validation pass for walking skeleton auth/session isolation. Files: `packages/api-server/src/middleware/auth.test.ts`, `packages/api-server/src/routes/learner.test.ts`. Downstream: no API response or route contract changes; tests now pin custom JWT auth to an unrevoked, unexpired persisted session and verify one completed learner block is recorded only through the current user's active session/learner state.
 
 **[2026-04-25] Instructor routes**
@@ -215,6 +217,8 @@ Files touched by multiple agents. **Always check these before and after changes.
 _No updates yet._
 
 ### test-engineer
+
+- **[2026-05-25]** `test` `stimulus-synthesis` Added heuristic and CLI coverage for the stimulus authoring pipeline. Files: `packages/content-authoring/src/heuristics/stimulus-synth.test.ts`, `packages/content-authoring/src/cli/synth-stimulus.test.ts`. Coverage now includes `menu_board`, `plain_text`, intentional image no-synthesis without `imageRef`, `--dry-run` non-mutation, `--write` mutation plus `_authorReview`, and recursive directory `--backfill`. Verification: `pnpm --filter @topshelf/content-authoring test -- stimulus-synth.test.ts synth-stimulus.test.ts` passed (72/72).
 
 - **[2026-05-23]** `test` `stimulus` `P2.2.1` Added exhaustive-switch and per-renderer render tests. Files: `apps/web/src/components/kitchen/stimuli/__tests__/stimulus-renderers.test.tsx`, `apps/web/vitest.config.ts` (added `@vitejs/plugin-react` plugin to enable automatic JSX transform in Vitest — renderer files don't import React directly, relying on Next.js transform). 20 tests added (7 exhaustive-switch, 13 per-renderer). All web tests pass: 211/211.
 

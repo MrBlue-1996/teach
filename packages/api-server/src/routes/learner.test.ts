@@ -1269,6 +1269,90 @@ describe('Learner Routes', () => {
   });
 
   // ---------------------------------------------------------------------------
+  // GET /learner/retention/queue
+  // ---------------------------------------------------------------------------
+
+  describe('GET /learner/retention/queue', () => {
+    it('should return an empty queue when the learner has no states', async () => {
+      mockDb.query.learnerStates.findMany.mockResolvedValue([]);
+
+      const res = await app.request('/learner/retention/queue');
+
+      expect(res.status).toBe(200);
+      expect(await res.json()).toEqual({
+        dueTaskIds: [],
+        dueCount: 0,
+        nextDueAt: null,
+      });
+    });
+
+    it('should aggregate due retention tasks across learner states', async () => {
+      const now = new Date('2026-05-10T12:00:00.000Z');
+      vi.useFakeTimers();
+      vi.setSystemTime(now);
+
+      mockDb.query.learnerStates.findMany.mockResolvedValue([
+        {
+          retentionHistory: [
+            {
+              taskId: 'block-late',
+              date: '2026-05-01T12:00:00.000Z',
+              pass: true,
+              daysSinceOriginal: 0,
+              latencyMs: 42000,
+              reassessAfterDays: 5,
+              decayHalfLifeDays: 21,
+              nextReassessAt: '2026-05-06T12:00:00.000Z',
+            },
+          ],
+        },
+        {
+          retentionHistory: [
+            {
+              taskId: 'block-earlier',
+              date: '2026-05-01T12:00:00.000Z',
+              pass: true,
+              daysSinceOriginal: 0,
+              latencyMs: 32000,
+              reassessAfterDays: 4,
+              decayHalfLifeDays: 21,
+              nextReassessAt: '2026-05-05T12:00:00.000Z',
+            },
+            {
+              taskId: 'block-future',
+              date: '2026-05-08T12:00:00.000Z',
+              pass: true,
+              daysSinceOriginal: 0,
+              latencyMs: 15000,
+              reassessAfterDays: 10,
+              decayHalfLifeDays: 21,
+              nextReassessAt: '2026-05-18T12:00:00.000Z',
+            },
+          ],
+        },
+      ]);
+
+      try {
+        const res = await app.request('/learner/retention/queue');
+
+        expect(res.status).toBe(200);
+        expect(await res.json()).toEqual({
+          dueTaskIds: ['block-earlier', 'block-late'],
+          dueCount: 2,
+          nextDueAt: '2026-05-18T12:00:00.000Z',
+        });
+        expect(mockDb.query.learnerStates.findMany).toHaveBeenCalledWith(
+          expect.objectContaining({
+            columns: { retentionHistory: true },
+          })
+        );
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+  });
+
+  // ---------------------------------------------------------------------------
   // GET /learner/stats
   // ---------------------------------------------------------------------------
 
