@@ -100,7 +100,14 @@ export interface TeachingGuidanceResponse {
   filtered: boolean;
   filterReason?: string;
   triggers: string[];
+  /** Mode elevation result for the current request (max of engine mode + trigger-driven elevation). */
   suggestedMode: number;
+  /**
+   * Engine recommendation for the next block. Equals `suggestedMode` when
+   * triggers elevated this turn; otherwise reflects a fade if the last few
+   * blocks were clean passes (no help requested, high correctness).
+   */
+  recommendedMode: number;
   currentMode: number;
 }
 
@@ -193,5 +200,14 @@ export const learnerApi = {
     api.patch<{ targetMinutes: number; completedMinutes: number; daysActive: number }>(
       '/learner/weekly-goal',
       { targetMinutes }
+    ),
+
+  /**
+   * GET /learner/retention/queue — aggregated spaced-retrieval due queue across
+   * all packs. Shape matches RetentionQueueSummary in mastery-decay.ts.
+   */
+  getRetentionQueue: () =>
+    api.get<{ dueTaskIds: string[]; dueCount: number; nextDueAt: string | null }>(
+      '/learner/retention/queue'
     ),
 };

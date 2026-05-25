@@ -22,17 +22,24 @@ import {
   Wrench,
   FlaskConical,
   Cog,
+  RefreshCw,
 } from 'lucide-react';
 import { getLevelColor, getLevelName } from '@/lib/utils';
 import { learnerApi, contentApi, badgesApi } from '@/lib/api';
 import type { LearnerState, LearningSession, ContentPack } from '@/lib/api';
 import { pickGoldenPathPack } from '@/lib/golden-path';
+import {
+  computeDecayAffordance,
+  formatNextDueLabel,
+  type RetentionQueueSummary,
+} from '@/lib/mastery-decay';
 
 interface DashboardData {
   states: LearnerState[];
   sessions: LearningSession[];
   packs: ContentPack[];
   badgeCount: number;
+  retentionQueue: RetentionQueueSummary | null;
   isLoading: boolean;
   error: string | null;
 }
@@ -43,6 +50,7 @@ export default function DashboardPage() {
     sessions: [],
     packs: [],
     badgeCount: 0,
+    retentionQueue: null,
     isLoading: true,
     error: null,
   });
@@ -50,23 +58,27 @@ export default function DashboardPage() {
   useEffect(() => {
     async function loadDashboard() {
       try {
-        const [statesRes, sessionsRes, packsRes, badgesRes] = await Promise.allSettled([
-          learnerApi.getStates(),
-          learnerApi.getRecentSessions(10),
-          contentApi.getPacks({ limit: '20' }),
-          badgesApi.getAll(),
-        ]);
+        const [statesRes, sessionsRes, packsRes, badgesRes, retentionRes] =
+          await Promise.allSettled([
+            learnerApi.getStates(),
+            learnerApi.getRecentSessions(10),
+            contentApi.getPacks({ limit: '20' }),
+            badgesApi.getAll(),
+            learnerApi.getRetentionQueue(),
+          ]);
 
         const states = statesRes.status === 'fulfilled' ? statesRes.value.states : [];
         const sessions = sessionsRes.status === 'fulfilled' ? sessionsRes.value.sessions : [];
         const packs = packsRes.status === 'fulfilled' ? packsRes.value.packs : [];
         const badges = badgesRes.status === 'fulfilled' ? badgesRes.value.badges : [];
+        const retentionQueue = retentionRes.status === 'fulfilled' ? retentionRes.value : null;
 
         setData({
           states,
           sessions,
           packs,
           badgeCount: badges.length,
+          retentionQueue,
           isLoading: false,
           error: null,
         });
@@ -101,13 +113,18 @@ export default function DashboardPage() {
     );
   }
 
-  const { states, sessions, packs, badgeCount } = data;
+  const { states, sessions, packs, badgeCount, retentionQueue } = data;
   const currentState = states.length > 0 ? states[0] : null;
   const totalBlocksCompleted = states.reduce((sum, s) => sum + (s.blocksCompleted || 0), 0);
   const recentSessions = sessions.slice(0, 3);
   const enrolledPackIds = new Set(states.map((s) => s.contentPack?.id).filter(Boolean));
   const suggestedPacks = packs.filter((p) => !enrolledPackIds.has(p.id)).slice(0, 3);
   const starterPack = pickGoldenPathPack(packs.filter((p) => !enrolledPackIds.has(p.id)));
+  const decayAffordance = computeDecayAffordance(retentionQueue, null);
+  const reviewPackHref =
+    currentState?.contentPack?.id !== undefined
+      ? `/learn/${currentState.contentPack.id}`
+      : '/content';
 
   // Compute streak from consecutive session days
   const streak = computeStreak(sessions);
@@ -146,6 +163,51 @@ export default function DashboardPage() {
         <StatCard icon={GraduationCap} label="Courses Active" value={states.length} color="blue" />
         <StatCard icon={Zap} label="Blocks Completed" value={totalBlocksCompleted} color="purple" />
       </div>
+
+      {/* Review Now — surfaces spaced-retrieval due queue when learner has items to refresh */}
+      {decayAffordance.status !== 'healthy' && (
+        <Card
+          className={
+            decayAffordance.status === 'urgent'
+              ? 'border-2 border-destructive/40 bg-destructive/5'
+              : 'border-2 border-warning/40 bg-warning/5'
+          }
+          data-testid="review-now-card"
+        >
+          <CardContent className="flex flex-col gap-3 p-5 md:flex-row md:items-center md:justify-between">
+            <div className="flex items-start gap-3">
+              <RefreshCw
+                className={
+                  decayAffordance.status === 'urgent'
+                    ? 'mt-1 h-5 w-5 text-destructive'
+                    : 'mt-1 h-5 w-5 text-warning'
+                }
+                aria-hidden="true"
+              />
+              <div>
+                <p className="font-semibold">
+                  {decayAffordance.status === 'urgent'
+                    ? 'Several items need a refresh'
+                    : `${decayAffordance.dueCount} ${decayAffordance.dueCount === 1 ? 'item' : 'items'} to review`}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {formatNextDueLabel(decayAffordance.nextDueAt)} — short reviews keep what you've
+                  learned sharp.
+                </p>
+              </div>
+            </div>
+            <Link href={reviewPackHref}>
+              <Button
+                size="lg"
+                variant={decayAffordance.status === 'urgent' ? 'destructive' : 'default'}
+              >
+                Open review
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Continue Learning - Primary CTA */}
       {currentState && currentState.contentPack && (

@@ -29,8 +29,72 @@ import {
   ConstraintEngine,
   TeachingMode,
   type TeachingContext,
+  type TrialOutcome,
 } from '@topshelf/engine';
 import { notFound } from '../middleware/error-handler.js';
+import {
+  nextSchedule,
+  buildAggregateRetentionQueue,
+  type RetentionHistoryEntry as SchedulerRetentionEntry,
+} from '../lib/retention-scheduler.js';
+
+// =============================================================================
+// HELPERS
+// =============================================================================
+
+const CLEAN_PASS_CORRECTNESS = 0.8;
+
+/**
+ * Walk events oldest-to-newest, building per-block trial outcomes.
+ * A block trial is "passed" when a `completed` event with
+ * `correctness >= CLEAN_PASS_CORRECTNESS` exists for it. `helpRequested`
+ * is true if any `hint_used` event for the same block precedes the
+ * completion in the same session window.
+ *
+ * Events are expected newest-first (from DB ORDER BY); internally reversed
+ * so a later `completed` overrides an earlier attempt. Returned trials are
+ * oldest-first so `TriggerDetector.suggestModeFade` can slice the trailing window.
+ */
+function deriveRecentTrials(
+  events: readonly {
+    blockId: string;
+    eventType: string;
+    correctness: number | null;
+  }[]
+): TrialOutcome[] {
+  const trialsByBlock = new Map<string, { passed: boolean | null; helpRequested: boolean }>();
+  const ordered: string[] = [];
+
+  // Walk oldest-to-newest so a later `completed` overrides an earlier attempt
+  for (const event of [...events].reverse()) {
+    const existing = trialsByBlock.get(event.blockId) ?? {
+      passed: null,
+      helpRequested: false,
+    };
+
+    if (event.eventType === 'hint_used') {
+      existing.helpRequested = true;
+    } else if (event.eventType === 'completed') {
+      existing.passed = (event.correctness ?? 0) >= CLEAN_PASS_CORRECTNESS;
+    }
+
+    trialsByBlock.set(event.blockId, existing);
+    if (!ordered.includes(event.blockId)) {
+      ordered.push(event.blockId);
+    }
+  }
+
+  return ordered.flatMap((blockId) => {
+    const trial = trialsByBlock.get(blockId);
+    // Only count blocks that have actually been completed (passed is non-null)
+    // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
+    if (!trial || trial.passed === null) {
+      return [];
+    }
+
+    return [{ passed: trial.passed, helpRequested: trial.helpRequested }];
+  });
+}
 
 // =============================================================================
 // SCHEMAS
@@ -72,6 +136,10 @@ interface RetentionHistoryEntry {
   reassessAfterDays?: number;
   decayHalfLifeDays?: number;
   nextReassessAt?: string;
+  /** Leitner stage at the time this record was written. */
+  stage?: number;
+  /** Consecutive-pass counter at the time this record was written. */
+  consecutivePasses?: number;
 }
 
 function parseRetentionSchedule(content: unknown): RetentionSchedule {
@@ -442,19 +510,38 @@ export function createLearnerRoutes(): Hono {
 
         const schedule = parseRetentionSchedule(block?.content);
         const now = new Date();
-        const nextReassessAt = toReassessmentDate(now, schedule.reassessAfterDays).toISOString();
+        const existingHistory = parseRetentionHistory(learnerState.retentionHistory);
+        const passed = (eventData.correctness ?? 0) >= 0.5;
+
+        // Heuristic: a hint_used event for this block (matched by current
+        // block) is recorded separately and bumps errorsEncountered. We treat
+        // the current completion as "with help" only when this event itself
+        // arrives with `responseData.helpRequested === true`.
+        const responseData = eventData.responseData;
+        const helpRequested = responseData?.['helpRequested'] === true;
+
+        const computed = nextSchedule({
+          taskId: eventData.blockId,
+          passed,
+          helpRequested,
+          completedAt: now,
+          decayHalfLifeDays: schedule.decayHalfLifeDays,
+          history: existingHistory,
+        });
+
         const retentionRecord: RetentionHistoryEntry = {
           taskId: eventData.blockId,
           date: now.toISOString(),
-          pass: (eventData.correctness ?? 0) >= 0.5,
+          pass: passed,
           daysSinceOriginal: 0,
           latencyMs: Math.max(0, (eventData.timeSpentSeconds ?? 0) * 1000),
-          reassessAfterDays: schedule.reassessAfterDays,
+          reassessAfterDays: computed.intervalDays,
           decayHalfLifeDays: schedule.decayHalfLifeDays,
-          nextReassessAt,
+          nextReassessAt: computed.nextReassessAt,
+          stage: computed.stage,
+          consecutivePasses: computed.consecutivePasses,
         };
 
-        const existingHistory = parseRetentionHistory(learnerState.retentionHistory);
         updatedRetentionHistory = [...existingHistory, retentionRecord].slice(
           -MAX_RETENTION_HISTORY_ENTRIES
         );
@@ -530,7 +617,7 @@ export function createLearnerRoutes(): Hono {
     );
 
     const teachingContext: TeachingContext = {
-      mode: (refreshedSession.teachingMode ?? TeachingMode.L2_CONTEXTUAL) as TeachingMode,
+      mode: refreshedSession.teachingMode ?? TeachingMode.L2_CONTEXTUAL,
       deviceProfile,
       constraints: ConstraintEngine.getConstraints(deviceProfile),
       triggers: [],
@@ -709,6 +796,30 @@ export function createLearnerRoutes(): Hono {
   // ---------------------------------------------------------------------------
   // GET /learner/weekly-goal - Weekly learning goal summary
   // ---------------------------------------------------------------------------
+  // ---------------------------------------------------------------------------
+  // GET /learner/retention/queue
+  // Aggregated due-task queue across all packs for the current learner.
+  // Returns RetentionQueueSummary shape consumed by computeDecayAffordance.
+  // ---------------------------------------------------------------------------
+  router.get('/retention/queue', async (c) => {
+    const userId = c.get('userId');
+    const db = getDatabase();
+
+    const states = await db.query.learnerStates.findMany({
+      where: eq(learnerStates.userId, userId),
+      columns: { retentionHistory: true },
+    });
+
+    const histories = states.map((state) => {
+      const parsed = parseRetentionHistory(state.retentionHistory) as SchedulerRetentionEntry[];
+      return parsed;
+    });
+
+    const queue = buildAggregateRetentionQueue(histories, new Date());
+
+    return c.json(queue);
+  });
+
   router.get('/weekly-goal', async (c) => {
     const userId = c.get('userId');
     const db = getDatabase();
@@ -859,7 +970,7 @@ export function createLearnerRoutes(): Hono {
     );
 
     const context: TeachingContext = {
-      mode: (session.teachingMode ?? TeachingMode.L2_CONTEXTUAL) as TeachingMode,
+      mode: session.teachingMode ?? TeachingMode.L2_CONTEXTUAL,
       deviceProfile,
       constraints: ConstraintEngine.getConstraints(deviceProfile),
       triggers: [],
@@ -874,19 +985,34 @@ export function createLearnerRoutes(): Hono {
     // Check for mode elevation
     const triggers = TriggerDetector.detectTriggers(context);
     const suggestedMode = TriggerDetector.suggestModeElevation(context.mode, triggers);
-    const elevatedMode = Math.max(response.mode as number, suggestedMode as number) as TeachingMode;
+    const elevatedMode = suggestedMode > response.mode ? suggestedMode : response.mode;
 
-    if ((elevatedMode as number) > (context.mode as number)) {
+    if (elevatedMode > context.mode) {
       await db
         .update(learningSessions)
         .set({ teachingMode: elevatedMode, triggersFired: triggers })
         .where(eq(learningSessions.id, sessionId));
     }
 
+    // Compute recommendedMode: elevation wins if active; otherwise consider fade
+    // when the last few completed blocks were clean (high correctness, no hints).
+    let recommendedMode = elevatedMode;
+    if (elevatedMode <= context.mode) {
+      const recentEvents = await db.query.learnerProgressEvents.findMany({
+        where: eq(learnerProgressEvents.learnerStateId, session.learnerStateId),
+        orderBy: [desc(learnerProgressEvents.occurredAt)],
+        limit: 50,
+      });
+
+      const recentTrials = deriveRecentTrials(recentEvents);
+      recommendedMode = TriggerDetector.suggestModeFade(context.mode, recentTrials);
+    }
+
     return c.json({
       ...response,
       triggers,
       suggestedMode: elevatedMode,
+      recommendedMode,
       currentMode: context.mode,
     });
   });

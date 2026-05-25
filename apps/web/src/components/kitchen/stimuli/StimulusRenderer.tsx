@@ -5,8 +5,10 @@
  */
 
 import { HuddleNotesStimulus } from './HuddleNotesStimulus';
+import { ImageStimulus } from './ImageStimulus';
 import { MenuBoardStimulus } from './MenuBoardStimulus';
 import { PlainTextStimulus } from './PlainTextStimulus';
+import { RecipeStimulus } from './RecipeStimulus';
 import { StationStateStimulus } from './StationStateStimulus';
 import { StepBankStimulus } from './StepBankStimulus';
 import { TicketStimulus } from './TicketStimulus';
@@ -30,6 +32,10 @@ export function StimulusRenderer({ stimulus }: StimulusRendererProps) {
       return <StepBankStimulus stimulus={stimulus} />;
     case 'plain_text':
       return <PlainTextStimulus stimulus={stimulus} />;
+    case 'recipe':
+      return <RecipeStimulus stimulus={stimulus} />;
+    case 'image':
+      return <ImageStimulus stimulus={stimulus} />;
     default:
       return null;
   }

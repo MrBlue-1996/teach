@@ -58,6 +58,25 @@ export enum TriggerType {
 }
 
 /**
+ * Per-block / per-session trigger threshold overrides. Content packs can supply
+ * these via `triggerRules` on a teaching block; callers translate them onto the
+ * context before processing. Absent fields fall back to engine defaults.
+ */
+export interface TriggerThresholds {
+  errorRepeatThreshold?: number;
+  stuckTimeThresholdMs?: number;
+}
+
+/**
+ * Trial outcome record used by `TriggerDetector.suggestModeFade`. Tracks a single
+ * completed block within the current concept window.
+ */
+export interface TrialOutcome {
+  passed: boolean;
+  helpRequested: boolean;
+}
+
+/**
  * Teaching context for a session
  */
 export interface TeachingContext {
@@ -68,6 +87,26 @@ export interface TeachingContext {
   sessionStartTime: Date;
   problemsSolved: number;
   errorsEncountered: number;
+  /**
+   * True when the learner has zero mastery on `block.concept` and no prior
+   * exposure. Seeds `L4_TUTORIAL` in `createContext` unless an explicit
+   * learner override is present.
+   */
+  initialExposure?: boolean;
+  /** Per-block trigger threshold overrides. */
+  thresholds?: TriggerThresholds;
+}
+
+/**
+ * Options consumed by `PedagogyEngine.createContext` to resolve the seed
+ * teaching mode. Precedence: `learnerOverride` > `initialExposure` (→ L4) >
+ * `blockMode` > the explicit `mode` argument.
+ */
+export interface CreateContextOptions {
+  initialExposure?: boolean;
+  blockMode?: TeachingMode;
+  learnerOverride?: TeachingMode;
+  thresholds?: TriggerThresholds;
 }
 
 /**

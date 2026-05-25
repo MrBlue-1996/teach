@@ -7,34 +7,39 @@
  * Detects when teaching intervention is needed.
  */
 
-import { TriggerType, TeachingContext, TeachingMode } from './types.js';
+import { TriggerType, TeachingContext, TeachingMode, TrialOutcome } from './types.js';
 
-const ERROR_REPEAT_THRESHOLD = 3;
-const STUCK_TIME_THRESHOLD_MS = 300000; // 5 minutes
+export const ERROR_REPEAT_THRESHOLD = 3;
+export const STUCK_TIME_THRESHOLD_MS = 300000; // 5 minutes
+const FADE_CONSECUTIVE_PASSES = 3;
 
 export const TriggerDetector = {
   /**
-   * Detect triggers based on teaching context
+   * Detect triggers based on teaching context.
+   *
+   * STUCK_DETECTED requires that the learner has actually tried and failed —
+   * elapsed time alone is not enough. This preserves "productive struggle":
+   * a learner reading or thinking should not be interrupted as stuck.
    */
   detectTriggers(context: TeachingContext): TriggerType[] {
     const triggers: TriggerType[] = [];
 
-    // Detect repeated errors
-    if (context.errorsEncountered >= ERROR_REPEAT_THRESHOLD) {
+    const errorThreshold = context.thresholds?.errorRepeatThreshold ?? ERROR_REPEAT_THRESHOLD;
+    const stuckThresholdMs = context.thresholds?.stuckTimeThresholdMs ?? STUCK_TIME_THRESHOLD_MS;
+
+    if (context.errorsEncountered >= errorThreshold) {
       triggers.push(TriggerType.ERROR_REPEATED);
     }
 
-    // Detect stuck state (time spent without progress)
     const timeElapsed = Date.now() - context.sessionStartTime.getTime();
     const elapsedMinutes = Math.max(timeElapsed / 60000, 0.01);
-    const progressRate = context.problemsSolved / elapsedMinutes; // problems per minute
+    const progressRate = context.problemsSolved / elapsedMinutes;
 
-    if (timeElapsed > STUCK_TIME_THRESHOLD_MS && progressRate < 0.1) {
+    if (timeElapsed > stuckThresholdMs && progressRate < 0.1 && context.errorsEncountered > 0) {
       triggers.push(TriggerType.STUCK_DETECTED);
     }
 
-    // Time threshold trigger
-    if (timeElapsed > STUCK_TIME_THRESHOLD_MS) {
+    if (timeElapsed > stuckThresholdMs) {
       triggers.push(TriggerType.TIME_THRESHOLD);
     }
 
@@ -72,7 +77,11 @@ export const TriggerDetector = {
   },
 
   /**
-   * Suggest mode elevation based on triggers
+   * Suggest mode elevation based on triggers.
+   *
+   * Only `ERROR_REPEATED` and `STUCK_DETECTED` count as severe. `TIME_THRESHOLD`
+   * is a soft signal — passing time alone does not justify forcing a heavier
+   * teaching intervention, because doing so interrupts productive struggle.
    */
   suggestModeElevation(currentMode: TeachingMode, triggers: TriggerType[]): TeachingMode {
     if (currentMode >= TeachingMode.L4_TUTORIAL) {
@@ -92,5 +101,36 @@ export const TriggerDetector = {
     }
 
     return currentMode;
+  },
+
+  /**
+   * Suggest a fade — move teaching mode one step *down* when the learner has
+   * accumulated consecutive clean passes (no help requested, no failures) at
+   * the current mode. Mirrors the expertise-reversal correction: once a
+   * learner shows competence at a guided mode, the next block should ask more
+   * of them.
+   *
+   * Rules:
+   * - Fewer than `FADE_CONSECUTIVE_PASSES` trials → no fade.
+   * - Any non-pass or any help request in the most recent window → no fade.
+   * - L0_SILENT and L1_MINIMAL never fade automatically (L1 is the floor).
+   */
+  suggestModeFade(currentMode: TeachingMode, recentTrials: TrialOutcome[]): TeachingMode {
+    if (currentMode <= TeachingMode.L1_MINIMAL) {
+      return currentMode;
+    }
+
+    if (recentTrials.length < FADE_CONSECUTIVE_PASSES) {
+      return currentMode;
+    }
+
+    const window = recentTrials.slice(-FADE_CONSECUTIVE_PASSES);
+    const allClean = window.every((trial) => trial.passed && !trial.helpRequested);
+
+    if (!allClean) {
+      return currentMode;
+    }
+
+    return currentMode - 1;
   },
 };

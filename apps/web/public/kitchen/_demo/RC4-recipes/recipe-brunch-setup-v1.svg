@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" role="img" aria-label="Demo image: Brunch Setup">
+  <rect width="640" height="360" fill="#181A1F"/>
+  <rect x="0" y="0" width="640" height="6" fill="#0EA5E9"/>
+  <g font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-weight="700" text-anchor="middle">
+    <text x="320" y="170" font-size="36" fill="#FAFAFA">Brunch Setup</text>
+    <text x="320" y="210" font-size="14" fill="#94A3B8" letter-spacing="4">TOP SHELF TEACHING · DEMO ASSET</text>
+  </g>
+  <g transform="translate(540, 320)">
+    <rect x="-40" y="-14" width="80" height="28" rx="4" fill="#0EA5E9"/>
+    <text x="0" y="4" font-family="system-ui, sans-serif" font-size="12" font-weight="700" fill="#FAFAFA" text-anchor="middle" letter-spacing="2">DEMO</text>
+  </g>
+</svg>

@@ -13,6 +13,9 @@ export {
   type DeviceConstraints,
   type TeachingContext,
   type TeachingResponse,
+  type TriggerThresholds,
+  type TrialOutcome,
+  type CreateContextOptions,
 } from './types.js';
 
 export { PedagogyEngine } from './pedagogy-engine.js';

@@ -1,0 +1,254 @@
+{
+  "schemaVersion": "1.0.0",
+  "defaultDimensions": { "widthPx": 640, "heightPx": 360 },
+  "entries": {
+    "EQ1-equipment/cold_station": {
+      "path": "/kitchen/_demo/EQ1-equipment/cold_station.svg",
+      "altText": "Cold prep station with rails and inserts",
+      "sourceDataStatus": "demo",
+      "licenseRef": null,
+      "tags": ["equipment", "cold"]
+    },
+    "EQ1-equipment/expediter": {
+      "path": "/kitchen/_demo/EQ1-equipment/expediter.svg",
+      "altText": "Expediter pass with ticket rail and heat lamps",
+      "sourceDataStatus": "demo",
+      "licenseRef": null,
+      "tags": ["equipment", "expo"]
+    },
+    "EQ1-equipment/flat_top": {
+      "path": "/kitchen/_demo/EQ1-equipment/flat_top.svg",
+      "altText": "Commercial flat-top griddle at service temperature",
+      "sourceDataStatus": "demo",
+      "licenseRef": null,
+      "tags": ["equipment", "griddle"]
+    },
+    "EQ1-equipment/fryer": {
+      "path": "/kitchen/_demo/EQ1-equipment/fryer.svg",
+      "altText": "Twin-basket fryer with oil thermometer",
+      "sourceDataStatus": "demo",
+      "licenseRef": null,
+      "tags": ["equipment", "fryer"]
+    },
+    "EQ1-equipment/grill": {
+      "path": "/kitchen/_demo/EQ1-equipment/grill.svg",
+      "altText": "Char-grill broiler at service temperature",
+      "sourceDataStatus": "demo",
+      "licenseRef": null,
+      "tags": ["equipment", "grill"]
+    },
+    "EQ1-equipment/oven": {
+      "path": "/kitchen/_demo/EQ1-equipment/oven.svg",
+      "altText": "Convection oven set to baking temp",
+      "sourceDataStatus": "demo",
+      "licenseRef": null,
+      "tags": ["equipment", "oven"]
+    },
+    "EQ1-equipment/prep_table": {
+      "path": "/kitchen/_demo/EQ1-equipment/prep_table.svg",
+      "altText": "Prep table with cutting board and ingredients",
+      "sourceDataStatus": "demo",
+      "licenseRef": null,
+      "tags": ["equipment", "prep"]
+    },
+    "EQ1-equipment/saute": {
+      "path": "/kitchen/_demo/EQ1-equipment/saute.svg",
+      "altText": "Saute range with multiple burners",
+      "sourceDataStatus": "demo",
+      "licenseRef": null,
+      "tags": ["equipment", "saute"]
+    },
+
+    "RC4-recipes/recipe-brunch-setup-v1": {
+      "path": "/kitchen/_demo/RC4-recipes/recipe-brunch-setup-v1.svg",
+      "altText": "Brunch service mise en place",
+      "sourceDataStatus": "demo",
+      "licenseRef": null,
+      "tags": ["recipe", "brunch"]
+    },
+    "RC4-recipes/recipe-burger-smash-v1": {
+      "path": "/kitchen/_demo/RC4-recipes/recipe-burger-smash-v1.svg",
+      "altText": "Smashed burger on flat-top",
+      "sourceDataStatus": "demo",
+      "licenseRef": null,
+      "tags": ["recipe", "burger"]
+    },
+    "RC4-recipes/recipe-hollandaise-v1": {
+      "path": "/kitchen/_demo/RC4-recipes/recipe-hollandaise-v1.svg",
+      "altText": "Hollandaise in a double boiler",
+      "sourceDataStatus": "demo",
+      "licenseRef": null,
+      "tags": ["recipe", "sauce"]
+    },
+    "RC4-recipes/recipe-labor-plan-v1": {
+      "path": "/kitchen/_demo/RC4-recipes/recipe-labor-plan-v1.svg",
+      "altText": "Shift labor plan on whiteboard",
+      "sourceDataStatus": "demo",
+      "licenseRef": null,
+      "tags": ["recipe", "labor"]
+    },
+    "RC4-recipes/recipe-order-review-v1": {
+      "path": "/kitchen/_demo/RC4-recipes/recipe-order-review-v1.svg",
+      "altText": "Inventory order review sheet",
+      "sourceDataStatus": "demo",
+      "licenseRef": null,
+      "tags": ["recipe", "ordering"]
+    },
+    "RC4-recipes/recipe-osha-standard-v1": {
+      "path": "/kitchen/_demo/RC4-recipes/recipe-osha-standard-v1.svg",
+      "altText": "OSHA safety standard checklist",
+      "sourceDataStatus": "demo",
+      "licenseRef": null,
+      "tags": ["recipe", "safety"]
+    },
+    "RC4-recipes/recipe-temp-standard-v1": {
+      "path": "/kitchen/_demo/RC4-recipes/recipe-temp-standard-v1.svg",
+      "altText": "Food safety temperature reference chart",
+      "sourceDataStatus": "demo",
+      "licenseRef": null,
+      "tags": ["recipe", "safety"]
+    },
+    "RC4-recipes/recipe-walkin-org-v1": {
+      "path": "/kitchen/_demo/RC4-recipes/recipe-walkin-org-v1.svg",
+      "altText": "Walk-in cooler organization chart",
+      "sourceDataStatus": "demo",
+      "licenseRef": null,
+      "tags": ["recipe", "storage"]
+    },
+
+    "ST3-stations/brunch-station": {
+      "path": "/kitchen/_demo/ST3-stations/brunch-station.svg",
+      "altText": "Brunch station with eggs and griddle",
+      "sourceDataStatus": "demo",
+      "licenseRef": null,
+      "tags": ["station", "brunch"]
+    },
+    "ST3-stations/cold_station": {
+      "path": "/kitchen/_demo/ST3-stations/cold_station.svg",
+      "altText": "Cold salad station with garnish rail",
+      "sourceDataStatus": "demo",
+      "licenseRef": null,
+      "tags": ["station", "cold"]
+    },
+    "ST3-stations/prep_table": {
+      "path": "/kitchen/_demo/ST3-stations/prep_table.svg",
+      "altText": "Prep station with knife block and boards",
+      "sourceDataStatus": "demo",
+      "licenseRef": null,
+      "tags": ["station", "prep"]
+    },
+    "ST3-stations/saute": {
+      "path": "/kitchen/_demo/ST3-stations/saute.svg",
+      "altText": "Saute station with pans and tongs",
+      "sourceDataStatus": "demo",
+      "licenseRef": null,
+      "tags": ["station", "saute"]
+    },
+
+    "TL2-tools/chef-knife": {
+      "path": "/kitchen/_demo/TL2-tools/chef-knife.svg",
+      "altText": "8-inch chef knife on cutting board",
+      "sourceDataStatus": "demo",
+      "licenseRef": null,
+      "tags": ["tool", "knife"]
+    },
+    "TL2-tools/cutting_board": {
+      "path": "/kitchen/_demo/TL2-tools/cutting_board.svg",
+      "altText": "Sanitized cutting board with color coding",
+      "sourceDataStatus": "demo",
+      "licenseRef": null,
+      "tags": ["tool", "board"]
+    },
+    "TL2-tools/double_boiler": {
+      "path": "/kitchen/_demo/TL2-tools/double_boiler.svg",
+      "altText": "Double boiler for delicate sauces",
+      "sourceDataStatus": "demo",
+      "licenseRef": null,
+      "tags": ["tool", "boiler"]
+    },
+    "TL2-tools/gloves": {
+      "path": "/kitchen/_demo/TL2-tools/gloves.svg",
+      "altText": "Food-safe gloves in dispenser",
+      "sourceDataStatus": "demo",
+      "licenseRef": null,
+      "tags": ["tool", "safety"]
+    },
+    "TL2-tools/ice_bath": {
+      "path": "/kitchen/_demo/TL2-tools/ice_bath.svg",
+      "altText": "Ice bath for rapid cooling",
+      "sourceDataStatus": "demo",
+      "licenseRef": null,
+      "tags": ["tool", "cooling"]
+    },
+    "TL2-tools/labels": {
+      "path": "/kitchen/_demo/TL2-tools/labels.svg",
+      "altText": "Date labels with marker",
+      "sourceDataStatus": "demo",
+      "licenseRef": null,
+      "tags": ["tool", "labeling"]
+    },
+    "TL2-tools/marker": {
+      "path": "/kitchen/_demo/TL2-tools/marker.svg",
+      "altText": "Food-safe marker",
+      "sourceDataStatus": "demo",
+      "licenseRef": null,
+      "tags": ["tool", "labeling"]
+    },
+    "TL2-tools/measuring_cup": {
+      "path": "/kitchen/_demo/TL2-tools/measuring_cup.svg",
+      "altText": "Liquid measuring cup",
+      "sourceDataStatus": "demo",
+      "licenseRef": null,
+      "tags": ["tool", "measure"]
+    },
+    "TL2-tools/sani-bucket": {
+      "path": "/kitchen/_demo/TL2-tools/sani-bucket.svg",
+      "altText": "Sanitizer bucket with cloth",
+      "sourceDataStatus": "demo",
+      "licenseRef": null,
+      "tags": ["tool", "sanitation"]
+    },
+    "TL2-tools/scale": {
+      "path": "/kitchen/_demo/TL2-tools/scale.svg",
+      "altText": "Digital portion scale",
+      "sourceDataStatus": "demo",
+      "licenseRef": null,
+      "tags": ["tool", "measure"]
+    },
+    "TL2-tools/sheet_pan": {
+      "path": "/kitchen/_demo/TL2-tools/sheet_pan.svg",
+      "altText": "Half sheet pan with parchment",
+      "sourceDataStatus": "demo",
+      "licenseRef": null,
+      "tags": ["tool", "bakeware"]
+    },
+    "TL2-tools/sink": {
+      "path": "/kitchen/_demo/TL2-tools/sink.svg",
+      "altText": "Three-compartment sink",
+      "sourceDataStatus": "demo",
+      "licenseRef": null,
+      "tags": ["tool", "sanitation"]
+    },
+    "TL2-tools/spatula": {
+      "path": "/kitchen/_demo/TL2-tools/spatula.svg",
+      "altText": "Wide-blade spatula",
+      "sourceDataStatus": "demo",
+      "licenseRef": null,
+      "tags": ["tool", "utensil"]
+    },
+    "TL2-tools/thermometer": {
+      "path": "/kitchen/_demo/TL2-tools/thermometer.svg",
+      "altText": "Probe thermometer",
+      "sourceDataStatus": "demo",
+      "licenseRef": null,
+      "tags": ["tool", "measure"]
+    },
+    "TL2-tools/tongs": {
+      "path": "/kitchen/_demo/TL2-tools/tongs.svg",
+      "altText": "Stainless tongs",
+      "sourceDataStatus": "demo",
+      "licenseRef": null,
+      "tags": ["tool", "utensil"]
+    }
+  }
+}

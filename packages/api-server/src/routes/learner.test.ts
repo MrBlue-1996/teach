@@ -799,15 +799,18 @@ describe('Learner Routes', () => {
 
       expect(res.status).toBe(200);
       const learnerStateUpdate = setSpy.mock.calls[0]?.[0];
+      // Leitner stage 1 = 3 days. Half-life still comes from content schedule.
       expect(learnerStateUpdate.retentionHistory).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
             taskId: 'block-9',
             pass: true,
             latencyMs: 42000,
-            reassessAfterDays: 5,
+            reassessAfterDays: 3,
             decayHalfLifeDays: 13,
-            nextReassessAt: '2026-05-15T12:00:00.000Z',
+            nextReassessAt: '2026-05-13T12:00:00.000Z',
+            stage: 1,
+            consecutivePasses: 1,
           }),
         ])
       );

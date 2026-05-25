@@ -10,7 +10,7 @@
  * - avoid caching auth tokens, API responses, protected mutations, or tenant-private data
  */
 
-const VERSION = 'pwa-shell-v2';
+const VERSION = 'pwa-shell-v3';
 const APP_SHELL_CACHE = `topshelf-app-shell-${VERSION}`;
 const STATIC_CACHE = `topshelf-static-${VERSION}`;
 
@@ -28,6 +28,15 @@ const PRIVATE_OR_DYNAMIC_PREFIXES = [
   '/admin',
   '/manager',
   '/instructor',
+  '/learn',
+  '/content',
+  '/analytics',
+  '/achievements',
+  '/onboarding',
+  '/ingredients',
+  '/library',
+  '/machines',
+  '/tools',
 ];
 
 self.addEventListener('install', (event) => {

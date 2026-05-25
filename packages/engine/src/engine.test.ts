@@ -39,13 +39,25 @@ describe('TriggerDetector', () => {
       expect(triggers).not.toContain(TriggerType.ERROR_REPEATED);
     });
 
-    it('fires STUCK_DETECTED after 5 min with low progress', () => {
+    it('fires STUCK_DETECTED after 5 min with low progress AND at least one error', () => {
       const ctx = makeContext({
         sessionStartTime: new Date(Date.now() - 6 * 60 * 1000),
         problemsSolved: 0,
+        errorsEncountered: 1,
       });
       const triggers = TriggerDetector.detectTriggers(ctx);
       expect(triggers).toContain(TriggerType.STUCK_DETECTED);
+    });
+
+    it('does NOT fire STUCK_DETECTED on elapsed time alone with zero errors', () => {
+      const ctx = makeContext({
+        sessionStartTime: new Date(Date.now() - 6 * 60 * 1000),
+        problemsSolved: 0,
+        errorsEncountered: 0,
+      });
+      const triggers = TriggerDetector.detectTriggers(ctx);
+      expect(triggers).not.toContain(TriggerType.STUCK_DETECTED);
+      expect(triggers).toContain(TriggerType.TIME_THRESHOLD);
     });
 
     it('fires TIME_THRESHOLD after 5 min regardless of progress', () => {
@@ -56,6 +68,26 @@ describe('TriggerDetector', () => {
       const triggers = TriggerDetector.detectTriggers(ctx);
       expect(triggers).toContain(TriggerType.TIME_THRESHOLD);
       expect(triggers).not.toContain(TriggerType.STUCK_DETECTED);
+    });
+
+    it('honors per-context errorRepeatThreshold override', () => {
+      const ctx = makeContext({
+        errorsEncountered: 2,
+        thresholds: { errorRepeatThreshold: 2 },
+      });
+      expect(TriggerDetector.detectTriggers(ctx)).toContain(TriggerType.ERROR_REPEATED);
+    });
+
+    it('honors per-context stuckTimeThresholdMs override', () => {
+      const ctx = makeContext({
+        sessionStartTime: new Date(Date.now() - 90 * 1000),
+        errorsEncountered: 1,
+        problemsSolved: 0,
+        thresholds: { stuckTimeThresholdMs: 60_000 },
+      });
+      const triggers = TriggerDetector.detectTriggers(ctx);
+      expect(triggers).toContain(TriggerType.STUCK_DETECTED);
+      expect(triggers).toContain(TriggerType.TIME_THRESHOLD);
     });
 
     it('handles trigger checks at session start without dividing by zero', () => {
@@ -134,6 +166,92 @@ describe('TriggerDetector', () => {
       expect(
         TriggerDetector.suggestModeElevation(TeachingMode.L1_MINIMAL, [TriggerType.TIME_THRESHOLD])
       ).toBe(TeachingMode.L1_MINIMAL);
+    });
+  });
+
+  describe('suggestModeFade', () => {
+    const cleanTrial = { passed: true, helpRequested: false };
+
+    it('does not fade with fewer than 3 trials', () => {
+      expect(
+        TriggerDetector.suggestModeFade(TeachingMode.L4_TUTORIAL, [cleanTrial, cleanTrial])
+      ).toBe(TeachingMode.L4_TUTORIAL);
+    });
+
+    it('fades one step down after 3 clean passes', () => {
+      expect(
+        TriggerDetector.suggestModeFade(TeachingMode.L4_TUTORIAL, [
+          cleanTrial,
+          cleanTrial,
+          cleanTrial,
+        ])
+      ).toBe(TeachingMode.L3_ACTIVE);
+
+      expect(
+        TriggerDetector.suggestModeFade(TeachingMode.L3_ACTIVE, [
+          cleanTrial,
+          cleanTrial,
+          cleanTrial,
+        ])
+      ).toBe(TeachingMode.L2_CONTEXTUAL);
+
+      expect(
+        TriggerDetector.suggestModeFade(TeachingMode.L2_CONTEXTUAL, [
+          cleanTrial,
+          cleanTrial,
+          cleanTrial,
+        ])
+      ).toBe(TeachingMode.L1_MINIMAL);
+    });
+
+    it('does not fade when any recent trial requested help', () => {
+      expect(
+        TriggerDetector.suggestModeFade(TeachingMode.L4_TUTORIAL, [
+          cleanTrial,
+          { passed: true, helpRequested: true },
+          cleanTrial,
+        ])
+      ).toBe(TeachingMode.L4_TUTORIAL);
+    });
+
+    it('does not fade when any recent trial failed', () => {
+      expect(
+        TriggerDetector.suggestModeFade(TeachingMode.L4_TUTORIAL, [
+          cleanTrial,
+          { passed: false, helpRequested: false },
+          cleanTrial,
+        ])
+      ).toBe(TeachingMode.L4_TUTORIAL);
+    });
+
+    it('never fades L1_MINIMAL or L0_SILENT', () => {
+      expect(
+        TriggerDetector.suggestModeFade(TeachingMode.L1_MINIMAL, [
+          cleanTrial,
+          cleanTrial,
+          cleanTrial,
+        ])
+      ).toBe(TeachingMode.L1_MINIMAL);
+
+      expect(
+        TriggerDetector.suggestModeFade(TeachingMode.L0_SILENT, [
+          cleanTrial,
+          cleanTrial,
+          cleanTrial,
+        ])
+      ).toBe(TeachingMode.L0_SILENT);
+    });
+
+    it('considers only the most recent FADE_CONSECUTIVE_PASSES window', () => {
+      // An older fail should not block a fade if the last 3 are clean
+      expect(
+        TriggerDetector.suggestModeFade(TeachingMode.L3_ACTIVE, [
+          { passed: false, helpRequested: false },
+          cleanTrial,
+          cleanTrial,
+          cleanTrial,
+        ])
+      ).toBe(TeachingMode.L2_CONTEXTUAL);
     });
   });
 });
@@ -316,6 +434,48 @@ describe('PedagogyEngine', () => {
       expect(ctx.problemsSolved).toBe(0);
       expect(ctx.errorsEncountered).toBe(0);
       expect(ctx.constraints.maxMemoryMB).toBe(4096);
+    });
+
+    it('seeds L4_TUTORIAL when initialExposure is true', () => {
+      const ctx = PedagogyEngine.createContext(
+        TeachingMode.L2_CONTEXTUAL,
+        DeviceProfile.CHROMEBOOK_STANDARD,
+        { initialExposure: true }
+      );
+      expect(ctx.mode).toBe(TeachingMode.L4_TUTORIAL);
+      expect(ctx.initialExposure).toBe(true);
+    });
+
+    it('honors blockMode when no override and no initial exposure', () => {
+      const ctx = PedagogyEngine.createContext(
+        TeachingMode.L2_CONTEXTUAL,
+        DeviceProfile.CHROMEBOOK_STANDARD,
+        { blockMode: TeachingMode.L3_ACTIVE }
+      );
+      expect(ctx.mode).toBe(TeachingMode.L3_ACTIVE);
+    });
+
+    it('learner override beats initial exposure and block mode', () => {
+      const ctx = PedagogyEngine.createContext(
+        TeachingMode.L2_CONTEXTUAL,
+        DeviceProfile.CHROMEBOOK_STANDARD,
+        {
+          initialExposure: true,
+          blockMode: TeachingMode.L3_ACTIVE,
+          learnerOverride: TeachingMode.L1_MINIMAL,
+        }
+      );
+      expect(ctx.mode).toBe(TeachingMode.L1_MINIMAL);
+    });
+
+    it('persists threshold overrides onto the context', () => {
+      const ctx = PedagogyEngine.createContext(
+        TeachingMode.L2_CONTEXTUAL,
+        DeviceProfile.CHROMEBOOK_STANDARD,
+        { thresholds: { errorRepeatThreshold: 2, stuckTimeThresholdMs: 60_000 } }
+      );
+      expect(ctx.thresholds?.errorRepeatThreshold).toBe(2);
+      expect(ctx.thresholds?.stuckTimeThresholdMs).toBe(60_000);
     });
   });
 

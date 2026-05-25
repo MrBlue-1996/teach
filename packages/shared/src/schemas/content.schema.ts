@@ -169,6 +169,55 @@ export const plainTextStimulusSchema = z
   })
   .strict();
 
+export const recipeStimulusSchema = z
+  .object({
+    kind: z.literal('recipe'),
+    title: z.string().min(1).max(120),
+    yields: z.string().min(1).max(60).optional(),
+    prepTimeMinutes: z.number().int().min(0).max(1440).optional(),
+    cookTimeMinutes: z.number().int().min(0).max(1440).optional(),
+    ingredients: z
+      .array(
+        z
+          .object({
+            quantity: z.string().min(1).max(40),
+            item: z.string().min(1).max(120),
+            modifier: z.string().min(1).max(120).optional(),
+          })
+          .strict()
+      )
+      .min(1)
+      .max(30)
+      .readonly(),
+    steps: z.array(z.string().min(1).max(300)).min(1).max(30).readonly(),
+    notes: z.string().max(400).optional(),
+    imageRef: z.string().min(1).max(200).optional(),
+  })
+  .strict();
+
+export const imageStimulusSchema = z
+  .object({
+    kind: z.literal('image'),
+    imageRef: z.string().min(1).max(200),
+    altText: z.string().min(4).max(300),
+    caption: z.string().max(400).optional(),
+    focusRegions: z
+      .array(
+        z
+          .object({
+            label: z.string().min(1).max(60),
+            xPct: z.number().min(0).max(100),
+            yPct: z.number().min(0).max(100),
+            widthPct: z.number().min(0.5).max(100),
+            heightPct: z.number().min(0.5).max(100),
+          })
+          .strict()
+      )
+      .readonly()
+      .optional(),
+  })
+  .strict();
+
 export const challengeStimulusSchema = z.discriminatedUnion('kind', [
   ticketStimulusSchema,
   stationStateStimulusSchema,
@@ -176,6 +225,8 @@ export const challengeStimulusSchema = z.discriminatedUnion('kind', [
   menuBoardStimulusSchema,
   stepBankStimulusSchema,
   plainTextStimulusSchema,
+  recipeStimulusSchema,
+  imageStimulusSchema,
 ]);
 
 /** Structured module links */

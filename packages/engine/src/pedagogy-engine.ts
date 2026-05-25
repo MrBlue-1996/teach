@@ -7,7 +7,13 @@
  * Coordinates trigger detection, mode management, and constraint filtering.
  */
 
-import { TeachingMode, TeachingContext, TeachingResponse, DeviceProfile } from './types.js';
+import {
+  TeachingMode,
+  TeachingContext,
+  TeachingResponse,
+  DeviceProfile,
+  type CreateContextOptions,
+} from './types.js';
 import { TriggerDetector } from './trigger-detector.js';
 import { ConstraintEngine } from './constraint-engine.js';
 
@@ -106,17 +112,46 @@ export const PedagogyEngine = {
   },
 
   /**
-   * Create initial teaching context
+   * Create initial teaching context.
+   *
+   * Mode precedence (highest wins):
+   *   1. `options.learnerOverride` — explicit learner choice from session API
+   *   2. `options.initialExposure === true` → `L4_TUTORIAL` (worked-example-first)
+   *   3. `options.blockMode` — content-pack recommendation on the teaching block
+   *   4. `mode` — caller-supplied default (typically the account default)
    */
-  createContext(mode: TeachingMode, deviceProfile: DeviceProfile): TeachingContext {
+  createContext(
+    mode: TeachingMode,
+    deviceProfile: DeviceProfile,
+    options: CreateContextOptions = {}
+  ): TeachingContext {
+    const seedMode = this.resolveSeedMode(mode, options);
+
     return {
-      mode,
+      mode: seedMode,
       deviceProfile,
       constraints: ConstraintEngine.getConstraints(deviceProfile),
       triggers: [],
       sessionStartTime: new Date(),
       problemsSolved: 0,
       errorsEncountered: 0,
+      ...(options.initialExposure !== undefined
+        ? { initialExposure: options.initialExposure }
+        : {}),
+      ...(options.thresholds !== undefined ? { thresholds: options.thresholds } : {}),
     };
+  },
+
+  resolveSeedMode(defaultMode: TeachingMode, options: CreateContextOptions): TeachingMode {
+    if (options.learnerOverride !== undefined) {
+      return options.learnerOverride;
+    }
+    if (options.initialExposure === true) {
+      return TeachingMode.L4_TUTORIAL;
+    }
+    if (options.blockMode !== undefined) {
+      return options.blockMode;
+    }
+    return defaultMode;
   },
 };

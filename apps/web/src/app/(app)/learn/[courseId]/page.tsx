@@ -30,6 +30,8 @@ import {
 import { cn, getLevelName } from '@/lib/utils';
 import { contentApi, type ContentPackDetail } from '@/lib/api/content';
 import { learnerApi } from '@/lib/api/learner';
+import { StimulusRenderer } from '@/components/kitchen/stimuli/StimulusRenderer';
+import type { ChallengeStimulus } from '@/components/kitchen/stimuli/types';
 
 interface LessonData {
   id: string;
@@ -43,12 +45,46 @@ interface LessonData {
   currentBlock: number;
   blocksCompleted: number;
   estimatedTimeMinutes: number;
+  stimulus: ChallengeStimulus | null;
   content: {
     question: string;
     hints: string[];
     correctAnswer: string;
     explanation: string;
   };
+}
+
+function parseStimulus(raw: unknown): ChallengeStimulus | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const obj = raw as Record<string, unknown>;
+  switch (obj['kind']) {
+    case 'ticket':
+      return typeof obj['table'] === 'string' && Array.isArray(obj['items'])
+        ? (raw as ChallengeStimulus)
+        : null;
+    case 'station_state':
+      return Array.isArray(obj['observations']) ? (raw as ChallengeStimulus) : null;
+    case 'huddle_notes':
+      return Array.isArray(obj['notes']) ? (raw as ChallengeStimulus) : null;
+    case 'menu_board':
+      return raw as ChallengeStimulus;
+    case 'step_bank':
+      return Array.isArray(obj['steps']) ? (raw as ChallengeStimulus) : null;
+    case 'plain_text':
+      return Array.isArray(obj['lines']) ? (raw as ChallengeStimulus) : null;
+    case 'recipe':
+      return typeof obj['title'] === 'string' &&
+        Array.isArray(obj['ingredients']) &&
+        Array.isArray(obj['steps'])
+        ? (raw as ChallengeStimulus)
+        : null;
+    case 'image':
+      return typeof obj['imageRef'] === 'string' && typeof obj['altText'] === 'string'
+        ? (raw as ChallengeStimulus)
+        : null;
+    default:
+      return null;
+  }
 }
 
 interface LearnerContextState {
@@ -63,6 +99,11 @@ interface SessionContextState {
   sessionId: string | null;
   teachingMode: number | null;
   deviceProfile: string | null;
+  /**
+   * Engine recommendation for the next block's seed teaching mode. Non-binding:
+   * the learner can override, and it is only applied when no override is set.
+   */
+  recommendedMode: number | null;
 }
 
 interface GuidanceState {
@@ -191,6 +232,7 @@ export default function LearnPage({ params }: { params: Promise<{ courseId: stri
     sessionId: null,
     teachingMode: null,
     deviceProfile: null,
+    recommendedMode: null,
   });
   const [guidance, setGuidance] = useState<GuidanceState | null>(null);
   const [completion, setCompletion] = useState<CompletionState | null>(null);
@@ -368,6 +410,7 @@ export default function LearnPage({ params }: { params: Promise<{ courseId: stri
       totalBlocks: packData.pack.totalBlocks,
       currentBlock: blockIndex >= 0 ? blockIndex + 1 : Math.max(blockSummary.sequenceOrder, 1),
       blocksCompleted,
+      stimulus: parseStimulus(blockDetail?.block.stimulus ?? null),
       estimatedTimeMinutes:
         blockDetail?.block.timeBudgetSeconds && blockDetail.block.timeBudgetSeconds > 0
           ? Math.max(1, Math.round(blockDetail.block.timeBudgetSeconds / 60))
@@ -457,6 +500,7 @@ export default function LearnPage({ params }: { params: Promise<{ courseId: stri
             response.suggestedMode > (current.teachingMode ?? response.currentMode)
               ? response.suggestedMode
               : (current.teachingMode ?? response.currentMode),
+          recommendedMode: response.recommendedMode,
         }));
 
         if (response.shouldTeach && response.content) {
@@ -624,6 +668,7 @@ export default function LearnPage({ params }: { params: Promise<{ courseId: stri
           sessionId: activeSessionId,
           teachingMode,
           deviceProfile,
+          recommendedMode: null,
         });
 
         if (nextData?.complete) {
@@ -874,6 +919,11 @@ export default function LearnPage({ params }: { params: Promise<{ courseId: stri
                   <Zap className="h-4 w-4" />
                   Challenge
                 </div>
+                {lesson.stimulus && (
+                  <div className="mb-4">
+                    <StimulusRenderer stimulus={lesson.stimulus} />
+                  </div>
+                )}
                 <p className="text-lg leading-relaxed">{lesson.content.question}</p>
               </div>
 

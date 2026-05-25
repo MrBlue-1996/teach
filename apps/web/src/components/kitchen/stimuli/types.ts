@@ -57,10 +57,46 @@ export interface PlainTextStimulus {
   readonly lines: readonly string[];
 }
 
+export interface RecipeIngredient {
+  readonly quantity: string;
+  readonly item: string;
+  readonly modifier?: string;
+}
+
+export interface RecipeStimulus {
+  readonly kind: 'recipe';
+  readonly title: string;
+  readonly yields?: string;
+  readonly prepTimeMinutes?: number;
+  readonly cookTimeMinutes?: number;
+  readonly ingredients: readonly RecipeIngredient[];
+  readonly steps: readonly string[];
+  readonly notes?: string;
+  readonly imageRef?: string;
+}
+
+export interface ImageFocusRegion {
+  readonly label: string;
+  readonly xPct: number;
+  readonly yPct: number;
+  readonly widthPct: number;
+  readonly heightPct: number;
+}
+
+export interface ImageStimulus {
+  readonly kind: 'image';
+  readonly imageRef: string;
+  readonly altText: string;
+  readonly caption?: string;
+  readonly focusRegions?: readonly ImageFocusRegion[];
+}
+
 export type ChallengeStimulus =
   | TicketStimulus
   | StationStateStimulus
   | HuddleNotesStimulus
   | MenuBoardStimulus
   | StepBankStimulus
-  | PlainTextStimulus;
+  | PlainTextStimulus
+  | RecipeStimulus
+  | ImageStimulus;

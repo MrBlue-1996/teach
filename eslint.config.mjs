@@ -46,6 +46,8 @@ export default tseslint.config(
             'packages/database/drizzle.config.ts',
             'packages/engine/vitest.config.ts',
             'packages/api-server/vitest.config.ts',
+            'packages/content-authoring/src/heuristics/stimulus-synth.test.ts',
+            'packages/content-authoring/src/index.test.ts',
             'packages/tests/vitest.config.ts',
             'packages/tests/playwright.config.ts',
           ],

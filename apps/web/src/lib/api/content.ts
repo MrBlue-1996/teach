@@ -65,6 +65,7 @@ export interface ContentBlockDetail {
     content: unknown;
     hints: unknown;
     variants: unknown;
+    stimulus?: unknown;
   };
   learnerMode: string;
   pack: {

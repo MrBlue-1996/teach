@@ -80,6 +80,7 @@ function LoginForm() {
         {/* Google login */}
         <Button
           variant="outline"
+          size="lg"
           className="w-full"
           type="button"
           onClick={handleGoogleLogin}
@@ -110,7 +111,7 @@ function LoginForm() {
               type="email"
               autoComplete="email"
               placeholder="Email"
-              className="pl-10"
+              className="h-11 pl-10"
               value={formData.email}
               onChange={handleChange}
               disabled={isLoading}
@@ -124,7 +125,7 @@ function LoginForm() {
               type="password"
               autoComplete="current-password"
               placeholder="Password"
-              className="pl-10"
+              className="h-11 pl-10"
               value={formData.password}
               onChange={handleChange}
               disabled={isLoading}
@@ -140,7 +141,7 @@ function LoginForm() {
             </Link>
           </div>
 
-          <Button type="submit" className="w-full" loading={isLoading}>
+          <Button type="submit" size="lg" className="w-full" loading={isLoading}>
             Sign In
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
