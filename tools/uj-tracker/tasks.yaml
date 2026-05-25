@@ -452,7 +452,7 @@ phases:
             title: stuck_time timer
             agent: claude-code
             skill: null
-            status: pending
+            status: review
             blocked_on: null
             gates:
               - description: Past threshold → hint surfaces
@@ -462,7 +462,7 @@ phases:
             title: repeated_errors counter
             agent: claude-code
             skill: null
-            status: pending
+            status: review
             blocked_on: null
             gates:
               - description: Wrong twice → guided breakdown surfaces
@@ -472,7 +472,7 @@ phases:
             title: help_requested button
             agent: claude-code
             skill: .agents/skills/top-shelf-ui/SKILL.md
-            status: pending
+            status: review
             blocked_on: null
             gates:
               - description: Tap help → explanation visible
