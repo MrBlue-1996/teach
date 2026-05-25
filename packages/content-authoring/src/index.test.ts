@@ -15,6 +15,7 @@ import {
   type ContentPackManifest,
   type DraftContentPack,
   type DraftTeachingBlock,
+  type KitchenImageManifest,
   type SigningConfig,
   type TeachingBlock,
   type ValidationOptions,
@@ -26,7 +27,7 @@ import {
 
 function createValidTeachingBlock(overrides: Partial<TeachingBlock> = {}): TeachingBlock {
   return {
-    id: 'tb-test123' as `tb-${string}`,
+    id: 'tb-test123',
     concept: 'Test Concept',
     mode: 'L0',
     canonicalSolution: 'The correct answer is 42',
@@ -52,7 +53,7 @@ function createValidTeachingBlock(overrides: Partial<TeachingBlock> = {}): Teach
 
 function createValidContentPack(overrides: Partial<ContentPackManifest> = {}): ContentPackManifest {
   return {
-    id: 'pack-test123' as `pack-${string}`,
+    id: 'pack-test123',
     name: 'Test Content Pack',
     version: '1.0.0',
     description: 'A test content pack',
@@ -112,6 +113,26 @@ const testSigningConfig: SigningConfig = {
 };
 
 const testSigningKey = 'test-secret-key-for-signing';
+
+const demoKitchenImageManifest: KitchenImageManifest = {
+  schemaVersion: '1.0.0',
+  entries: {
+    'EQ1-equipment/grill': {
+      path: '/kitchen/_demo/EQ1-equipment/grill.svg',
+      altText: 'Commercial grill at service temperature',
+      sourceDataStatus: 'demo',
+      licenseRef: null,
+      tags: ['equipment'],
+    },
+    'EQ1-equipment/authorized-grill': {
+      path: '/kitchen/EQ1-equipment/authorized-grill.webp',
+      altText: 'Authorized commercial grill image',
+      sourceDataStatus: 'authorized',
+      licenseRef: 'license-001',
+      tags: ['equipment'],
+    },
+  },
+};
 
 // =============================================================================
 // CONTENT PACK VALIDATOR TESTS
@@ -200,7 +221,7 @@ describe('ContentPackValidator', () => {
     });
 
     it('should error on duplicate teaching block IDs', () => {
-      const duplicateBlock = createValidTeachingBlock({ id: 'tb-duplicate' as `tb-${string}` });
+      const duplicateBlock = createValidTeachingBlock({ id: 'tb-duplicate' });
       const pack = createValidContentPack({
         teachingBlocks: [duplicateBlock, duplicateBlock],
       });
@@ -212,8 +233,8 @@ describe('ContentPackValidator', () => {
 
     it('should error when prerequisite block does not exist', () => {
       const blockWithMissingPrereq = createValidTeachingBlock({
-        id: 'tb-main' as `tb-${string}`,
-        prerequisites: ['tb-nonexistent' as `tb-${string}`],
+        id: 'tb-main',
+        prerequisites: ['tb-nonexistent'],
       });
       const pack = createValidContentPack({
         teachingBlocks: [blockWithMissingPrereq],
@@ -225,10 +246,10 @@ describe('ContentPackValidator', () => {
     });
 
     it('should pass when prerequisite exists in pack', () => {
-      const prereqBlock = createValidTeachingBlock({ id: 'tb-prereq' as `tb-${string}` });
+      const prereqBlock = createValidTeachingBlock({ id: 'tb-prereq' });
       const mainBlock = createValidTeachingBlock({
-        id: 'tb-main' as `tb-${string}`,
-        prerequisites: ['tb-prereq' as `tb-${string}`],
+        id: 'tb-main',
+        prerequisites: ['tb-prereq'],
       });
       const pack = createValidContentPack({
         teachingBlocks: [prereqBlock, mainBlock],
@@ -241,7 +262,7 @@ describe('ContentPackValidator', () => {
 
     it('should warn on large packs', () => {
       const manyBlocks = Array.from({ length: 60 }, (_, i) =>
-        createValidTeachingBlock({ id: `tb-block${i}` as `tb-${string}` })
+        createValidTeachingBlock({ id: `tb-block${i}` })
       );
       const pack = createValidContentPack({ teachingBlocks: manyBlocks });
 
@@ -297,6 +318,94 @@ describe('ContentPackValidator', () => {
       const result = validator.validate(pack, { skipSignatureCheck: true });
 
       expect(result.warnings.some((w) => w.code === 'SHORT_TIME_BUDGET')).toBe(true);
+    });
+
+    it('should pass image stimulus with a known manifest key', () => {
+      const pack = createValidContentPack({
+        teachingBlocks: [
+          createValidTeachingBlock({
+            stimulus: {
+              kind: 'image',
+              imageRef: 'EQ1-equipment/grill',
+              altText: 'Commercial grill at service temperature',
+            },
+          }),
+        ],
+      });
+
+      const result = validator.validate(pack, {
+        skipSignatureCheck: true,
+        kitchenImageManifest: demoKitchenImageManifest,
+      });
+
+      expect(result.valid).toBe(true);
+      expect(result.errors).toHaveLength(0);
+    });
+
+    it('should error when image stimulus references a missing manifest key', () => {
+      const pack = createValidContentPack({
+        teachingBlocks: [
+          createValidTeachingBlock({
+            stimulus: {
+              kind: 'image',
+              imageRef: 'EQ1-equipment/missing',
+              altText: 'Missing grill image',
+            },
+          }),
+        ],
+      });
+
+      const result = validator.validate(pack, {
+        skipSignatureCheck: true,
+        kitchenImageManifest: demoKitchenImageManifest,
+      });
+
+      expect(result.errors.some((e) => e.code === 'MISSING_IMAGE_MANIFEST_REFERENCE')).toBe(true);
+    });
+
+    it('should error when release pack references a demo image', () => {
+      const pack = createValidContentPack({
+        integrity: { releaseMode: 'release', checksum: 'checksum-001' },
+        teachingBlocks: [
+          createValidTeachingBlock({
+            stimulus: {
+              kind: 'image',
+              imageRef: 'EQ1-equipment/grill',
+              altText: 'Commercial grill at service temperature',
+            },
+          }),
+        ],
+      });
+
+      const result = validator.validate(pack, {
+        skipSignatureCheck: true,
+        kitchenImageManifest: demoKitchenImageManifest,
+      });
+
+      expect(result.errors.some((e) => e.code === 'RELEASE_IMAGE_NOT_AUTHORIZED')).toBe(true);
+    });
+
+    it('should pass when release pack references an authorized image', () => {
+      const pack = createValidContentPack({
+        integrity: { releaseMode: 'release', checksum: 'checksum-001' },
+        teachingBlocks: [
+          createValidTeachingBlock({
+            stimulus: {
+              kind: 'image',
+              imageRef: 'EQ1-equipment/authorized-grill',
+              altText: 'Authorized commercial grill image',
+            },
+          }),
+        ],
+      });
+
+      const result = validator.validate(pack, {
+        skipSignatureCheck: true,
+        kitchenImageManifest: demoKitchenImageManifest,
+      });
+
+      expect(result.valid).toBe(true);
+      expect(result.errors).toHaveLength(0);
     });
   });
 

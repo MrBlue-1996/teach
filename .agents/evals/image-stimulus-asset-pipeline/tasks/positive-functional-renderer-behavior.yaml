@@ -1,0 +1,19 @@
+id: positive-functional-renderer-behavior
+name: Functional Renderer Behavior
+description: Image stimulus work should cover renderer behavior for alt text, demo badge, and focus overlays.
+tags:
+  - positive-trigger
+  - functional
+inputs:
+  prompt: 'Test that ImageStimulus renders alt text, a demo badge, and focus region overlays for a manifest-backed image.'
+expected:
+  should_trigger: true
+graders:
+  - type: text
+    name: contains-renderer-keywords
+    config:
+      contains:
+        - 'ImageStimulus'
+        - 'alt text'
+        - 'demo'
+        - 'focus'

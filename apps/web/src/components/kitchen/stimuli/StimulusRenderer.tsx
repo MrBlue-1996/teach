@@ -18,6 +18,10 @@ interface StimulusRendererProps {
   stimulus: ChallengeStimulus;
 }
 
+function assertNever(stimulus: never): never {
+  throw new Error(`Unexpected stimulus kind: ${String(stimulus)}`);
+}
+
 export function StimulusRenderer({ stimulus }: StimulusRendererProps) {
   switch (stimulus.kind) {
     case 'ticket':
@@ -37,6 +41,6 @@ export function StimulusRenderer({ stimulus }: StimulusRendererProps) {
     case 'image':
       return <ImageStimulus stimulus={stimulus} />;
     default:
-      return null;
+      return assertNever(stimulus);
   }
 }

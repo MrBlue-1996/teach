@@ -30,6 +30,7 @@ export type {
 export type {
   ContentPackManifest,
   ContentPackValidationResult,
+  KitchenImageManifest,
   TeachingBlock,
   ValidationError,
   ValidationWarning,

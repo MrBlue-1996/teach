@@ -75,10 +75,14 @@ Supported `stimulus.kind` values:
 - `menu_board`
 - `step_bank`
 - `plain_text`
+- `recipe`
+- `image`
 
 Authoring guideline:
 
-- If prompt references ticket, board, station state, huddle notes, or ordered steps, attach a matching `stimulus`.
+- If prompt references ticket, board, station state, huddle notes, ordered steps, recipe cards, or a visual/photo artifact, attach a matching `stimulus`.
+- For `image`, use a manifest key such as `EQ1-equipment/grill` in `imageRef`, never a raw public URL or inline image data.
+- `image.altText` is required and must describe the image in at least 4 non-whitespace characters.
 - Reserve no-stimulus blocks for capstone-style manager observation or pure conceptual prompts.
 
 ## Validator expectations
@@ -91,6 +95,8 @@ Current validator suite enforces semantic rules in addition to schema shape, inc
 - safety trigger checks
 - proprietary claim checks
 - required stimulus checks (pack-specific and heuristic)
+- image stimulus manifest reference checks
+- release-mode blocks on demo/non-authorized image assets
 
 When changing authored fields, update fixtures and tests in the same PR.
 

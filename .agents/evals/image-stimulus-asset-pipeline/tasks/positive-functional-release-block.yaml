@@ -1,0 +1,19 @@
+id: positive-functional-release-block
+name: Functional Release Demo Block
+description: Image stimulus work should preserve the release-mode guard against demo image assets.
+tags:
+  - positive-trigger
+  - functional
+inputs:
+  prompt: 'Verify the image asset pipeline blocks release packs from using demo-status image assets.'
+expected:
+  should_trigger: true
+graders:
+  - type: text
+    name: contains-release-guard-keywords
+    config:
+      contains:
+        - 'release'
+        - 'demo'
+        - 'image'
+        - 'asset'

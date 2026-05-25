@@ -13,7 +13,7 @@
   - `deviceConstraintsSchema` with `maxResponseChars` bounds `min(200)` and `max(50000)`
   - `triggerRuleSchema`
   - `moduleLinksSchema` (current canonical link structure)
-- [x] Verified 6 stimulus schemas are defined and included in `challengeStimulusSchema`
+- [x] Verified 6 original stimulus schemas are defined and included in `challengeStimulusSchema`
 - [x] Verified `challengeStimulusSchema` discriminated union on `kind`
 - [x] Verified `commonErrorSchema` and `teachingBlockSchema` align with current codebase contracts
 
@@ -96,3 +96,4 @@ pnpm test                         # ✓ 42 pass
 
 - Current pack schema uses `moduleLinks` as canonical linkage field; older references to `contentLinks` are outdated in this repo state.
 - User phone test gate is complete.
+- Post-Phase-1 addendum: `recipe` and `image` stimuli have since expanded the union to 8 kinds. See `.agents/progress.md` and `packages/shared/src/schemas/content.schema.ts` for current status.
