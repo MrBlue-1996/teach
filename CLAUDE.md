@@ -31,6 +31,8 @@ Workspace roots in `pnpm-workspace.yaml`:
 
 `packages/_future/` is out of scope for active work and must not be imported.
 
+Active tooling lives in `tools/` (not a workspace package): `tools/uj-tracker/` is the production user-journey tracker driven by `tasks.yaml`.
+
 ## Command Reference
 
 ```bash
@@ -92,6 +94,8 @@ pnpm db:studio
 
 `apps/web/` is Next.js App Router and must remain responsive and usable on Chromebook-class hardware.
 
+PWA shell has shipped: `apps/web/public/sw.js` (service worker), `apps/web/public/manifest.json`, and an offline fallback page are present. Do not remove or overwrite these files without updating the PWA skill.
+
 ## Non-Negotiable Engineering Rules
 
 - Use `pnpm` only
@@ -121,6 +125,8 @@ A task is complete only when all items below are true:
 
 When working in a multi-agent flow, always use `.github/state/` as the shared source of truth.
 
+Each specialized agent has an individual scope guide in `.github/agents/` (e.g., `api-engineer.agent.md`, `frontend-engineer.agent.md`). Read your agent's scope guide before starting work.
+
 Before starting:
 
 - Read `.github/state/board.md`
@@ -145,6 +151,7 @@ When tasks include these tags, read these files first:
 - `infra`: `infrastructure/docker/docker-compose.yml`
 - `policy`: `governance/policies/promotion_policy_config.json`
 - `pedagogy`: `packages/engine/src/pedagogy-engine.ts`
+- `pwa`: `apps/web/public/sw.js`, `apps/web/public/manifest.json`
 
 ## UI And Brand Requirements
 
