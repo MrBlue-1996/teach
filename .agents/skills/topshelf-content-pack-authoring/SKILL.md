@@ -94,7 +94,7 @@ Current validator suite enforces semantic rules in addition to schema shape, inc
 - orphan module-link checks for targeted packs
 - safety trigger checks
 - proprietary claim checks
-- required stimulus checks (pack-specific and heuristic)
+- required stimulus checks: warnings for demo/internal packs, errors for release-mode packs
 - image stimulus manifest reference checks
 - release-mode blocks on demo/non-authorized image assets
 

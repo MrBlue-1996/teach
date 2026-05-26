@@ -69,7 +69,7 @@ function getDifficulty(
 
 function getDifficultyColor(level: KitchenChallengeConfig['difficultyLevel']) {
   if (level >= 4) return 'text-[hsl(var(--kitchen-danger-bright,0_84%_60%))]';
-  if (level === 3) return 'text-[hsl(var(--kitchen-danger))]';
+  if (level === 3) return 'text-[hsl(var(--kitchen-danger-bright,0_84%_60%))]';
   if (level === 2) return 'text-[hsl(var(--kitchen-caution))]';
   return 'text-[hsl(var(--kitchen-safe))]';
 }
@@ -313,39 +313,44 @@ export default function KitchenDashboardPage() {
       <section className="mb-4">
         <h2 className="mb-4 text-xl font-bold uppercase tracking-wide">Quick Actions</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Link href={`/kitchen/challenges/${challenges[0]?.slug ?? 'uj-fajita-rush'}`}>
-            <span className="btn-action btn-primary flex w-full items-center justify-center gap-3">
-              <Shuffle className="h-6 w-6" />
-              Start Challenge
-            </span>
+          <Link
+            href={`/kitchen/challenges/${challenges[0]?.slug ?? 'uj-fajita-rush'}`}
+            className="btn-action btn-primary flex w-full items-center justify-center gap-3"
+          >
+            <Shuffle className="h-6 w-6" />
+            Start Challenge
           </Link>
 
-          <Link href="/kitchen/mastery">
-            <button className="btn-action btn-safe flex w-full items-center justify-center gap-3">
-              <Eye className="h-6 w-6" />
-              View Mastery
-            </button>
+          <Link
+            href="/kitchen/mastery"
+            className="btn-action btn-safe flex w-full items-center justify-center gap-3"
+          >
+            <Eye className="h-6 w-6" />
+            View Mastery
           </Link>
 
-          <Link href="/kitchen/qr-validate">
-            <button className="btn-action btn-ghost flex w-full items-center justify-center gap-3">
-              <QrCode className="h-6 w-6" />
-              QR Validate
-            </button>
+          <Link
+            href="/kitchen/qr-validate"
+            className="btn-action btn-ghost flex w-full items-center justify-center gap-3"
+          >
+            <QrCode className="h-6 w-6" />
+            QR Validate
           </Link>
 
-          <Link href="/kitchen/recipes">
-            <button className="btn-action btn-ghost flex w-full items-center justify-center gap-3">
-              <BookOpen className="h-6 w-6" />
-              Recipe Book
-            </button>
+          <Link
+            href="/kitchen/recipes"
+            className="btn-action btn-ghost flex w-full items-center justify-center gap-3"
+          >
+            <BookOpen className="h-6 w-6" />
+            Recipe Book
           </Link>
 
-          <Link href="/kitchen/preview">
-            <button className="btn-action btn-ghost flex w-full items-center justify-center gap-3">
-              <Smartphone className="h-6 w-6" />
-              Phone Emulator
-            </button>
+          <Link
+            href="/kitchen/preview"
+            className="btn-action btn-ghost flex w-full items-center justify-center gap-3"
+          >
+            <Smartphone className="h-6 w-6" />
+            Phone Emulator
           </Link>
         </div>
       </section>

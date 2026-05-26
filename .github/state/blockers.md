@@ -2,7 +2,13 @@
 
 Shared blocker ledger for cross-agent work. Use `[OPEN]` and `[RESOLVED]` headers; append notes rather than deleting history.
 
-Last updated: 2026-05-25
+Last updated: 2026-05-26
+
+## [OPEN] From: infra-engineer -> To: owner
+
+**Need**: Deployed HTTPS URL or local tunnel for real-device PWA install prompt and offline validation.
+**Why**: Local production validation passed on Chromium/Playwright, but the requested real mobile install prompt cannot be verified from localhost alone.
+**Filed**: 2026-05-26
 
 ## [OPEN] From: content-engineer -> To: coordinator
 

@@ -320,14 +320,52 @@ describe('ContentPackValidator', () => {
       expect(result.warnings.some((w) => w.code === 'SHORT_TIME_BUDGET')).toBe(true);
     });
 
-    it('should pass image stimulus with a known manifest key', () => {
+    it('should warn on missing artifact stimulus outside release mode', () => {
       const pack = createValidContentPack({
         teachingBlocks: [
           createValidTeachingBlock({
+            id: 'tb-ticket-context',
+            concept: 'Ticket timing',
+            canonicalSolution: 'Expo fires a ticket for table 12.',
+          }),
+        ],
+      });
+
+      const result = validator.validate(pack, { skipSignatureCheck: true });
+
+      expect(result.valid).toBe(true);
+      expect(result.errors.some((e) => e.code === 'STIMULUS_REQUIRED')).toBe(false);
+      expect(result.warnings.some((w) => w.code === 'STIMULUS_REQUIRED')).toBe(true);
+    });
+
+    it('should error on missing artifact stimulus in release mode', () => {
+      const pack = createValidContentPack({
+        integrity: { releaseMode: 'release', checksum: 'checksum-001' },
+        teachingBlocks: [
+          createValidTeachingBlock({
+            id: 'tb-ticket-context',
+            concept: 'Ticket timing',
+            canonicalSolution: 'Expo fires a ticket for table 12.',
+          }),
+        ],
+      });
+
+      const result = validator.validate(pack, { skipSignatureCheck: true });
+
+      expect(result.valid).toBe(false);
+      expect(result.errors.some((e) => e.code === 'STIMULUS_REQUIRED')).toBe(true);
+    });
+
+    it('should pass neutral image stimulus with a known manifest key', () => {
+      const pack = createValidContentPack({
+        teachingBlocks: [
+          createValidTeachingBlock({
+            concept: 'Equipment photo check',
             stimulus: {
               kind: 'image',
               imageRef: 'EQ1-equipment/grill',
               altText: 'Commercial grill at service temperature',
+              caption: 'Internal demo grill readiness check',
             },
           }),
         ],

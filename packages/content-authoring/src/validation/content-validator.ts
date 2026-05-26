@@ -88,6 +88,32 @@ const STIMULUS_KEYWORDS = [
   /\bexpo fires\b/i,
 ];
 
+function reportMissingStimulus(
+  pack: ContentPackManifest,
+  blockId: string,
+  message: string,
+  errors: ValidationError[],
+  warnings: ValidationWarning[]
+): void {
+  const issue = {
+    code: 'STIMULUS_REQUIRED',
+    path: `teachingBlocks.${blockId}.stimulus`,
+    message,
+  };
+
+  if (pack.integrity?.releaseMode === 'release') {
+    errors.push({
+      ...issue,
+      severity: 'error',
+    });
+  } else {
+    warnings.push({
+      ...issue,
+      severity: 'warning',
+    });
+  }
+}
+
 function expectedPackIdFromSourcePath(sourcePath: string): string | null {
   const normalizedPath = sourcePath.replace(/\\/g, '/');
   const fileName = normalizedPath.split('/').at(-1);
@@ -541,13 +567,13 @@ export class ContentPackValidator {
       const requiredStimulusForPack = PER_PACK_REQUIRED_STIMULUS[pack.id];
       if (requiredStimulusForPack?.has(block.id) === true) {
         if (block.stimulus === undefined) {
-          errors.push({
-            code: 'STIMULUS_REQUIRED',
-            path: `teachingBlocks.${block.id}.stimulus`,
-            message:
-              'Challenge prompt references an external artifact, but no stimulus is attached.',
-            severity: 'error',
-          });
+          reportMissingStimulus(
+            pack,
+            block.id,
+            'Challenge prompt references an external artifact, but no stimulus is attached.',
+            errors,
+            warnings
+          );
         }
       } else if (block.stimulus === undefined) {
         const isExempt = Array.from(GENERIC_STIMULUS_EXEMPT).some((fragment) =>
@@ -575,13 +601,13 @@ export class ContentPackValidator {
             ...surfacePrompts,
           ].join(' ');
           if (STIMULUS_KEYWORDS.some((pattern) => pattern.test(promptText))) {
-            errors.push({
-              code: 'STIMULUS_REQUIRED',
-              path: `teachingBlocks.${block.id}.stimulus`,
-              message:
-                'Prompt appears to reference ticket/station/huddle/menu artifacts but no stimulus is attached.',
-              severity: 'error',
-            });
+            reportMissingStimulus(
+              pack,
+              block.id,
+              'Prompt appears to reference ticket/station/huddle/menu artifacts but no stimulus is attached.',
+              errors,
+              warnings
+            );
           }
         }
       }

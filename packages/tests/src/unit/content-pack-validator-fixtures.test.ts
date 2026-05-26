@@ -69,11 +69,6 @@ describe('fixture-backed content pack validation', () => {
       expectedCode: 'ORPHAN_FUNDAMENTAL',
       expectedMessage: 'not referenced',
     },
-    {
-      fileName: 'bad-missing-stimulus.json',
-      expectedCode: 'STIMULUS_REQUIRED',
-      expectedMessage: 'stimulus',
-    },
   ])(
     'rejects $fileName through the real validator',
     ({ fileName, expectedCode, expectedMessage }) => {
@@ -84,6 +79,38 @@ describe('fixture-backed content pack validation', () => {
       expect(result.errors.some((error) => error.message.includes(expectedMessage))).toBe(true);
     }
   );
+
+  it('warns for missing stimulus in demo/internal validation', () => {
+    const result = validateContentPack(loadFixture('bad-missing-stimulus.json'));
+
+    expect(result.valid).toBe(true);
+    expect(result.errors.some((error) => error.code === 'STIMULUS_REQUIRED')).toBe(false);
+    expect(result.warnings.some((warning) => warning.code === 'STIMULUS_REQUIRED')).toBe(true);
+  });
+
+  it('rejects missing stimulus in strict validation', () => {
+    const result = validateContentPack(loadFixture('bad-missing-stimulus.json'), {
+      strict: true,
+    });
+
+    expect(result.valid).toBe(false);
+    expect(result.warnings.some((warning) => warning.code === 'STIMULUS_REQUIRED')).toBe(true);
+  });
+
+  it('rejects missing stimulus in release-mode packs', () => {
+    const fixture = loadFixture('bad-missing-stimulus.json');
+    if (typeof fixture !== 'object' || fixture === null || Array.isArray(fixture)) {
+      throw new Error('Expected fixture object');
+    }
+
+    const result = validateContentPack({
+      ...fixture,
+      integrity: { releaseMode: 'release', checksum: 'checksum-001' },
+    });
+
+    expect(result.valid).toBe(false);
+    expect(result.errors.some((error) => error.code === 'STIMULUS_REQUIRED')).toBe(true);
+  });
 
   it('rejects filename and pack-id mismatches through the real validator', () => {
     const result = validateContentPack(loadFixture('valid-minimal-pack.json'), {

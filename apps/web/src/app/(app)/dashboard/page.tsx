@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { StatCard } from '@/components/ui/stat-card';
 import { ImagePlaceholder, ImageBanner } from '@/components/ui/image-placeholder';
+import { ReviewNowCard } from '@/components/dashboard/ReviewNowCard';
 import {
   Flame,
   Target,
@@ -22,17 +23,12 @@ import {
   Wrench,
   FlaskConical,
   Cog,
-  RefreshCw,
 } from 'lucide-react';
 import { getLevelColor, getLevelName } from '@/lib/utils';
 import { learnerApi, contentApi, badgesApi } from '@/lib/api';
 import type { LearnerState, LearningSession, ContentPack } from '@/lib/api';
 import { pickGoldenPathPack } from '@/lib/golden-path';
-import {
-  computeDecayAffordance,
-  formatNextDueLabel,
-  type RetentionQueueSummary,
-} from '@/lib/mastery-decay';
+import { computeDecayAffordance, type RetentionQueueSummary } from '@/lib/mastery-decay';
 
 interface DashboardData {
   states: LearnerState[];
@@ -164,50 +160,8 @@ export default function DashboardPage() {
         <StatCard icon={Zap} label="Blocks Completed" value={totalBlocksCompleted} color="purple" />
       </div>
 
-      {/* Review Now — surfaces spaced-retrieval due queue when learner has items to refresh */}
-      {decayAffordance.status !== 'healthy' && (
-        <Card
-          className={
-            decayAffordance.status === 'urgent'
-              ? 'border-2 border-destructive/40 bg-destructive/5'
-              : 'border-2 border-warning/40 bg-warning/5'
-          }
-          data-testid="review-now-card"
-        >
-          <CardContent className="flex flex-col gap-3 p-5 md:flex-row md:items-center md:justify-between">
-            <div className="flex items-start gap-3">
-              <RefreshCw
-                className={
-                  decayAffordance.status === 'urgent'
-                    ? 'mt-1 h-5 w-5 text-destructive'
-                    : 'mt-1 h-5 w-5 text-warning'
-                }
-                aria-hidden="true"
-              />
-              <div>
-                <p className="font-semibold">
-                  {decayAffordance.status === 'urgent'
-                    ? 'Several items need a refresh'
-                    : `${decayAffordance.dueCount} ${decayAffordance.dueCount === 1 ? 'item' : 'items'} to review`}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {formatNextDueLabel(decayAffordance.nextDueAt)} — short reviews keep what you've
-                  learned sharp.
-                </p>
-              </div>
-            </div>
-            <Link href={reviewPackHref}>
-              <Button
-                size="lg"
-                variant={decayAffordance.status === 'urgent' ? 'destructive' : 'default'}
-              >
-                Open review
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
-      )}
+      {/* Review Now — surfaces due refresh work without exposing scheduler internals */}
+      <ReviewNowCard affordance={decayAffordance} href={reviewPackHref} />
 
       {/* Continue Learning - Primary CTA */}
       {currentState && currentState.contentPack && (

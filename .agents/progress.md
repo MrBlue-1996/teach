@@ -1,6 +1,6 @@
 # Agent Progress Tracker
 
-Last updated: 2026-05-25
+Last updated: 2026-05-26
 
 This tracks implementation progress against the local `.agents/skills/**/SKILL.md` contracts and eval files. Status is based on code inspection, targeted tests, and parallel agent review.
 
@@ -25,7 +25,7 @@ Skill: `.agents/skills/image-stimulus-asset-pipeline/SKILL.md`
 - [x] Renderer tests cover alt text, demo badge, missing-asset fallback, and focus regions.
 - [~] Renderer uses a plain `<img>` rather than the skill's requested Next `<Image>`.
 - [~] Demo recipe SVGs are 16:9, while the skill notes 4:3 for recipes.
-- [ ] Add at least one authored `kind: "image"` teaching-block stimulus to prove the full content path.
+- [x] Neutral internal validator fixture proves a `kind: "image"` teaching-block stimulus resolves through the manifest path.
 - [ ] Add functional eval tasks beyond trigger/anti-trigger checks.
 
 Evidence:
@@ -45,10 +45,8 @@ Skill: `.agents/skills/stimulus-renderer-integration/SKILL.md`
 - [x] Kitchen challenge surface renders stimuli.
 - [x] Learn page renders stimuli above the prompt.
 - [x] Unit tests cover route/render behavior for all current kinds.
-- [~] Skill doc is stale: it still describes six kinds and marks learn page as not wired.
-- [~] Exhaustive switch is covered by runtime tests, not the documented compile-time `never` pattern.
-- [ ] Update skill documentation to reflect 8 current kinds.
-- [ ] Consider replacing router `default: return null` with a typed exhaustiveness guard plus a separate resilient boundary if desired.
+- [x] Skill doc reflects the current 8-kind system and wired learn page.
+- [x] Router uses a typed `never` exhaustiveness guard.
 
 Evidence:
 
@@ -66,8 +64,8 @@ Skill: `.agents/skills/stimulus-synthesis-from-prompts/SKILL.md`
 - [x] Drafted outputs validate against `challengeStimulusSchema`.
 - [x] Tests cover existing-stimulus skip, no-text skip, ticket, recipe, huddle notes, station state, menu board, plain text, step-bank-ish synthesis, image no-synthesis, no-match, and review envelope.
 - [x] CLI tests cover `--dry-run`, `--write`, and current recursive `--backfill <dir>` behavior.
-- [~] `--backfill` behavior differs from the skill's documented glob wording.
-- [ ] Resolve validator severity mismatch: synthesis skill says missing artifact stimuli should warn, while current validator emits errors in some paths.
+- [x] Skill doc documents current recursive `--backfill <dir>` behavior and explicitly notes glob input is not supported.
+- [x] Missing artifact stimuli warn for demo/internal packs and remain errors for release-mode packs.
 
 Evidence:
 
@@ -86,11 +84,11 @@ Skill: `.agents/skills/topshelf-content-pack-authoring/SKILL.md`
 - [x] Structured stimulus schema is wired into teaching blocks.
 - [x] `validate:packs` CLI exists and loads the kitchen image manifest.
 - [x] Validator fixture/unit coverage exists for core schema/business rules.
-- [~] Skill doc lists six stimulus kinds; current repo supports eight.
+- [x] Skill doc lists all 8 stimulus kinds.
 - [~] Authored stimuli are uneven across content packs.
 - [ ] Backfill or intentionally exempt remaining stimulus-worthy authored blocks.
-- [ ] Update skill documentation to include `recipe` and `image`.
-- [ ] Decide and document missing-stimulus warning vs error policy.
+- [x] Skill documentation includes `recipe` and `image`.
+- [x] Missing-stimulus warning vs error policy is implemented and documented.
 
 Evidence:
 
@@ -106,9 +104,9 @@ Skill: `.agents/skills/top-shelf-ui/SKILL.md`
 - [x] Kitchen stimulus components use established kitchen UI surfaces.
 - [x] Learn page displays structured stimuli above prompt content.
 - [x] Web unit tests pass for current component surfaces.
-- [~] No recorded mobile/a11y/browser checklist evidence found.
-- [~] PWA/offline UI exists, but full real-device validation is not recorded.
-- [ ] Run and record mobile viewport checks at 320, 375, 768, and 1366x768.
+- [x] Local mobile/a11y/browser evidence recorded for internal-demo viewport checks.
+- [~] PWA/offline UI is locally validated, but full real-device install validation still needs a deployed HTTPS URL or tunnel.
+- [x] Run and record mobile viewport checks at 320, 375, 768, and 1366x768.
 - [ ] Run and record keyboard/focus and screen-reader sweep for primary learning path.
 
 Evidence:
@@ -116,6 +114,7 @@ Evidence:
 - `apps/web/src/components/kitchen/stimuli/**`
 - `apps/web/src/app/(app)/learn/[courseId]/page.tsx`
 - `apps/web/src/app/offline/page.tsx`
+- `docs/validation/pwa-2026-05-26.md`
 
 ## Worked Example Fading
 
@@ -125,11 +124,11 @@ Skill: `.agents/skills/worked-example-fading/SKILL.md`
 - [x] `PedagogyEngine.createContext` implements seed precedence.
 - [x] `TriggerDetector.suggestModeFade` exists.
 - [x] Engine tests cover fade behavior and create-context precedence.
-- [~] API teach response computes and returns `recommendedMode`.
-- [ ] Session start still hardcodes `TeachingMode.L2_CONTEXTUAL`; wire real seed-mode selection.
+- [x] API teach response computes and returns `recommendedMode`.
+- [x] Session start uses `PedagogyEngine.createContext` seed precedence instead of persisting hardcoded L2.
 - [ ] Implement real initial-exposure detection from mastery plus prior same-concept events.
 - [ ] Add learner override persistence/endpoint if that remains part of the contract.
-- [ ] Add API tests for novice L4 seeding and `recommendedMode` fade.
+- [x] Add API tests for novice L4 seeding, preserved non-novice L2 seed, `recommendedMode`, and fade behavior.
 
 Evidence:
 
@@ -174,8 +173,8 @@ Skill: `.agents/skills/spaced-retrieval-scheduler/SKILL.md`
 - [x] Direct route tests cover empty and aggregated due retention queues.
 - [x] Web API client calls the retention queue endpoint.
 - [~] Retention is stored in `learnerStates.retentionHistory` JSON, not a dedicated `retention_records` table.
-- [~] Dashboard review card exists, but route target is not clearly first due block.
-- [ ] Add dashboard render tests for healthy/watch/urgent states.
+- [~] Dashboard review card routes to the active pack until task-to-pack routing exists.
+- [x] Add dashboard render tests for healthy/watch/urgent states.
 - [ ] Decide whether JSON retention history is acceptable or migrate to indexed retention table.
 - [ ] Route review CTA directly to `dueTaskIds[0]` if the product contract still requires it.
 
@@ -196,12 +195,12 @@ Skill: `.agents/skills/pwa-validation/SKILL.md`
 - [x] Referenced icon files exist.
 - [x] Service worker registration is client-side and production-gated.
 - [x] Offline page is static and fetch-free.
-- [~] Service worker has versioned caches, route bypasses, and offline fallback.
-- [~] `PRECACHE_URLS` does not include install-banner icons.
-- [~] `self.skipWaiting()` is used during install without an explicit upgrade-story note in the skill/doc trail.
-- [~] Viewport theme color is conditional; skill asks for `#050507`.
-- [ ] Run production build/start and Lighthouse mobile PWA audit.
-- [ ] Record real-device install/offline validation.
+- [x] Service worker has versioned caches, route bypasses, offline fallback, and a local cache smoke.
+- [x] `PRECACHE_URLS` includes install-banner icons.
+- [x] `self.skipWaiting()` has an explicit v0.1.x read-only app-shell upgrade note.
+- [x] Viewport theme color is `#050507`.
+- [x] Run production build/start and Lighthouse mobile audit evidence.
+- [~] Record real-device install/offline validation: blocked on deployed HTTPS URL or tunnel.
 
 Evidence:
 
@@ -210,6 +209,7 @@ Evidence:
 - `apps/web/src/components/providers/pwa-registrar.tsx`
 - `apps/web/src/app/layout.tsx`
 - `apps/web/src/app/offline/page.tsx`
+- `docs/validation/pwa-2026-05-26.md`
 
 ## Supabase
 
@@ -283,9 +283,9 @@ Agents: `.github/agents/*.agent.md`
 - [x] `infra-engineer` protocol exists for Docker, CI/CD, env, and deployment automation.
 - [x] `quality-reviewer` protocol exists for read-only findings, security, type/lint/test health.
 - [x] `test-engineer` protocol exists for unit, integration, e2e, fixture, and parity tests.
-- [~] Board has entries for several agents, but `coordinator` and `quality-reviewer` have no current status entries.
+- [x] Board has current coordinator and specialist status entries for the internal-demo readiness pass.
 - [~] Board contains stale notes in places, including old migration counts and mixed `_No updates yet_` markers near later updates.
-- [ ] Update `.github/state/board.md` after this pass so the blackboard reflects the actual current state.
+- [x] Update `.github/state/board.md` after this pass so the blackboard reflects the actual current state.
 
 Evidence:
 
@@ -474,21 +474,30 @@ These tracker areas are not covered by a local `.agents/skills/*/SKILL.md`.
 
 ## Verification Already Run During This Pass
 
+- [x] `pnpm --filter @topshelf/web test -- ReviewNowCard.test.tsx learner.test.ts`
+- [x] `pnpm --filter @topshelf/web typecheck`
+- [x] `pnpm --filter @topshelf/web build`
+- [x] `PLAYWRIGHT_BASE_URL=http://localhost:3001 pnpm --filter @topshelf/tests test:e2e:phone`
+- [x] Lighthouse 12 mobile audit for `/kitchen`: 99 performance, 100 accessibility, 100 best practices.
+- [x] Playwright service-worker cache/offline smoke for `/kitchen` and `/offline`.
+- [x] `pnpm --filter @topshelf/engine test`
+- [x] `pnpm --filter @topshelf/api-server test -- src/routes/learner.test.ts`
+- [x] `pnpm --filter @topshelf/api-server typecheck`
 - [x] `pnpm --filter @topshelf/shared typecheck`
-- [x] `pnpm --filter @topshelf/shared test -- content.schema.test.ts`
+- [x] `pnpm --filter @topshelf/shared test`
 - [x] `pnpm --filter @topshelf/shared build`
 - [x] `pnpm --filter @topshelf/content-authoring typecheck`
 - [x] `pnpm --filter @topshelf/content-authoring test -- index.test.ts`
 - [x] `pnpm --filter @topshelf/content-authoring validate:packs`
-- [x] `pnpm --filter @topshelf/web typecheck`
-- [x] `pnpm --filter @topshelf/web test -- stimulus-renderers.test.tsx`
+- [x] `pnpm --filter @topshelf/tests test -- content-pack-validator-fixtures.test.ts`
 - [x] `git diff --check`
+- [x] `pnpm run workflow:lint`
+- [x] `pnpm validate`
 
 ## Recommended Next Batch
 
-1. Update stale skill docs for stimulus kinds and learn-page wiring.
-2. Add compile-time exhaustiveness to `StimulusRenderer`.
-3. Add image-stimulus authored fixture/content path.
-4. Add CLI tests for stimulus synthesis.
-5. Add route/UI tests for retention queue and dashboard review card.
-6. Start PWA production audit and record real-device results.
+1. Complete real-device PWA install/offline validation when a deployed HTTPS URL or tunnel is available.
+2. Decide whether JSON retention history is sufficient for v0.1.x or whether an indexed table is needed.
+3. Route dashboard review CTA directly to the first due task once task-to-pack routing exists.
+4. Add mode-specific teaching panel UI for L0-L4 surfaces.
+5. Resolve UJ/Sun authorization before any external pilot or real-source pack work.

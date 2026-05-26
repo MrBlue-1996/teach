@@ -400,4 +400,20 @@ describe('learnerApi', () => {
       expect(result.targetMinutes).toBe(180);
     });
   });
+
+  describe('getRetentionQueue', () => {
+    it('should call GET /learner/retention/queue', async () => {
+      const queue = {
+        dueTaskIds: ['block-1'],
+        dueCount: 1,
+        nextDueAt: '2026-05-27T12:00:00.000Z',
+      };
+      mockApi.get.mockResolvedValueOnce(queue);
+
+      const result = await learnerApi.getRetentionQueue();
+
+      expect(mockApi.get).toHaveBeenCalledWith('/learner/retention/queue');
+      expect(result).toEqual(queue);
+    });
+  });
 });
