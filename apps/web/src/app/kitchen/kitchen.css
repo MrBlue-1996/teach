@@ -13,7 +13,7 @@
 :root {
   /* Safety colors — consistent with kitchen signage */
   --kitchen-danger: 0 72% 51%; /* Red: critical failure, temp danger, unsafe */
-  --kitchen-danger-bright: 0 84% 60%;
+  --kitchen-danger-bright: 0 90% 68%;
   --kitchen-caution: 38 92% 50%; /* Amber: lateness, caution, attention */
   --kitchen-caution-bright: 45 96% 55%;
   --kitchen-safe: 142 71% 45%; /* Green: success, safe temp, clean execution */
@@ -117,7 +117,7 @@
 
 .kitchen-ui .btn-safe {
   background: hsl(var(--kitchen-safe));
-  color: white;
+  color: hsl(220 20% 8%);
   border: 2px solid hsl(var(--kitchen-safe-bright));
 }
 
@@ -1449,7 +1449,7 @@
 }
 .btn-safe {
   background: var(--kitchen-safe, #22c55e);
-  color: #fff;
+  color: hsl(220 20% 8%);
 }
 .btn-caution {
   background: var(--kitchen-caution, #f59e0b);

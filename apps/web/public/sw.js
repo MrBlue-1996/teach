@@ -10,11 +10,21 @@
  * - avoid caching auth tokens, API responses, protected mutations, or tenant-private data
  */
 
-const VERSION = 'pwa-shell-v3';
+const VERSION = 'pwa-shell-v4';
 const APP_SHELL_CACHE = `topshelf-app-shell-${VERSION}`;
 const STATIC_CACHE = `topshelf-static-${VERSION}`;
 
-const PRECACHE_URLS = ['/', '/kitchen', '/offline', '/manifest.json'];
+const PRECACHE_URLS = [
+  '/',
+  '/kitchen',
+  '/offline',
+  '/manifest.json',
+  '/icons/icon-192.png',
+  '/icons/icon-512.png',
+  '/icons/maskable-192.png',
+  '/icons/maskable-512.png',
+  '/icons/apple-touch-icon.png',
+];
 
 const ALLOWED_NAVIGATION_PREFIXES = ['/', '/kitchen', '/kitchen/', '/offline'];
 
@@ -44,6 +54,7 @@ self.addEventListener('install', (event) => {
     caches
       .open(APP_SHELL_CACHE)
       .then((cache) => cache.addAll(PRECACHE_URLS))
+      // v0.1.x app shell is static/offline-read-only; activate new shell fixes immediately.
       .then(() => self.skipWaiting())
   );
 });

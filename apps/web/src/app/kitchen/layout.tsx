@@ -7,13 +7,15 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#111318',
+  themeColor: '#050507',
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
 };
 
 export default function KitchenLayout({ children }: { children: React.ReactNode }) {
-  return <div className="kitchen-ui min-h-screen">{children}</div>;
+  return (
+    <main id="main-content" className="kitchen-ui min-h-screen">
+      {children}
+    </main>
+  );
 }

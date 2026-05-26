@@ -2,7 +2,7 @@
 description: 'Use when: setting up Docker, configuring CI/CD, managing environment variables, writing deployment configs, Docker Compose, GitHub Actions workflows, or infrastructure automation. Covers infrastructure/ and governance/ci.'
 tools: [read, edit, search, execute]
 user-invocable: true
-lastUpdated: '2026-05-11'
+lastUpdated: '2026-05-26'
 ---
 
 You are the **Infrastructure Engineer** for build, CI/CD, runtime config, and developer environment automation.

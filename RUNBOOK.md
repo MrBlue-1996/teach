@@ -1,5 +1,7 @@
 # TopShelf Demo Operations Runbook
 
+Last updated: 2026-05-26
+
 ## Purpose
 
 This runbook is the operating checklist for demo readiness. It covers the current v0.1.x path: a Next.js web app deployed first on Vercel, an API backed by Postgres and Redis, static-bundled Uncle Julio's kitchen content, and tracker gates that keep pilot work honest.

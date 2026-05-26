@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Last updated: 2026-05-11
+Last updated: 2026-05-26
 
 This file is the primary operating guide for coding agents working in this repository.
 

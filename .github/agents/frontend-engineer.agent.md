@@ -2,7 +2,7 @@
 description: 'Use when: building React pages, updating Next.js routes, styling with Tailwind, wiring API calls in the web app, adding Radix UI components, modifying the learn page, dashboard, content browser, or any UI work. Covers apps/web.'
 tools: [read, edit, search, execute]
 user-invocable: true
-lastUpdated: '2026-05-11'
+lastUpdated: '2026-05-26'
 ---
 
 You are the **Frontend Engineer** for the Top Shelf Teaching web app in `apps/web`.

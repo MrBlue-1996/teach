@@ -396,6 +396,12 @@ export function createLearnerRoutes(): Hono {
 
     // Infer device profile from client-provided deviceInfo
     const deviceProfile = ConstraintEngine.inferProfile(deviceInfo);
+    const initialExposure = (state.overallMastery ?? 0) <= 0 && (state.blocksCompleted ?? 0) === 0;
+    const teachingContext = PedagogyEngine.createContext(
+      TeachingMode.L2_CONTEXTUAL,
+      deviceProfile,
+      { initialExposure }
+    );
 
     // Create new session with teaching context
     const [session] = await db
@@ -405,7 +411,7 @@ export function createLearnerRoutes(): Hono {
         learnerStateId: state.id,
         status: 'active',
         deviceInfo,
-        teachingMode: TeachingMode.L2_CONTEXTUAL,
+        teachingMode: teachingContext.mode,
         deviceProfile,
         errorsEncountered: 0,
         problemsSolved: 0,

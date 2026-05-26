@@ -367,8 +367,11 @@ describe('Learner Routes', () => {
 
       // Mock the insert for new learner state
       let insertCallCount = 0;
+      const insertedValues: unknown[] = [];
       mockDb.insert.mockImplementation(() => ({
-        values: vi.fn().mockReturnValue({
+        values: vi.fn((values: unknown) => {
+          insertedValues.push(values);
+          return {
           returning: vi.fn().mockImplementation(() => {
             insertCallCount++;
             if (insertCallCount === 1) {
@@ -391,10 +394,13 @@ describe('Learner Routes', () => {
                 userId: 'user-test-1',
                 learnerStateId: 'new-state-1',
                 status: 'active',
+                teachingMode: 4,
+                deviceProfile: 'chromebook_standard',
                 startedAt: new Date(),
               },
             ]);
           }),
+          };
         }),
       }));
 
@@ -409,6 +415,12 @@ describe('Learner Routes', () => {
       expect(res.status).toBe(201);
       const body = await res.json();
       expect(body.sessionId).toBeDefined();
+      expect(body.teaching.mode).toBe(4);
+      expect(insertedValues[1]).toEqual(
+        expect.objectContaining({
+          teachingMode: 4,
+        })
+      );
     });
 
     it('should accept optional device info', async () => {
@@ -470,6 +482,53 @@ describe('Learner Routes', () => {
       expect(body.teaching).toEqual(
         expect.objectContaining({
           mode: 2,
+          deviceProfile: 'chromebook_standard',
+        })
+      );
+    });
+
+    it('should seed tutorial mode for an existing novice learner state', async () => {
+      const valuesSpy = vi.fn().mockReturnValue({
+        returning: vi.fn().mockResolvedValue([
+          {
+            id: 'new-session-1',
+            userId: 'user-test-1',
+            learnerStateId: 'state-1',
+            status: 'active',
+            teachingMode: 4,
+            deviceProfile: 'chromebook_standard',
+            startedAt: new Date(),
+          },
+        ]),
+      });
+
+      mockDb.query.learnerStates.findFirst.mockResolvedValue({
+        ...mockLearnerState,
+        overallMastery: 0,
+        blocksCompleted: 0,
+      });
+      mockDb.insert.mockReturnValue({ values: valuesSpy });
+
+      const res = await app.request('/learner/session/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contentPackId: '550e8400-e29b-41d4-a716-446655440000',
+          deviceInfo: mockSession.deviceInfo,
+        }),
+      });
+
+      expect(res.status).toBe(201);
+      expect(valuesSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          teachingMode: 4,
+        })
+      );
+
+      const body = await res.json();
+      expect(body.teaching).toEqual(
+        expect.objectContaining({
+          mode: 4,
           deviceProfile: 'chromebook_standard',
         })
       );
@@ -1424,6 +1483,7 @@ describe('Learner Routes', () => {
       const body = await res.json();
       expect(body).toHaveProperty('triggers');
       expect(body).toHaveProperty('suggestedMode');
+      expect(body).toHaveProperty('recommendedMode');
       expect(body).toHaveProperty('currentMode');
       expect(mockDb.query.contentBlocks.findFirst).not.toHaveBeenCalled();
     });
@@ -1498,6 +1558,61 @@ describe('Learner Routes', () => {
           triggersFired: expect.any(Array),
         })
       );
+    });
+
+    it('should recommend fading tutorial mode after three clean completed trials', async () => {
+      mockDb.query.learningSessions.findFirst.mockResolvedValue({
+        ...mockSession,
+        teachingMode: 4,
+        errorsEncountered: 0,
+        problemsSolved: 1,
+        startedAt: new Date(),
+        learnerState: { contentPackId: 'pack-1' },
+      });
+      mockDb.query.learnerProgressEvents.findMany.mockResolvedValue([
+        { blockId: 'block-3', eventType: 'completed', correctness: 0.95 },
+        { blockId: 'block-2', eventType: 'completed', correctness: 0.9 },
+        { blockId: 'block-1', eventType: 'completed', correctness: 0.85 },
+      ]);
+
+      const res = await app.request('/learner/session/session-1/teach', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: 'Walk through the next step.' }),
+      });
+
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.currentMode).toBe(4);
+      expect(body.recommendedMode).toBe(3);
+    });
+
+    it('should not recommend fading when a recent trial used help', async () => {
+      mockDb.query.learningSessions.findFirst.mockResolvedValue({
+        ...mockSession,
+        teachingMode: 4,
+        errorsEncountered: 0,
+        problemsSolved: 1,
+        startedAt: new Date(),
+        learnerState: { contentPackId: 'pack-1' },
+      });
+      mockDb.query.learnerProgressEvents.findMany.mockResolvedValue([
+        { blockId: 'block-3', eventType: 'completed', correctness: 0.95 },
+        { blockId: 'block-3', eventType: 'hint_used', correctness: null },
+        { blockId: 'block-2', eventType: 'completed', correctness: 0.9 },
+        { blockId: 'block-1', eventType: 'completed', correctness: 0.85 },
+      ]);
+
+      const res = await app.request('/learner/session/session-1/teach', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: 'Walk through the next step.' }),
+      });
+
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.currentMode).toBe(4);
+      expect(body.recommendedMode).toBe(4);
     });
   });
 

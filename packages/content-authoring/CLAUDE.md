@@ -1,5 +1,7 @@
 # CLAUDE.md
 
+Last updated: 2026-05-26
+
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Package: `@topshelf/content-authoring`
