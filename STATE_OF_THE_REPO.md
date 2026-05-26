@@ -1,7 +1,7 @@
 # State of the Repo — Batch 0.1 Inventory
 
 > Generated: 2026-05-26  
-> Branch: `main` @ `3bea8a4`  
+> Branch: `main` @ `339457e`  
 > Agent: GitHub Copilot (Claude Sonnet 4.6)  
 > Purpose: Pre-flight baseline for UJ Pack → Production execution plan
 
@@ -46,18 +46,25 @@
 
 `client-pwa`, `nlp`, `policy-engine`, `mcp-server` (old copy), `deterministic-formatter` (old copy). **Do not import from `_future/`.**
 
+### Agent Scope Guides (`.github/agents/`)
+
+9 specialized `.agent.md` files define bounded scopes for each coding agent (api-engineer, content-engineer, db-engineer, engine-engineer, frontend-engineer, infra-engineer, quality-reviewer, test-engineer, coordinator). Read the relevant file before working in that area.
+
 ### Web App (`apps/web/`)
 
-- **Framework**: Next.js 15.5.15, React 19, App Router
+- **Framework**: Next.js 15.5.18, React 19, App Router
 - **UI**: Tailwind CSS 3.4, Radix UI primitives, Lucide icons
 - **State**: Zustand 4.5 (auth-store, challenge-store)
 - **Data fetching**: TanStack Query 5.17
 - **Forms**: react-hook-form 7.50
+- **PWA**: `public/sw.js` service worker, `public/manifest.webmanifest`, offline fallback page — app is installable on mobile (added `339457e` era)
 - **Key routes**:
-  - `/(app)/learn/[courseId]/` — teaching content runner
+  - `/(app)/learn/[courseId]/` — teaching content runner (P3.1 trigger UI wired)
   - `/kitchen/` — kitchen challenge index
   - `/kitchen/challenges/[slug]/` — kitchen challenge runner (see Section 3)
-  - `/kitchen/mastery/` — mastery dashboard
+  - `/kitchen/mastery/` — mastery dashboard (retention decay status panel, `retentionQueue` from API)
+  - `/kitchen/preview/` — phone emulator preview surface
+  - `/kitchen/recipes/` — recipe book
   - `/kitchen/qr-validate/` — QR code validation
   - `/(app)/settings/`, `/onboarding/`, `/notifications/`
 
@@ -123,7 +130,7 @@ Middleware extracts `userId` and `userRole` into Hono context vars.
 
 ### Supabase Role (Web Client Only)
 
-`apps/web/src/lib/supabase.ts` → `getSupabaseBrowserClient()` creates a Supabase browser client using `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY`. This is used for **Supabase-specific features** (likely realtime, or auth flows that route through Supabase). The API server **does not use Supabase** — it connects to PostgreSQL directly via Drizzle.
+`apps/web/src/lib/supabase.ts` → `getSupabaseBrowserClient()` creates a Supabase browser client using `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY`. **As of `fdbc4b5`, the DB config is Supabase-first** — both the API server and web client use Supabase as the backing database; Drizzle schema targets the Supabase Postgres instance.
 
 ### Supabase Migrations (separate from Drizzle)
 
@@ -157,6 +164,7 @@ Key env vars:
 - `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` — PostgreSQL
 - `REDIS_HOST`, `REDIS_PORT` — Redis (rate limiter, session cache)
 - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` — web Supabase client
+- `TOPSHELF_ENV=hybrid` — enables hybrid env mode (added post-`3bea8a4`; required for Supabase-first DB config)
 
 ### API Server Middleware Stack (in order)
 
@@ -179,6 +187,11 @@ Auth middleware (Bearer JWT) added per-router.
 - Calls `getPack(slug)` → `ChallengeConfig | null`
 - Passes config to `useChallenge(config)` hook
 - Renders `<PhaseView>` based on `ch.phase`
+- **Golden path link selector fixed** (`339457e` era): `/kitchen/challenges/[slug]` link selector corrected so challenge runner is reachable from the kitchen index
+
+### Stimulus Renderers
+
+All six challenge-stimulus renderers (`ticket`, `station_state`, `recipe`, `huddle_notes`, `image`, `recipe`) are fully integrated into the challenge surface. The discriminator router is exhaustively switched.
 
 ### Content Registry
 
@@ -290,7 +303,7 @@ Required secrets: `DB_PASSWORD`, `JWT_SECRET`, `SESSION_SECRET` (no defaults, fa
 
 ### PWA Status
 
-**No PWA manifest** — `apps/web/public/` contains only `brand/` and `kitchen/` directories. **There is no `manifest.json`.** PWA support is not implemented.
+**PWA shell shipped** (`339457e` era): `apps/web/public/sw.js` service worker, `manifest.webmanifest`, and offline fallback page added. App is installable on mobile. P1.1 phone installability target is met.
 
 ### Monitoring / Observability
 
@@ -316,6 +329,10 @@ Run separately from Drizzle migrations (`pnpm db:migrate`).
 - `decisions.md` — architectural decisions
 - `queue.md` — task queue
 
+### Demo-to-Pilot Gates
+
+`governance/repo/uj-pack-demo-to-pilot-gates.md` and `tools/uj-tracker/tasks.yaml` define the gating criteria and production task tracker for the demo→pilot transition. Current focus: closing demo-to-pilot phase gates.
+
 ### Key Scripts
 
 | Script                                                             | Command                                |
@@ -333,9 +350,10 @@ Run separately from Drizzle migrations (`pnpm db:migrate`).
 
 | #   | Area                          | Finding                                                                                                                                                                           | Impact                                                                 |
 | --- | ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| 1   | Auth                          | **No Firebase.** Plan references Firebase — ignore those steps. Custom JWT + Supabase browser client only.                                                                        | Phase 1+ auth work must NOT introduce Firebase.                        |
-| 2   | PWA                           | **No manifest.json.** Chromebook-first design has no installable PWA surface yet.                                                                                                 | Any PWA work requires net-new manifest + service worker.               |
+| 1   | Auth                          | **No Firebase.** Plan references Firebase — ignore those steps. Custom JWT + Supabase browser client only. Onboarding auth flow stabilized (`339457e` era).                       | Phase 1+ auth work must NOT introduce Firebase.                        |
+| 2   | PWA                           | ~~No manifest.json~~ **Resolved.** PWA shell shipped: `sw.js`, `manifest.webmanifest`, offline fallback. Installable on mobile.                                                  | P1.1 phone installability met.                                         |
 | 3   | Kitchen packs                 | **Static bundle only.** Packs are imported at build time. Adding a pack requires code change + redeploy.                                                                          | Phase 1 may need a dynamic registry if runtime pack loading is needed. |
 | 4   | Teaching pack vs Kitchen pack | **Two formats.** `content_pack_uncle_julios_v1.json` (ContentPackManifest) and `content-packs/kitchen/uj-*.json` (ChallengeConfig) are separate artifacts with different schemas. | Content pack validation CLI targets ContentPackManifest only.          |
-| 5   | Supabase dual-stack           | Drizzle/Postgres for API + Supabase client for web = two migration systems.                                                                                                       | Schema changes may need to be applied in both Drizzle and Supabase.    |
+| 5   | Supabase dual-stack           | Drizzle/Postgres for API + Supabase client for web = two migration systems. Supabase-first DB config now active (`fdbc4b5`).                                                      | Schema changes may need to be applied in both Drizzle and Supabase.    |
 | 6   | Task 0.1.5                    | **User-only task** — run app on phone. Cannot be delegated to agent.                                                                                                              | Must be completed by Patrick before Phase 1 gate closes.               |
+| 7   | Demo-to-pilot gates           | P1/P2/P3 feature phases shipped. Current focus: demo-to-pilot gate criteria in `governance/repo/uj-pack-demo-to-pilot-gates.md` and `tools/uj-tracker/tasks.yaml`.               | Gate tasks must pass before production pilot launch.                   |
