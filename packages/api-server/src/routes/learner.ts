@@ -26,6 +26,7 @@ import {
 import {
   PedagogyEngine,
   TriggerDetector,
+  TriggerType,
   ConstraintEngine,
   TeachingMode,
   type TeachingContext,
@@ -100,10 +101,21 @@ function deriveRecentTrials(
 // SCHEMAS
 // =============================================================================
 
+const HintSourceEnum = z.enum(['help_button', 'stuck_timer']);
+
+const ProgressResponseDataSchema = z
+  .object({
+    hintIndex: z.number().int().min(0).optional(),
+    helpRequested: z.boolean().optional(),
+    helpUsed: z.boolean().optional(),
+    source: HintSourceEnum.optional(),
+  })
+  .passthrough();
+
 const ProgressEventSchema = z.object({
   blockId: z.string(),
   eventType: z.enum(['started', 'completed', 'hint_used', 'skipped', 'paused', 'resumed']),
-  responseData: z.record(z.unknown()).optional(),
+  responseData: ProgressResponseDataSchema.optional(),
   correctness: z.number().min(0).max(1).optional(),
   timeSpentSeconds: z.number().int().min(0).optional(),
 });
@@ -523,12 +535,25 @@ export function createLearnerRoutes(): Hono {
         const existingHistory = parseRetentionHistory(learnerState.retentionHistory);
         const passed = (eventData.correctness ?? 0) >= 0.5;
 
-        // Heuristic: a hint_used event for this block (matched by current
-        // block) is recorded separately and bumps errorsEncountered. We treat
-        // the current completion as "with help" only when this event itself
-        // arrives with `responseData.helpRequested === true`.
+        // A completion is treated as "with help" if the client tagged it
+        // explicitly (helpRequested/helpUsed) OR a hint_used event for this
+        // block already exists in this session.
         const responseData = eventData.responseData;
-        const helpRequested = responseData?.['helpRequested'] === true;
+        const explicitHelp =
+          responseData?.['helpRequested'] === true || responseData?.['helpUsed'] === true;
+        const priorHintUsed = explicitHelp
+          ? false
+          : Boolean(
+              await db.query.learnerProgressEvents.findFirst({
+                where: and(
+                  eq(learnerProgressEvents.userId, userId),
+                  eq(learnerProgressEvents.learnerStateId, session.learnerStateId),
+                  eq(learnerProgressEvents.blockId, eventData.blockId),
+                  eq(learnerProgressEvents.eventType, 'hint_used')
+                ),
+              })
+            );
+        const helpRequested = explicitHelp || priorHintUsed;
 
         const computed = nextSchedule({
           taskId: eventData.blockId,
@@ -626,17 +651,25 @@ export function createLearnerRoutes(): Hono {
       refreshedSession.deviceInfo as Record<string, unknown> | null
     );
 
+    const helpSeed =
+      eventData.eventType === 'hint_used' &&
+      (eventData.responseData?.['helpRequested'] === true ||
+        eventData.responseData?.['helpUsed'] === true)
+        ? [TriggerType.HELP_REQUESTED]
+        : [];
+
     const teachingContext: TeachingContext = {
       mode: refreshedSession.teachingMode ?? TeachingMode.L2_CONTEXTUAL,
       deviceProfile,
       constraints: ConstraintEngine.getConstraints(deviceProfile),
-      triggers: [],
+      triggers: helpSeed,
       sessionStartTime: refreshedSession.startedAt,
       problemsSolved: refreshedSession.problemsSolved ?? 0,
       errorsEncountered: refreshedSession.errorsEncountered ?? 0,
     };
 
-    const triggers = TriggerDetector.detectTriggers(teachingContext);
+    const detected = TriggerDetector.detectTriggers(teachingContext);
+    const triggers = [...new Set([...helpSeed, ...detected])];
     const suggestedMode = TriggerDetector.suggestModeElevation(teachingContext.mode, triggers);
 
     await db

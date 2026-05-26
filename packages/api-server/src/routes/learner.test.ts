@@ -111,6 +111,7 @@ const mockDb = {
       findMany: vi.fn(),
     },
     learnerProgressEvents: {
+      findFirst: vi.fn(),
       findMany: vi.fn(),
     },
     contentBlocks: {
@@ -636,6 +637,88 @@ describe('Learner Routes', () => {
       });
 
       expect(res.status).toBe(200);
+    });
+
+    it('seeds HELP_REQUESTED into triggersFired when hint_used carries helpRequested=true', async () => {
+      const setSpy = vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) });
+      mockDb.query.learningSessions.findFirst
+        .mockResolvedValueOnce({
+          ...mockSession,
+          teachingMode: 1, // L1_MINIMAL — only HELP_REQUESTED unlocks shouldTeach here
+          errorsEncountered: 0,
+          problemsSolved: 0,
+          startedAt: new Date(),
+        })
+        .mockResolvedValueOnce({
+          ...mockSession,
+          teachingMode: 1,
+          errorsEncountered: 1,
+          problemsSolved: 0,
+          startedAt: new Date(),
+        });
+      mockDb.update.mockReturnValue({ set: setSpy });
+
+      const res = await app.request('/learner/session/session-1/event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          blockId: 'block-3',
+          eventType: 'hint_used',
+          responseData: { helpRequested: true, source: 'help_button', hintIndex: 0 },
+        }),
+      });
+
+      expect(res.status).toBe(200);
+      const triggerUpdate = setSpy.mock.calls.find((call) =>
+        Object.keys(call[0] ?? {}).includes('triggersFired')
+      )?.[0];
+      expect(triggerUpdate?.triggersFired).toEqual(expect.arrayContaining(['help_requested']));
+    });
+
+    it('does NOT seed HELP_REQUESTED when hint_used has no helpRequested flag', async () => {
+      const setSpy = vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) });
+      mockDb.query.learningSessions.findFirst
+        .mockResolvedValueOnce({
+          ...mockSession,
+          teachingMode: 1,
+          errorsEncountered: 0,
+          problemsSolved: 0,
+          startedAt: new Date(),
+        })
+        .mockResolvedValueOnce({
+          ...mockSession,
+          teachingMode: 1,
+          errorsEncountered: 1,
+          problemsSolved: 0,
+          startedAt: new Date(),
+        });
+      mockDb.update.mockReturnValue({ set: setSpy });
+
+      const res = await app.request('/learner/session/session-1/event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ blockId: 'block-3', eventType: 'hint_used' }),
+      });
+
+      expect(res.status).toBe(200);
+      const triggerUpdate = setSpy.mock.calls.find((call) =>
+        Object.keys(call[0] ?? {}).includes('triggersFired')
+      )?.[0];
+      expect(triggerUpdate?.triggersFired).not.toEqual(expect.arrayContaining(['help_requested']));
+    });
+
+    it('rejects hint_used with an unknown responseData.source value', async () => {
+      const res = await app.request('/learner/session/session-1/event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          blockId: 'block-3',
+          eventType: 'hint_used',
+          responseData: { helpRequested: true, source: 'mystery_button' },
+        }),
+      });
+
+      expect(res.status).toBe(400);
     });
 
     it('should update learner and session metrics for a correct completion event', async () => {

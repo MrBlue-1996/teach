@@ -6,7 +6,7 @@
 
 'use client';
 
-import { use, useEffect, useRef, useState } from 'react';
+import { use, useCallback, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -113,7 +113,13 @@ interface GuidanceState {
   detail?: string;
 }
 
-const STUCK_PROMPT_SECONDS = 180;
+const STUCK_PROMPT_MIN_SECONDS = 180;
+const STUCK_PROMPT_BUDGET_FRACTION = 0.4;
+
+function stuckPromptSeconds(estimatedTimeMinutes: number | undefined) {
+  const budgetSeconds = (estimatedTimeMinutes ?? 0) * 60 * STUCK_PROMPT_BUDGET_FRACTION;
+  return Math.max(STUCK_PROMPT_MIN_SECONDS, Math.floor(budgetSeconds));
+}
 
 interface CompletionState {
   message: string;
@@ -256,6 +262,7 @@ export default function LearnPage({ params }: { params: Promise<{ courseId: stri
   const sessionStartedAtRef = useRef<number | null>(null);
   const blockStartedAtRef = useRef<number | null>(null);
   const stuckPromptFiredRef = useRef(false);
+  const blockHelpUsedRef = useRef(false);
 
   function resetBlockUi() {
     setUserAnswer('');
@@ -268,6 +275,7 @@ export default function LearnPage({ params }: { params: Promise<{ courseId: stri
     setBlockElapsed(0);
     blockStartedAtRef.current = Date.now();
     stuckPromptFiredRef.current = false;
+    blockHelpUsedRef.current = false;
   }
 
   function getBlockElapsedSeconds() {
@@ -484,113 +492,115 @@ export default function LearnPage({ params }: { params: Promise<{ courseId: stri
     }
   }
 
-  async function requestGuidance(reason: 'hint' | 'incorrect', escalate = false) {
-    if (!lesson) {
-      return;
+  function applyFallback(
+    staticFallback: NonNullable<ReturnType<typeof buildFallbackGuidance>>,
+    reason: 'hint' | 'incorrect',
+    escalate: boolean
+  ) {
+    const next = escalate
+      ? {
+          kind: 'breakdown' as const,
+          title: 'Guided breakdown',
+          body: staticFallback.guidance.body,
+          detail: 'Walk through this together — review each step before retrying.',
+        }
+      : staticFallback.guidance;
+    setGuidance(next);
+    if (escalate) {
+      setShowExplanation(true);
     }
+    setHintIndex(
+      staticFallback.nextHintIndex +
+        (reason === 'hint' && staticFallback.guidance.kind === 'static' ? 1 : 0)
+    );
+  }
 
-    setIsHintLoading(true);
+  const requestGuidance = useCallback(
+    async (reason: 'hint' | 'incorrect', escalate = false) => {
+      if (!lesson) {
+        return;
+      }
 
-    const staticFallback = buildFallbackGuidance(reason, hintIndex);
+      setIsHintLoading(true);
 
-    try {
-      if (sessionContext.sessionId) {
-        const response = await learnerApi.getTeachingGuidance(sessionContext.sessionId, {
-          blockId: lesson.id,
-          content: [lesson.content.question, lesson.content.explanation]
-            .filter(Boolean)
-            .join('\n\n'),
-        });
+      const staticFallback = buildFallbackGuidance(reason, hintIndex);
 
-        setSessionContext((current) => ({
-          ...current,
-          teachingMode:
-            response.suggestedMode > (current.teachingMode ?? response.currentMode)
-              ? response.suggestedMode
-              : (current.teachingMode ?? response.currentMode),
-          recommendedMode: response.recommendedMode,
-        }));
-
-        if (response.shouldTeach && response.content) {
-          setGuidance({
-            kind: escalate ? 'breakdown' : 'adaptive',
-            title: escalate ? 'Guided breakdown' : 'Next step',
-            body: response.content,
-            detail: escalate
-              ? 'Walk through this together — review each step before retrying.'
-              : 'Adjusted for this session.',
+      try {
+        if (sessionContext.sessionId) {
+          const response = await learnerApi.getTeachingGuidance(sessionContext.sessionId, {
+            blockId: lesson.id,
+            content: [lesson.content.question, lesson.content.explanation]
+              .filter(Boolean)
+              .join('\n\n'),
           });
-          if (escalate) {
-            setShowExplanation(true);
+
+          setSessionContext((current) => ({
+            ...current,
+            teachingMode:
+              response.suggestedMode > (current.teachingMode ?? response.currentMode)
+                ? response.suggestedMode
+                : (current.teachingMode ?? response.currentMode),
+            recommendedMode: response.recommendedMode,
+          }));
+
+          if (response.shouldTeach && response.content) {
+            setGuidance({
+              kind: escalate ? 'breakdown' : 'adaptive',
+              title: escalate ? 'Guided breakdown' : 'Next step',
+              body: response.content,
+              detail: escalate
+                ? 'Walk through this together — review each step before retrying.'
+                : 'Adjusted for this session.',
+            });
+            if (escalate) {
+              setShowExplanation(true);
+            }
+            return;
           }
-          return;
         }
+
+        if (staticFallback) {
+          applyFallback(staticFallback, reason, escalate);
+        }
+      } catch {
+        if (staticFallback) {
+          applyFallback(staticFallback, reason, escalate);
+        }
+      } finally {
+        setIsHintLoading(false);
+      }
+    },
+    [lesson, hintIndex, sessionContext.sessionId]
+  );
+
+  const handleShowHint = useCallback(
+    async (source: 'help_button' | 'stuck_timer' = 'help_button') => {
+      if (!lesson) {
+        return;
       }
 
-      if (staticFallback) {
-        const guidance = escalate
-          ? {
-              kind: 'breakdown' as const,
-              title: 'Guided breakdown',
-              body: staticFallback.guidance.body,
-              detail: 'Walk through this together — review each step before retrying.',
-            }
-          : staticFallback.guidance;
-        setGuidance(guidance);
-        if (escalate) {
-          setShowExplanation(true);
-        }
-        setHintIndex(
-          staticFallback.nextHintIndex +
-            (reason === 'hint' && staticFallback.guidance.kind === 'static' ? 1 : 0)
-        );
+      blockHelpUsedRef.current = true;
+
+      if (sessionContext.sessionId) {
+        await learnerApi
+          .recordEvent(sessionContext.sessionId, {
+            blockId: lesson.id,
+            eventType: 'hint_used',
+            responseData: { hintIndex, helpRequested: true, source },
+          })
+          .catch(() => {});
       }
-    } catch {
-      if (staticFallback) {
-        const guidance = escalate
-          ? {
-              kind: 'breakdown' as const,
-              title: 'Guided breakdown',
-              body: staticFallback.guidance.body,
-              detail: 'Walk through this together — review each step before retrying.',
-            }
-          : staticFallback.guidance;
-        setGuidance(guidance);
-        if (escalate) {
-          setShowExplanation(true);
-        }
-        setHintIndex(
-          staticFallback.nextHintIndex +
-            (reason === 'hint' && staticFallback.guidance.kind === 'static' ? 1 : 0)
-        );
-      }
-    } finally {
-      setIsHintLoading(false);
-    }
-  }
 
-  async function handleShowHint(source: 'help_button' | 'stuck_timer' = 'help_button') {
-    if (!lesson) {
-      return;
-    }
-
-    if (sessionContext.sessionId) {
-      await learnerApi
-        .recordEvent(sessionContext.sessionId, {
-          blockId: lesson.id,
-          eventType: 'hint_used',
-          responseData: { hintIndex, helpRequested: true, source },
-        })
-        .catch(() => {});
-    }
-
-    await requestGuidance('hint', blockAttempts >= 2);
-  }
+      await requestGuidance('hint', blockAttempts >= 2);
+    },
+    [lesson, sessionContext.sessionId, hintIndex, blockAttempts, requestGuidance]
+  );
 
   function handleRetry() {
     setSubmitted(false);
     setIsCorrect(false);
     setShowExplanation(false);
+    setGuidance(null);
     setErrorMessage(null);
   }
 
@@ -618,7 +628,10 @@ export default function LearnPage({ params }: { params: Promise<{ courseId: stri
           eventType: 'completed',
           correctness: correct ? 1 : 0,
           timeSpentSeconds: getBlockElapsedSeconds(),
-          responseData: { answer: userAnswer },
+          responseData: {
+            answer: userAnswer,
+            ...(blockHelpUsedRef.current ? { helpUsed: true } : {}),
+          },
         })
         .catch(() => {});
     }
@@ -757,18 +770,19 @@ export default function LearnPage({ params }: { params: Promise<{ courseId: stri
 
   useEffect(() => {
     if (
-      blockElapsed < STUCK_PROMPT_SECONDS ||
+      !lesson ||
+      blockElapsed < stuckPromptSeconds(lesson.estimatedTimeMinutes) ||
       submitted ||
       guidance !== null ||
       stuckPromptFiredRef.current ||
-      !lesson
+      blockAttempts === 0
     ) {
       return;
     }
 
     stuckPromptFiredRef.current = true;
     void handleShowHint('stuck_timer');
-  }, [blockElapsed, submitted, guidance, lesson, handleShowHint]);
+  }, [blockElapsed, submitted, guidance, blockAttempts, lesson, handleShowHint]);
 
   if (loading) {
     return (
@@ -1009,28 +1023,25 @@ export default function LearnPage({ params }: { params: Promise<{ courseId: stri
 
                 {guidance && !isCorrect && (
                   <div
+                    role="status"
+                    aria-live="polite"
                     className={cn(
                       'rounded-xl border p-4',
                       guidance.kind === 'adaptive' && 'border-warning/40 bg-warning/10',
                       guidance.kind === 'static' && 'border-warning/30 bg-ts-black/50',
                       guidance.kind === 'fallback' && 'border-ts-slate bg-ts-black/40',
-                      guidance.kind === 'breakdown' && 'border-destructive/40 bg-destructive/10'
+                      guidance.kind === 'breakdown' && 'border-warning/60 bg-warning/15'
                     )}
                   >
                     <div className="mb-2 flex items-center justify-between gap-3">
                       <span className="flex items-center gap-2 text-sm font-medium text-ts-mist">
-                        <Lightbulb
-                          className={cn(
-                            'h-4 w-4',
-                            guidance.kind === 'breakdown' ? 'text-destructive' : 'text-warning'
-                          )}
-                        />
+                        <Lightbulb className="h-4 w-4 text-warning" />
                         {guidance.title}
                       </span>
                       {guidance.kind === 'static' && hintIndex < lesson.content.hints.length && (
                         <Button
                           variant="ghost"
-                          size="sm"
+                          size="lg"
                           className="text-ts-mist hover:bg-ts-black/60 hover:text-ts-mist"
                           onClick={() => handleShowHint('help_button')}
                           disabled={isHintLoading}
@@ -1063,15 +1074,12 @@ export default function LearnPage({ params }: { params: Promise<{ courseId: stri
                 )}
 
                 {blockAttempts > 0 && (
-                  <div
-                    className="flex items-center justify-between text-xs text-muted-foreground"
-                    aria-live="polite"
-                  >
-                    <span>
-                      Attempt {blockAttempts + 1}
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span aria-live="polite">
+                      Attempt {blockAttempts}
                       {blockAttempts >= 2 && ' · guided breakdown active'}
                     </span>
-                    <span>{formatTime(blockElapsed)} on this block</span>
+                    <span aria-hidden="true">{formatTime(blockElapsed)} on this block</span>
                   </div>
                 )}
 
@@ -1081,6 +1089,7 @@ export default function LearnPage({ params }: { params: Promise<{ courseId: stri
                       {canRequestHint && (
                         <Button
                           variant="outline"
+                          size="lg"
                           className="border-ts-slate bg-transparent text-ts-mist hover:bg-ts-black/60 hover:text-ts-mist"
                           onClick={() => handleShowHint('help_button')}
                           loading={isHintLoading}
@@ -1088,7 +1097,12 @@ export default function LearnPage({ params }: { params: Promise<{ courseId: stri
                           <Lightbulb className="mr-2 h-4 w-4" />I need help
                         </Button>
                       )}
-                      <Button className="flex-1" onClick={handleSubmit} loading={isSubmitting}>
+                      <Button
+                        size="lg"
+                        className="flex-1"
+                        onClick={handleSubmit}
+                        loading={isSubmitting}
+                      >
                         Check Answer
                         <ChevronRight className="ml-2 h-4 w-4" />
                       </Button>
@@ -1098,6 +1112,7 @@ export default function LearnPage({ params }: { params: Promise<{ courseId: stri
                       {!isCorrect && (
                         <Button
                           variant="outline"
+                          size="lg"
                           className="border-ts-slate bg-transparent text-ts-mist hover:bg-ts-black/60 hover:text-ts-mist"
                           onClick={handleRetry}
                         >
@@ -1107,6 +1122,7 @@ export default function LearnPage({ params }: { params: Promise<{ courseId: stri
                       )}
                       {isCorrect && (
                         <Button
+                          size="lg"
                           className="flex-1"
                           onClick={advanceToNextBlock}
                           loading={isAdvancing}
