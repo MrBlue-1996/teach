@@ -372,34 +372,34 @@ describe('Learner Routes', () => {
         values: vi.fn((values: unknown) => {
           insertedValues.push(values);
           return {
-          returning: vi.fn().mockImplementation(() => {
-            insertCallCount++;
-            if (insertCallCount === 1) {
-              // First insert is for learner state
+            returning: vi.fn().mockImplementation(() => {
+              insertCallCount++;
+              if (insertCallCount === 1) {
+                // First insert is for learner state
+                return Promise.resolve([
+                  {
+                    id: 'new-state-1',
+                    userId: 'user-test-1',
+                    contentPackId: '550e8400-e29b-41d4-a716-446655440000',
+                    currentMode: 'L1_RECALL',
+                    overallMastery: 0,
+                    currentBlockId: null,
+                  },
+                ]);
+              }
+              // Second insert is for session
               return Promise.resolve([
                 {
-                  id: 'new-state-1',
+                  id: 'new-session-1',
                   userId: 'user-test-1',
-                  contentPackId: '550e8400-e29b-41d4-a716-446655440000',
-                  currentMode: 'L1_RECALL',
-                  overallMastery: 0,
-                  currentBlockId: null,
+                  learnerStateId: 'new-state-1',
+                  status: 'active',
+                  teachingMode: 4,
+                  deviceProfile: 'chromebook_standard',
+                  startedAt: new Date(),
                 },
               ]);
-            }
-            // Second insert is for session
-            return Promise.resolve([
-              {
-                id: 'new-session-1',
-                userId: 'user-test-1',
-                learnerStateId: 'new-state-1',
-                status: 'active',
-                teachingMode: 4,
-                deviceProfile: 'chromebook_standard',
-                startedAt: new Date(),
-              },
-            ]);
-          }),
+            }),
           };
         }),
       }));

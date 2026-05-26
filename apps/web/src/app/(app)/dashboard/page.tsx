@@ -28,10 +28,7 @@ import { getLevelColor, getLevelName } from '@/lib/utils';
 import { learnerApi, contentApi, badgesApi } from '@/lib/api';
 import type { LearnerState, LearningSession, ContentPack } from '@/lib/api';
 import { pickGoldenPathPack } from '@/lib/golden-path';
-import {
-  computeDecayAffordance,
-  type RetentionQueueSummary,
-} from '@/lib/mastery-decay';
+import { computeDecayAffordance, type RetentionQueueSummary } from '@/lib/mastery-decay';
 
 interface DashboardData {
   states: LearnerState[];

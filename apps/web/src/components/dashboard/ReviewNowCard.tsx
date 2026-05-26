@@ -6,10 +6,7 @@ import { ArrowRight, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import {
-  formatNextDueLabel,
-  type DecayAffordance,
-} from '@/lib/mastery-decay';
+import { formatNextDueLabel, type DecayAffordance } from '@/lib/mastery-decay';
 
 interface ReviewNowCardProps {
   affordance: DecayAffordance;
@@ -40,10 +37,7 @@ export function ReviewNowCard({ affordance, href, className }: ReviewNowCardProp
       <CardContent className="flex flex-col gap-3 p-5 md:flex-row md:items-center md:justify-between">
         <div className="flex items-start gap-3">
           <RefreshCw
-            className={cn(
-              'mt-1 h-5 w-5',
-              isUrgent ? 'text-destructive' : 'text-warning'
-            )}
+            className={cn('mt-1 h-5 w-5', isUrgent ? 'text-destructive' : 'text-warning')}
             aria-hidden="true"
           />
           <div>
