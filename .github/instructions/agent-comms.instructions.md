@@ -33,11 +33,13 @@ Update the `Status` field in place as work progresses. Do not remove entries —
 ## Parallel vs Sequential Execution
 
 Tasks **may run in parallel** when all of the following are true:
+
 - They touch different packages (no shared file writes)
 - Neither produces an artifact the other consumes
 - They have no declared dependency relationship in `queue.md`
 
 Tasks **must run sequentially** when:
+
 - One task produces a type, schema, or API contract that another task consumes
 - Both tasks write to the same package or shared file (e.g., `packages/shared/src/types/`)
 - A `Blocking` relationship is declared in `queue.md`

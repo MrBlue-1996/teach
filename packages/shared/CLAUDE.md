@@ -46,13 +46,13 @@ If a type is only used inside one package (e.g., engine-internal state, an API-s
 
 ## Type Naming Conventions
 
-| Kind            | Convention            | Example                      |
-| --------------- | --------------------- | ---------------------------- |
-| Interface       | PascalCase            | `LearnerState`               |
-| Enum            | PascalCase            | `TeachingMode`               |
-| Zod schema      | `${TypeName}Schema`   | `LearnerStateSchema`         |
-| Constant        | SCREAMING_SNAKE_CASE  | `MAX_HINTS_PER_BLOCK`        |
-| Utility fn      | camelCase             | `normalizeBlockId`           |
+| Kind       | Convention           | Example               |
+| ---------- | -------------------- | --------------------- |
+| Interface  | PascalCase           | `LearnerState`        |
+| Enum       | PascalCase           | `TeachingMode`        |
+| Zod schema | `${TypeName}Schema`  | `LearnerStateSchema`  |
+| Constant   | SCREAMING_SNAKE_CASE | `MAX_HINTS_PER_BLOCK` |
+| Utility fn | camelCase            | `normalizeBlockId`    |
 
 ## Zod Schema / Type Parity
 

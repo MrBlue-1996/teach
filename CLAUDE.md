@@ -102,16 +102,16 @@ VS Code Copilot skills live in `.vscode/` or `.github/` and are invoked by the c
 
 When a task touches one of the following domains, invoke the corresponding skill rather than working from scratch:
 
-| Skill | When to use |
-| ----- | ----------- |
-| `supabase` | Any Supabase, database, or auth work |
-| `top-shelf-ui` | UI authoring in `apps/web/src/` |
-| `pwa-validation` | PWA, service worker, or offline validation |
-| `topshelf-content-pack-authoring` | Content pack JSON authoring or validation |
-| `stimulus-renderer-integration` | Wiring stimulus renderers into surfaces |
-| `spaced-retrieval-scheduler` | Retention queue or spaced-review work |
-| `trigger-engine-implementation` | Trigger detection and mode elevation work |
-| `worked-example-fading` | Novice teaching mode and expertise reversal |
+| Skill                             | When to use                                 |
+| --------------------------------- | ------------------------------------------- |
+| `supabase`                        | Any Supabase, database, or auth work        |
+| `top-shelf-ui`                    | UI authoring in `apps/web/src/`             |
+| `pwa-validation`                  | PWA, service worker, or offline validation  |
+| `topshelf-content-pack-authoring` | Content pack JSON authoring or validation   |
+| `stimulus-renderer-integration`   | Wiring stimulus renderers into surfaces     |
+| `spaced-retrieval-scheduler`      | Retention queue or spaced-review work       |
+| `trigger-engine-implementation`   | Trigger detection and mode elevation work   |
+| `worked-example-fading`           | Novice teaching mode and expertise reversal |
 
 ## Non-Negotiable Engineering Rules
 
@@ -157,12 +157,12 @@ Each specialized agent has an individual scope guide in `.github/agents/` (e.g.,
 
 ### State File Locations
 
-| File | Purpose |
-| ---- | ------- |
-| `.github/state/board.md` | Per-agent work status and timestamped progress updates |
-| `.github/state/queue.md` | Pending tasks and dispatch queue |
-| `.github/state/decisions.md` | Architecture decisions with rationale |
-| `.github/state/blockers.md` | Active blockers and their resolution status |
+| File                         | Purpose                                                |
+| ---------------------------- | ------------------------------------------------------ |
+| `.github/state/board.md`     | Per-agent work status and timestamped progress updates |
+| `.github/state/queue.md`     | Pending tasks and dispatch queue                       |
+| `.github/state/decisions.md` | Architecture decisions with rationale                  |
+| `.github/state/blockers.md`  | Active blockers and their resolution status            |
 
 ### Before Starting
 

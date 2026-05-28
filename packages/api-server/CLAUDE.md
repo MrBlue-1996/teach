@@ -131,9 +131,9 @@ Do not `throw new Error(...)` directly in route handlers — it produces an unfo
 After `authMiddleware()` runs, the following context vars are set and typed:
 
 ```ts
-c.get('userId')       // string — user ID from verified JWT
-c.get('userRole')     // string — 'learner' | 'instructor' | 'school_admin' | etc.
-c.get('tokenPayload') // full decoded JWT payload
+c.get('userId'); // string — user ID from verified JWT
+c.get('userRole'); // string — 'learner' | 'instructor' | 'school_admin' | etc.
+c.get('tokenPayload'); // full decoded JWT payload
 ```
 
 Always check `userRole` for admin-only operations. Never trust a client-supplied `userId` — always use the one extracted from token context by `authMiddleware`.

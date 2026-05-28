@@ -48,41 +48,50 @@ lastUpdated: '2026-05-28'
 Use these patterns consistently across all UI surfaces:
 
 **Buttons**
+
 ```tsx
 <Button variant="default">Save changes</Button>
 <Button variant="destructive">Delete session</Button>
 <Button variant="outline">Cancel</Button>
 <Button variant="ghost">View details</Button>
 ```
+
 Labels must be verb-first and max 3 words. No emoji, no exclamation marks.
 
 **Forms**
+
 ```tsx
 <div className="space-y-2">
   <Label htmlFor="email">Email address</Label>
   <Input id="email" type="email" placeholder="you@example.com" />
 </div>
 ```
+
 Always pair `<Label>` with `<Input>` via matching `htmlFor`/`id`. Accessible labels are non-negotiable.
 
 **Loading States**
+
 ```tsx
 <Skeleton className="h-4 w-[200px]" />
 <Skeleton className="h-10 w-full" />
 ```
+
 Use `<Skeleton>` from `components/ui/skeleton` — never use spinners or custom loading animations.
 
 **Errors**
+
 ```tsx
 <Alert variant="destructive">
   <AlertTitle>Something went wrong</AlertTitle>
   <AlertDescription>Could not load session. Try again.</AlertDescription>
 </Alert>
 ```
+
 Use `<Alert variant="destructive">` — never inline red text (`className="text-red-500"`).
 
 **Empty States**
 Every empty state must include: an icon + a heading + a brief description + a CTA button.
+
 ```tsx
 <div className="flex flex-col items-center gap-4 py-12 text-center">
   <BookOpen className="h-10 w-10 text-muted-foreground" />
@@ -96,15 +105,16 @@ Every empty state must include: an icon + a heading + a brief description + a CT
 
 Write copy the way a competent trainer talks — direct, calm, no hype.
 
-| ✅ Do | ❌ Don't |
-| ----- | -------- |
-| "Save changes" | "Click here to save your amazing changes!" |
-| "Session ended" | "Oops! Something went wrong 😢" |
-| "3 blocks completed" | "You're crushing it! 3 blocks done! 🎉" |
-| "Start session" | "Begin your learning journey" |
-| "No results found" | "Hmm, we couldn't find anything!" |
+| ✅ Do                | ❌ Don't                                   |
+| -------------------- | ------------------------------------------ |
+| "Save changes"       | "Click here to save your amazing changes!" |
+| "Session ended"      | "Oops! Something went wrong 😢"            |
+| "3 blocks completed" | "You're crushing it! 3 blocks done! 🎉"    |
+| "Start session"      | "Begin your learning journey"              |
+| "No results found"   | "Hmm, we couldn't find anything!"          |
 
 Rules:
+
 - No emoji in UI copy
 - No exclamation marks in body copy or labels
 - No "journey", "amazing", "crushing it", or similar hype language
