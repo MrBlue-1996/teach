@@ -19,7 +19,7 @@ These packages are **fully gated off** from the active workspace. They are not l
 To promote a package from `_future/` to active:
 
 1. Move the directory: `mv packages/_future/foo packages/foo`
-2. No workspace edit needed — `'packages/foo'` is already covered by `'packages/*'` in `pnpm-workspace.yaml`
+2. No workspace edit needed; `packages/foo` is already covered by `packages/*` in `pnpm-workspace.yaml`
 3. Fix any typecheck / lint failures
 4. Remove it from this table above
 
