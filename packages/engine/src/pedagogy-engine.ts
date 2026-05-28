@@ -22,7 +22,9 @@ export const PedagogyEngine = {
    * Process a teaching request
    */
   processTeachingRequest(context: TeachingContext, teachingContent?: string): TeachingResponse {
-    const triggers = TriggerDetector.detectTriggers(context);
+    const detected = TriggerDetector.detectTriggers(context);
+    // Merge caller-set triggers (e.g. HELP_REQUESTED) with auto-detected ones.
+    const triggers = [...new Set([...context.triggers, ...detected])];
     context.triggers = triggers;
 
     if (context.mode === TeachingMode.L0_SILENT) {
