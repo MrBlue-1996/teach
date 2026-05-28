@@ -15,6 +15,35 @@ This repository uses a blackboard model. Agents must coordinate through shared s
 3. `.github/state/decisions.md`
 4. `.github/state/blockers.md`
 
+## Queue Format
+
+Each task entry in `queue.md` uses the following structure:
+
+```markdown
+## [TASK-ID] Agent: <agent-name> | Status: pending/in_progress/done/blocked
+
+**Description**: What needs to be done.
+**Tags**: schema, api, contracts, etc.
+**Blocking**: TASK-ID of any task this must complete before
+**Deliverable**: Concrete artifact or behavior that proves the task is done
+```
+
+Update the `Status` field in place as work progresses. Do not remove entries — mark them `done`.
+
+## Parallel vs Sequential Execution
+
+Tasks **may run in parallel** when all of the following are true:
+- They touch different packages (no shared file writes)
+- Neither produces an artifact the other consumes
+- They have no declared dependency relationship in `queue.md`
+
+Tasks **must run sequentially** when:
+- One task produces a type, schema, or API contract that another task consumes
+- Both tasks write to the same package or shared file (e.g., `packages/shared/src/types/`)
+- A `Blocking` relationship is declared in `queue.md`
+
+When in doubt, run sequentially and note the dependency in `blockers.md`.
+
 ## Required Updates After Work
 
 1. Append a timestamped update under your section in `.github/state/board.md`
@@ -32,10 +61,16 @@ Each board entry must include:
 - Files changed
 - What downstream agents must know
 
-Example:
+Normal completion example:
 
 ```markdown
 - **[2026-05-11]** `api` `contracts` Completed: Added learner teach endpoint validation and response envelope alignment. Files: `packages/api-server/src/routes/learner.ts`. Downstream: web client should expect `data.teachingResponse`.
+```
+
+Blocker scenario example:
+
+```markdown
+- **[2026-05-14]** `schema` `contracts` Blocked: Cannot complete session history endpoint — requires new index on `learningSessions(userId, createdAt)`. Filed blocker to db-engineer. No files changed yet. Resuming after DB migration lands.
 ```
 
 ## Blocker Standard
@@ -51,6 +86,30 @@ Use this format:
 ```
 
 When resolved, update header to `[RESOLVED]` and add resolution note.
+
+## Decisions Format
+
+Record all architecture and contract decisions in `decisions.md`:
+
+```markdown
+## [DATE] Title
+
+**Decision**: What was decided.
+**Rationale**: Why this approach was chosen over alternatives.
+**Impact**: Which packages and agents are affected.
+**Decided by**: agent name or human
+```
+
+Example:
+
+```markdown
+## [2026-05-14] Use response envelope for all teach endpoints
+
+**Decision**: All `/api/learner/teach` responses wrap payload in `{ data: ..., meta: ... }`.
+**Rationale**: Consistent shape allows the web client to handle errors uniformly.
+**Impact**: packages/api-server, apps/web/src/lib/api/
+**Decided by**: api-engineer
+```
 
 ## Rules
 
@@ -73,3 +132,4 @@ If a task includes tags, read the corresponding hotspots before coding.
 - `content`: `content-packs/`, `content/web-fundamentals/`
 - `policy`: `governance/policies/promotion_policy_config.json`
 - `pedagogy`: `packages/engine/src/pedagogy-engine.ts`
+- `pwa`: `apps/web/public/sw.js`, `apps/web/public/manifest.json`

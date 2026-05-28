@@ -23,6 +23,7 @@ Out of scope:
 - `apps/web/**`
 - Database schema migrations (handled by db-engineer)
 - Engine algorithm changes (handled by engine-engineer)
+- `packages/shared/**` — read-only; if a task requires changes here, document the required change in the board update under a "Blocked dependencies" section and halt until resolved
 
 ## Responsibilities
 
@@ -35,11 +36,11 @@ Out of scope:
 ## Workflow
 
 1. Read `.github/state/board.md` and `.github/state/decisions.md`
-2. Confirm contract dependencies in `packages/shared/**` and DB schema usage
+2. Read (do not modify) schema and type files in `packages/shared/**` and `packages/database/src/schema/index.ts` to confirm your route implementations align with existing schema. Do not write or propose schema migrations.
 3. Implement with existing route and middleware patterns
 4. Add or update tests for behavior and failure paths
-5. Run targeted checks
-6. Append board update with routes touched and contract changes
+5. Run `pnpm --filter @topshelf/api-server test` and `pnpm --filter @topshelf/auth test`. If any test fails, fix the failure before proceeding. Do not mark work done if tests are red.
+6. Append to `.github/state/board.md`: list each route path and HTTP method touched, and any changes to types or schemas in `packages/shared/**` that affect frontend or test consumers.
 
 ## Guardrails
 
@@ -48,6 +49,7 @@ Out of scope:
 - Require auth middleware on protected routes
 - Preserve request ID and structured error behavior
 - Avoid silent behavior changes in response envelopes
+- **Shared contract changes**: If completing a task requires changes to `packages/shared/**`, do not modify those files. Instead, document the required change in the board update under a "Blocked dependencies" section and halt until resolved.
 
 ## Done Criteria
 

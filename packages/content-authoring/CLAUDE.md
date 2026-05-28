@@ -72,6 +72,57 @@ State machine transitions are strict — calling `sign()` before `approve()` thr
 }
 ```
 
-## CLI (`src/cli/validate-packs.ts`)
+## Validation Rules Cheatsheet
 
-Scans `content-packs/` and `content/` directories (relative to repo root or package root) for JSON files and validates their shape. Exits 0 if no packs found (not an error — content directories are optional). Run via `pnpm validate:packs`.
+The validator checks the following in order. A failing check produces an entry in `errors[]`; soft issues go into `warnings[]`:
+
+| Rule                     | What is checked                                                    |
+| ------------------------ | ------------------------------------------------------------------ |
+| Required fields          | `packId`, `slug`, `version`, `blocks[]` present and non-empty      |
+| Block ID uniqueness      | No two blocks share the same `blockId` within a pack               |
+| `targetMode` enum        | Each block's `targetMode` is one of `L1_RECALL … L5_EXPERT`        |
+| Hint ordering            | `hints[]` must be ordered easiest → hardest (no empty strings)     |
+| Difficulty range         | `difficulty` is an integer in `[1, 5]`                             |
+| `timeBudgetSeconds`      | Must be a positive integer (`> 0`)                                 |
+| Signature integrity      | If `signature` is present, `ContentPackSigner.verify()` must pass  |
+| Parity (when LLM output provided) | `ParityValidator.validateBatch()` must return no divergences |
+
+## CLI Usage
+
+```bash
+pnpm validate:packs
+```
+
+Scans `content-packs/` and `content/` directories for `*.json` files and validates each one. Exits 0 if all packs pass or if no packs are found (empty directories are not an error).
+
+**Passing output:**
+```
+✓ content-packs/food-safety-v1.json — valid (12 blocks)
+✓ content-packs/kitchen-basics-v2.json — valid (8 blocks)
+All 2 packs passed validation.
+```
+
+**Failing output:**
+```
+✗ content-packs/broken-pack.json
+  ERROR: Duplicate blockId "handwashing-001" at blocks[3] and blocks[7]
+  ERROR: blocks[5].difficulty must be 1–5, got 6
+  WARNING: blocks[2].hints is empty — learners will have no hints available
+1 pack failed validation. Fix errors before signing.
+```
+
+Exit code 1 on any error; exit code 0 on warnings only.
+
+## Conventions
+
+- Always import from `@topshelf/content-authoring` (package root).
+- Test files are named `*.test.ts` and live in `src/` alongside the module they test.
+- All source files must include the copyright header:
+  ```ts
+  /**
+   * TopShelf Service LLC
+   * PROPRIETARY AND CONFIDENTIAL
+   * Copyright (c) 2026 TopShelf Service LLC. All Rights Reserved.
+   */
+  ```
+- Run `pnpm --filter @topshelf/content-authoring typecheck` after changes.

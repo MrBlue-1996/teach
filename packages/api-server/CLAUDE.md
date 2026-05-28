@@ -96,9 +96,26 @@ The most complex router — integrates `@topshelf/engine` directly:
 
 `/learner/stats` active-pack threshold: `lastActivityAt >= now - 30 days`.
 
-## Error Handling
+## Zod Validation Rule
 
-Use helpers from `src/middleware/error-handler.ts`:
+Every external input (request body, path param, query string) must be validated with Zod before use. Use `zValidator` Hono middleware where possible, or validate manually and `throw badRequest()` on failure. Never trust raw `c.req.json()` without validation — shape your input with a `z.object(...)` schema.
+
+## Error Response Standard
+
+All error responses use this envelope (produced by `src/middleware/error-handler.ts`):
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "Resource 123 not found",
+    "requestId": "req_abc123"
+  }
+}
+```
+
+Use the helpers from `src/middleware/error-handler.ts` — they populate `code`, `message`, and `requestId` automatically:
 
 ```ts
 throw notFound('Resource', id); // 404
@@ -108,3 +125,29 @@ throw forbidden('Reason'); // 403
 ```
 
 Do not `throw new Error(...)` directly in route handlers — it produces an unformatted 500.
+
+## Auth Context
+
+After `authMiddleware()` runs, the following context vars are set and typed:
+
+```ts
+c.get('userId')       // string — user ID from verified JWT
+c.get('userRole')     // string — 'learner' | 'instructor' | 'school_admin' | etc.
+c.get('tokenPayload') // full decoded JWT payload
+```
+
+Always check `userRole` for admin-only operations. Never trust a client-supplied `userId` — always use the one extracted from token context by `authMiddleware`.
+
+## Conventions
+
+- Import from `@topshelf/database` (package root) for all DB access — never from `drizzle-orm` directly.
+- Test files are named `*.test.ts` and live in `src/routes/` alongside the route file they test.
+- All source files must include the copyright header:
+  ```ts
+  /**
+   * TopShelf Service LLC
+   * PROPRIETARY AND CONFIDENTIAL
+   * Copyright (c) 2026 TopShelf Service LLC. All Rights Reserved.
+   */
+  ```
+- Run `pnpm --filter @topshelf/api-server typecheck` after changes.

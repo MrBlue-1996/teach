@@ -72,6 +72,24 @@ All tables and enums are in `src/schema/index.ts`, re-exported from the package 
 
 Use `with:` in Drizzle queries to fetch relations rather than manual joins.
 
+## Query Patterns
+
+```ts
+// Fetch with relations
+const state = await db.query.learnerStates.findFirst({
+  where: eq(learnerStates.userId, userId),
+  with: { progressEvents: true },
+});
+
+// Insert
+const [inserted] = await db.insert(learnerStates).values({ ... }).returning();
+
+// Update
+await db.update(learnerStates).set({ ... }).where(eq(learnerStates.id, id));
+```
+
+Prefer `findFirst` / `findMany` with `with:` over manual joins. Use `.returning()` on inserts when you need the persisted row.
+
 ## Schema Changes
 
 1. Edit `src/schema/index.ts`
@@ -80,3 +98,25 @@ Use `with:` in Drizzle queries to fetch relations rather than manual joins.
 4. Re-run `pnpm typecheck` across `api-server` — Drizzle infers types from the schema, so type errors surface after schema changes
 
 Do not hand-write migration SQL unless correcting a Drizzle generator bug. The generated migrations are the source of truth.
+
+## Migration Safety Rules
+
+Generated migrations are the source of truth. **Never hand-edit migration files.** Before applying a migration:
+
+1. Read the generated SQL and confirm it is additive (new tables, new columns, new indexes).
+2. `DROP TABLE`, `DROP COLUMN`, or destructive `ALTER` statements require explicit approval — do not apply silently.
+3. Run `pnpm --filter @topshelf/api-server typecheck` after migrations — Drizzle infers types from the schema and type errors will surface there.
+
+## Conventions
+
+- Always import from `@topshelf/database` (package root) — never from `drizzle-orm` or internal paths directly.
+- Test files are named `*.test.ts` and live in `src/` alongside the module they test.
+- All source files must include the copyright header:
+  ```ts
+  /**
+   * TopShelf Service LLC
+   * PROPRIETARY AND CONFIDENTIAL
+   * Copyright (c) 2026 TopShelf Service LLC. All Rights Reserved.
+   */
+  ```
+- Run `pnpm --filter @topshelf/database typecheck` after schema changes.

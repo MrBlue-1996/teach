@@ -92,3 +92,38 @@ All types are re-exported through `src/index.ts`. Defining new types: put them i
 `TeachingMode` is a numeric enum (0–4). When persisted to DB it's stored as an integer. Cast with `as TeachingMode` when reading back.
 
 `DeviceProfile` is a string enum. `ConstraintEngine.inferProfile` is the canonical mapping function — don't duplicate UA-sniffing logic elsewhere.
+
+## Testing Patterns
+
+Tests live in `src/*.test.ts`. Run with `pnpm --filter @topshelf/engine test`.
+
+Each test file must cover three cases:
+
+- **Happy path** — normal inputs produce expected output
+- **Edge case** — boundary conditions on thresholds (e.g., exactly `errorsEncountered === 3`, elapsed exactly at 5 min)
+- **Regression** — previously-broken behavior pinned with a comment referencing the bug
+
+Snapshot tests are **not** appropriate for this package — use explicit assertions on returned values and trigger arrays.
+
+## Threshold Change Policy
+
+Changing trigger thresholds (`ERROR_REPEATED` count ≥ 3, `STUCK_DETECTED` elapsed > 5 min) requires an explicit architecture decision recorded in `.github/state/decisions.md`. Do **not** tune thresholds silently — they affect learner experience across all active sessions and must be traceable.
+
+## No Side Effects Rule
+
+Engine functions must be pure — no I/O, no network, no file system, no module-level mutable state. `PedagogyEngine.processTeachingRequest` does not persist; callers own persistence. If you find yourself reaching for `fs`, `fetch`, or a global variable inside `packages/engine/`, stop and reconsider the design.
+
+## Conventions
+
+- Always import from `@topshelf/engine` (the package root) in consuming packages — never from internal paths like `@topshelf/engine/src/trigger-detector`.
+- Test files are named `*.test.ts` and live in `src/` alongside the module they test.
+- All source files must include the copyright header:
+  ```ts
+  /**
+   * TopShelf Service LLC
+   * PROPRIETARY AND CONFIDENTIAL
+   * Copyright (c) 2026 TopShelf Service LLC. All Rights Reserved.
+   */
+  ```
+- Run `pnpm --filter @topshelf/engine typecheck` after changes.
+- Do not add runtime dependencies to this package.

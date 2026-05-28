@@ -27,6 +27,8 @@ src/app/
 
 Route protection is enforced via middleware or layout-level auth checks using `useAuthStore`. The `(app)` group redirects unauthenticated users to `/auth/login`.
 
+Kitchen routes at `/kitchen/**` are a separate domain — do not mix kitchen state with the `(app)` group state. Kitchen challenge state lives in `challenge-store`; the `(app)` group uses `auth-store` and server-fetched data only.
+
 ## Auth Pattern
 
 `useAuthStore` (Zustand + `localStorage` persistence) is the client-side auth source of truth:
@@ -75,7 +77,13 @@ src/stores/
   challenge-store.ts  # kitchen challenge state (active challenge, phase, score)
 ```
 
-Do not store server-fetched data in Zustand — use `useState`/`useEffect` or a data-fetching hook. Stores are for session-level client state only.
+## State Management Rules
+
+Zustand stores (`src/stores/`) are for session-level client state only. Do not store server-fetched data in Zustand — use `useState`/`useEffect` or a data-fetching hook. Stores should never contain data that belongs to the server's source of truth.
+
+## Component Conventions
+
+Use `src/components/ui/**` (shadcn/radix primitives) for all base UI elements (buttons, inputs, dialogs, etc.). Kitchen-domain components live in `src/components/kitchen/**` and must not be used outside the `kitchen/` route group. Use `lucide-react` icons only — do not import from other icon libraries. All interactive elements must meet a minimum 44×44px touch target.
 
 ## Kitchen UI Components
 
@@ -92,6 +100,42 @@ src/components/kitchen/
 
 These components receive data from `challenge-store` and render kitchen domain state. They do not call the API directly — the kitchen route pages orchestrate data flow.
 
+## PWA Notes
+
+The PWA shell has shipped. Do **not** modify `public/sw.js`, `public/manifest.json`, or `public/offline.html` without running the `pwa-validation` skill first. These files control offline behavior and installation — silent changes can break PWA installability on low-end devices.
+
+## Brand Requirements
+
+Before any UI work, read:
+
+- `governance/standards/brand/tokens/design-tokens.md`
+- `governance/standards/brand/voice/voice-and-tone.md`
+- `governance/standards/brand/doctrine/brand-doctrine.md`
+
+Key rules: semantic tokens only, Montserrat headings, Inter body, `lucide-react` icons, 44×44px touch targets minimum, dark-first palette.
+
 ## Environment Variables
 
-`NEXT_PUBLIC_API_URL` — API base URL injected into `src/lib/api/client.ts`. Must be set in `.env.local` for local development. Production value set via deployment config.
+All three variables are required for local development. Set them in `.env.local`:
+
+| Variable                        | Purpose                                         |
+| ------------------------------- | ----------------------------------------------- |
+| `NEXT_PUBLIC_API_URL`           | Base URL for `@topshelf/api-server` REST calls  |
+| `NEXT_PUBLIC_SUPABASE_URL`      | Supabase project URL (auth + realtime)          |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon key (public, safe for client use) |
+
+Production values are set via deployment config — never commit `.env.local`.
+
+## Conventions
+
+- Import from `@/lib/api/*`, `@/stores/*`, `@/components/*` using the `@/` alias — never use relative `../../` paths across feature boundaries.
+- Test files are named `*.test.ts` or `*.test.tsx` and live alongside the file they test (e.g., `MyComponent.test.tsx` next to `MyComponent.tsx`).
+- All source files must include the copyright header:
+  ```ts
+  /**
+   * TopShelf Service LLC
+   * PROPRIETARY AND CONFIDENTIAL
+   * Copyright (c) 2026 TopShelf Service LLC. All Rights Reserved.
+   */
+  ```
+- Run `pnpm typecheck` after any changes to types or API contracts.

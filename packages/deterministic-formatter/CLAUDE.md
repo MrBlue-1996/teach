@@ -55,3 +55,27 @@ runner.getAggregateResults()
 ## Configuration
 
 `DEFAULT_FORMATTER_CONFIG` is exported and documents all options. Override only what differs — pass a partial config; the formatter merges with defaults.
+
+## Hash Stability Rules
+
+The content hash is computed from the normalized canonical output produced by `CanonicalFormatter`. **Do not change normalization logic** (whitespace handling, delimiter normalization, hint sorting) without:
+
+1. Bumping a version flag in `DEFAULT_FORMATTER_CONFIG` (e.g., `normalizationVersion`)
+2. Regenerating all existing content hashes stored in the DB (`contentPacks.contentHash`)
+3. Updating parity test fixtures in `packages/tests/src/parity/`
+
+Hash changes silently break parity tests and invalidate signed content pack signatures — any normalization change is a breaking change for the entire content pipeline.
+
+## Conventions
+
+- Always import from `@topshelf/deterministic-formatter` (package root).
+- Test files are named `*.test.ts` and live in `src/` alongside the module they test.
+- All source files must include the copyright header:
+  ```ts
+  /**
+   * TopShelf Service LLC
+   * PROPRIETARY AND CONFIDENTIAL
+   * Copyright (c) 2026 TopShelf Service LLC. All Rights Reserved.
+   */
+  ```
+- Run `pnpm --filter @topshelf/deterministic-formatter typecheck` after changes.
