@@ -26,3 +26,6 @@ content-packs/**/*.sig
 
 # Uploaded external patch bundles (not source-of-truth repo code)
 zip/
+
+# Generated reports and temp files
+tmp/

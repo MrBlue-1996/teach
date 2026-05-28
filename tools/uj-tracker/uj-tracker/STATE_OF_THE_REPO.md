@@ -1,6 +1,6 @@
 # State of the Repo — Batch 0.1 Inventory
 
-> Generated: 2026-05-09  
+> Generated: 2026-05-26  
 > Branch: `main` @ `3bea8a4`  
 > Agent: GitHub Copilot (Claude Sonnet 4.6)  
 > Purpose: Pre-flight baseline for UJ Pack → Production execution plan

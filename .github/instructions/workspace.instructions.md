@@ -1,6 +1,7 @@
 ---
 description: 'TopShelf monorepo conventions and coding standards. Always applied.'
 applyTo: '**'
+lastUpdated: '2026-05-26'
 ---
 
 # TopShelf Workspace Standards

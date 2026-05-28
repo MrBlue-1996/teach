@@ -1,7 +1,7 @@
 ---
 description: 'Blackboard communication protocol for all specialized agents. Teaches agents to read shared state before working and write updates after completing work.'
 applyTo: '.github/agents/**'
-lastUpdated: '2026-05-11'
+lastUpdated: '2026-05-26'
 ---
 
 # Agent Communication Protocol

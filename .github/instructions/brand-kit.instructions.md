@@ -1,6 +1,7 @@
 ---
 description: 'TopShelf brand kit for UI work. Use when building pages, components, styling, or writing user-facing copy. Covers design tokens, voice/tone, and design principles.'
 applyTo: 'apps/web/src/**'
+lastUpdated: '2026-05-26'
 ---
 
 # Top Shelf Service LLC™ — Brand Kit

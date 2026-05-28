@@ -1,6 +1,6 @@
 # TopShelf Teaching
 
-TopShelf Teaching is a pnpm monorepo for the teaching platform, supporting packages, apps, governance artifacts, content packs, and implementation prototypes including the MCP MVP.
+TopShelf Teaching is a pnpm monorepo for the teaching platform, supporting packages, apps, governance artifacts, content packs, and implementation prototypes including the MCP MVP. The web app is mobile-first and PWA-installable (offline-tolerant service worker and manifest shipped).
 
 ## Start Here
 
@@ -9,6 +9,7 @@ TopShelf Teaching is a pnpm monorepo for the teaching platform, supporting packa
 - Apps overview: [apps/README.md](apps/README.md)
 - Packages overview: [packages/README.md](packages/README.md)
 - MCP MVP: [implementations/mcp-server/README.md](implementations/mcp-server/README.md)
+- Specialized agents: [.github/agents/](.github/agents/)
 
 ## Quick Start
 

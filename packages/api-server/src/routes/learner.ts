@@ -1012,11 +1012,19 @@ export function createLearnerRoutes(): Hono {
       session.deviceInfo as Record<string, unknown> | null
     );
 
+    // Re-seed any triggers that were stored during the most recent event so that
+    // HELP_REQUESTED (set by caller, never auto-detected) survives the round-trip.
+    const persistedTriggers = Array.isArray(session.triggersFired)
+      ? (session.triggersFired as string[]).filter((t): t is TriggerType =>
+          Object.values(TriggerType).includes(t as TriggerType)
+        )
+      : [];
+
     const context: TeachingContext = {
       mode: session.teachingMode ?? TeachingMode.L2_CONTEXTUAL,
       deviceProfile,
       constraints: ConstraintEngine.getConstraints(deviceProfile),
-      triggers: [],
+      triggers: persistedTriggers,
       sessionStartTime: session.startedAt,
       problemsSolved: session.problemsSolved ?? 0,
       errorsEncountered: session.errorsEncountered ?? 0,
