@@ -47,19 +47,19 @@ Out of scope:
 
 ## Patterns that already exist — reuse first
 
-| Need                  | Component / path                                                 |
-| --------------------- | ---------------------------------------------------------------- |
-| Button                | `components/ui/button.tsx`                                       |
-| Card surface          | `components/ui/card.tsx` (`bg-card` charcoal)                    |
-| Form input            | `components/ui/input.tsx`                                        |
-| Stat tile             | `components/ui/stat-card.tsx`                                    |
-| Page header           | `components/ui/page-header.tsx`                                  |
-| Empty state           | `components/ui/empty-state.tsx`                                  |
-| Phone frame mockup    | `components/ui/PhoneFrame.tsx`                                   |
-| Toaster               | `components/ui/toaster.tsx`                                      |
-| Progress bar          | `components/ui/progress.tsx`                                     |
-| Kitchen stimuli (six) | `components/kitchen/stimuli/*.tsx` + `StimulusRenderer.tsx`      |
-| Kitchen domain        | `components/kitchen/{DirtyHandTimer,MasteryRing,RecipeCard,...}` |
+| Need                    | Component / path                                                 |
+| ----------------------- | ---------------------------------------------------------------- |
+| Button                  | `components/ui/button.tsx`                                       |
+| Card surface            | `components/ui/card.tsx` (`bg-card` charcoal)                    |
+| Form input              | `components/ui/input.tsx`                                        |
+| Stat tile               | `components/ui/stat-card.tsx`                                    |
+| Page header             | `components/ui/page-header.tsx`                                  |
+| Empty state             | `components/ui/empty-state.tsx`                                  |
+| Phone frame mockup      | `components/ui/PhoneFrame.tsx`                                   |
+| Toaster                 | `components/ui/toaster.tsx`                                      |
+| Progress bar            | `components/ui/progress.tsx`                                     |
+| Kitchen stimuli (eight) | `components/kitchen/stimuli/*.tsx` + `StimulusRenderer.tsx`      |
+| Kitchen domain          | `components/kitchen/{DirtyHandTimer,MasteryRing,RecipeCard,...}` |
 
 If a need has a pre-existing component, extend it. Do not fork.
 

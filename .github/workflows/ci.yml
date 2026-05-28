@@ -11,16 +11,12 @@ on:
       - 'copilot/**'
       - 'claude/**'
     paths-ignore:
-      - 'docs/**'
       - 'brand/**'
-      - '**/*.md'
   pull_request:
     branches:
       - main
     paths-ignore:
-      - 'docs/**'
       - 'brand/**'
-      - '**/*.md'
   workflow_dispatch:
 
 permissions:

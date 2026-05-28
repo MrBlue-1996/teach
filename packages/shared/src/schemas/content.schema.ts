@@ -199,7 +199,12 @@ export const imageStimulusSchema = z
   .object({
     kind: z.literal('image'),
     imageRef: z.string().min(1).max(200),
-    altText: z.string().min(4).max(300),
+    altText: z
+      .string()
+      .max(300)
+      .refine((value) => value.trim().length >= 4, {
+        message: 'altText must be at least 4 non-whitespace characters',
+      }),
     caption: z.string().max(400).optional(),
     focusRegions: z
       .array(
@@ -215,6 +220,44 @@ export const imageStimulusSchema = z
       )
       .readonly()
       .optional(),
+  })
+  .strict();
+
+export const kitchenImageManifestEntrySchema = z
+  .object({
+    path: z.string().min(1).max(500),
+    altText: z
+      .string()
+      .max(300)
+      .refine((value) => value.trim().length >= 4, {
+        message: 'altText must be at least 4 non-whitespace characters',
+      }),
+    sourceDataStatus: sourceDataStatusSchema,
+    licenseRef: z.string().min(1).max(500).nullable().optional(),
+    tags: z.array(z.string().min(1).max(50)).readonly().optional(),
+  })
+  .strict();
+
+export const kitchenImageManifestSchema = z
+  .object({
+    schemaVersion: z.string().refine(isSemanticVersion, 'Invalid semantic version'),
+    defaultDimensions: z
+      .object({
+        widthPx: z.number().int().min(1).max(10000),
+        heightPx: z.number().int().min(1).max(10000),
+      })
+      .strict()
+      .optional(),
+    entries: z.record(
+      z
+        .string()
+        .min(1)
+        .max(200)
+        .refine((key) => !key.includes('..') && !/\.[a-z0-9]+$/i.test(key), {
+          message: 'imageRef keys must be extensionless manifest paths',
+        }),
+      kitchenImageManifestEntrySchema
+    ),
   })
   .strict();
 
@@ -474,3 +517,4 @@ export type BadgeIdSchema = z.infer<typeof badgeIdSchema>;
 export type TeachingBlockSchema = z.infer<typeof teachingBlockSchema>;
 export type ContentPackManifestSchema = z.infer<typeof contentPackManifestSchema>;
 export type ContentPackValidationResultSchema = z.infer<typeof contentPackValidationResultSchema>;
+export type KitchenImageManifestSchema = z.infer<typeof kitchenImageManifestSchema>;

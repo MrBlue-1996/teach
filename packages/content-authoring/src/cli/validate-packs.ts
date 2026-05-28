@@ -11,6 +11,8 @@ import path from 'path';
 import process from 'process';
 import { fileURLToPath } from 'url';
 
+import { kitchenImageManifestSchema, type KitchenImageManifestSchema } from '@topshelf/shared';
+
 import { validateContentPack } from '../validation/content-validator.js';
 
 export type ValidationIssue = {
@@ -27,6 +29,7 @@ const repoRoot = path.resolve(packageRoot, '../..');
 const REQUIRED_PACKAGE_FILES = [path.join(packageRoot, 'src', 'index.ts')];
 
 const CANDIDATE_DIRECTORIES = [path.join(repoRoot, 'content-packs')];
+const KITCHEN_IMAGE_MANIFEST_PATH = path.join(repoRoot, 'apps/web/public/kitchen/manifest.json');
 
 const CONTENT_PACK_FILE_PREFIX = 'content_pack_';
 
@@ -151,6 +154,46 @@ async function validateRequiredFiles(): Promise<ValidationIssue[]> {
   return issues;
 }
 
+async function loadKitchenImageManifest(): Promise<{
+  manifest?: KitchenImageManifestSchema;
+  issues: ValidationIssue[];
+}> {
+  if (!(await pathExists(KITCHEN_IMAGE_MANIFEST_PATH))) {
+    return { issues: [] };
+  }
+
+  const issuePath = toIssuePath(KITCHEN_IMAGE_MANIFEST_PATH);
+  try {
+    // CLI intentionally reads a fixed repository manifest path.
+
+    const raw = await fs.readFile(KITCHEN_IMAGE_MANIFEST_PATH, 'utf8');
+    const parsed: unknown = JSON.parse(raw);
+    const result = kitchenImageManifestSchema.safeParse(parsed);
+    if (result.success) {
+      return { manifest: result.data, issues: [] };
+    }
+
+    return {
+      issues: result.error.errors.map((error) => ({
+        code: 'INVALID_KITCHEN_IMAGE_MANIFEST',
+        path: issuePath,
+        message: `${error.path.join('.') || '<root>'}: ${error.message}`,
+      })),
+    };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    return {
+      issues: [
+        {
+          code: 'INVALID_KITCHEN_IMAGE_MANIFEST',
+          path: issuePath,
+          message: `Invalid kitchen image manifest: ${message}`,
+        },
+      ],
+    };
+  }
+}
+
 type ValidationArtifactsResult = {
   issues: ValidationIssue[];
   skippedFiles: string[];
@@ -165,6 +208,8 @@ export async function validateContentPackArtifacts(
   let validatedPackCount = 0;
 
   issues.push(...(await validateRequiredFiles()));
+  const kitchenImageManifest = await loadKitchenImageManifest();
+  issues.push(...kitchenImageManifest.issues);
 
   const jsonFiles = await resolveJsonFiles(inputPaths);
   if (jsonFiles.length === 0) {
@@ -192,7 +237,12 @@ export async function validateContentPackArtifacts(
         continue;
       }
 
-      const result = validateContentPack(parsed, { sourcePath: issuePath });
+      const result = validateContentPack(parsed, {
+        sourcePath: issuePath,
+        ...(kitchenImageManifest.manifest !== undefined
+          ? { kitchenImageManifest: kitchenImageManifest.manifest }
+          : {}),
+      });
       if (!result.valid) {
         for (const error of result.errors) {
           issues.push({

@@ -49,7 +49,7 @@ Modes:
 
 - `--dry-run` (default) — prints the drafted stimulus as JSON, no file changes.
 - `--write` — writes the draft into the pack JSON. Authors must re-sign the pack after.
-- `--backfill <pack-glob>` — runs over every block in matching packs that has no stimulus, prints a summary report (`N blocks drafted, M skipped`), writes drafts only if `--write` is also passed.
+- `--backfill <dir>` — recursively traverses the directory for JSON content packs, runs over every block that has no stimulus, prints a summary report (`N blocks drafted, M skipped`), and writes drafts only if `--write` is also passed. Glob input is not currently supported.
 
 ### Heuristic mapping
 

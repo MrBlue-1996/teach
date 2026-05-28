@@ -80,11 +80,10 @@ describe('StimulusRenderer', () => {
     expect(screen.getByRole('region', { name: /image stimulus/i })).toBeTruthy();
   });
 
-  it('returns null for unknown kind (exhaustive default)', () => {
-    // Force an unknown kind past TypeScript — the default arm must render nothing
+  it('throws for unknown kind forced past TypeScript', () => {
+    // Force an unknown kind past TypeScript — the default arm is a compile-time exhaustiveness guard.
     const s = { kind: 'unknown_kind' } as unknown as ChallengeStimulus;
-    const { container } = render(<StimulusRenderer stimulus={s} />);
-    expect(container.firstChild).toBeNull();
+    expect(() => render(<StimulusRenderer stimulus={s} />)).toThrow(/Unexpected stimulus kind/);
   });
 });
 

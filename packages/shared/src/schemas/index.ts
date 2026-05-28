@@ -41,7 +41,10 @@ export {
   roleIdSchema,
   difficultyLevelSchema,
   contentTagSchema,
+  sourceDataStatusSchema,
   challengeStimulusSchema,
+  kitchenImageManifestEntrySchema,
+  kitchenImageManifestSchema,
   minDeviceProfileSchema,
   surfaceVariantSchema,
   successCriteriaSchema,
@@ -64,6 +67,7 @@ export type {
   TeachingBlockSchema,
   ContentPackManifestSchema,
   ContentPackValidationResultSchema,
+  KitchenImageManifestSchema,
 } from './content.schema.js';
 
 // Policy schemas

@@ -62,10 +62,6 @@ bench-results/
 # Auto-generated
 next-env.d.ts
 package-lock.json
-.github/state/board.md
-.github/state/queue.md
-.github/state/decisions.md
-.github/state/blockers.md
 
 # Uploaded external patch bundles
 zip/

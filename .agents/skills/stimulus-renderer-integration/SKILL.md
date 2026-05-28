@@ -1,6 +1,6 @@
 ---
 name: stimulus-renderer-integration
-description: Wires the six challenge-stimulus renderers into surfaces that present teaching blocks or kitchen challenges. Use when adding a stimulus to a new surface, updating the discriminator router, adding exhaustive-switch tests, or extending the stimulus union. Triggers on requests like "wire stimulus into learn page", "render stimulus on block detail", "add a new stimulus kind", "test discriminator router", "stimulus does not appear in challenge surface". Do NOT use for authoring stimuli inside content-pack JSON — use `topshelf-content-pack-authoring` for that.
+description: Wires challenge-stimulus renderers into surfaces that present teaching blocks or kitchen challenges. Use when adding a stimulus to a new surface, updating the discriminator router, adding exhaustive-switch tests, or extending the stimulus union. Triggers on requests like "wire stimulus into learn page", "render stimulus on block detail", "add a new stimulus kind", "test discriminator router", "stimulus does not appear in challenge surface". Do NOT use for authoring stimuli inside content-pack JSON — use `topshelf-content-pack-authoring` for that.
 metadata:
   author: topshelf
   version: '0.1.0'
@@ -25,26 +25,28 @@ Out of scope:
 
 ## The contract
 
-The discriminated union is defined in [packages/shared/src/schemas/content.schema.ts](packages/shared/src/schemas/content.schema.ts) via `challengeStimulusSchema`. Six kinds, each `.strict()`:
+The discriminated union is defined in [packages/shared/src/schemas/content.schema.ts](packages/shared/src/schemas/content.schema.ts) via `challengeStimulusSchema`. Eight kinds, each `.strict()`:
 
-| `kind`          | Renderer component     | Required fields                  |
-| --------------- | ---------------------- | -------------------------------- |
-| `ticket`        | `TicketStimulus`       | `table`, `items[≥1]`             |
-| `station_state` | `StationStateStimulus` | `observations[≥1]`               |
-| `huddle_notes`  | `HuddleNotesStimulus`  | `notes[≥1]` (`label` + `detail`) |
-| `menu_board`    | `MenuBoardStimulus`    | none required                    |
-| `step_bank`     | `StepBankStimulus`     | `steps[≥2]`                      |
-| `plain_text`    | `PlainTextStimulus`    | `lines[≥1]`                      |
+| `kind`          | Renderer component     | Required fields                         |
+| --------------- | ---------------------- | --------------------------------------- |
+| `ticket`        | `TicketStimulus`       | `table`, `items[≥1]`                    |
+| `station_state` | `StationStateStimulus` | `observations[≥1]`                      |
+| `huddle_notes`  | `HuddleNotesStimulus`  | `notes[≥1]` (`label` + `detail`)        |
+| `menu_board`    | `MenuBoardStimulus`    | none required                           |
+| `step_bank`     | `StepBankStimulus`     | `steps[≥2]`                             |
+| `plain_text`    | `PlainTextStimulus`    | `lines[≥1]`                             |
+| `recipe`        | `RecipeStimulus`       | `title`, `ingredients[≥1]`, `steps[≥1]` |
+| `image`         | `ImageStimulus`        | `imageRef`, `altText`                   |
 
-The router is [apps/web/src/components/kitchen/stimuli/StimulusRenderer.tsx](apps/web/src/components/kitchen/stimuli/StimulusRenderer.tsx). The switch covers all six and returns `null` for `default`. Keep the `default` arm — TypeScript exhaustiveness should make it unreachable, but it is the safety net.
+The router is [apps/web/src/components/kitchen/stimuli/StimulusRenderer.tsx](apps/web/src/components/kitchen/stimuli/StimulusRenderer.tsx). The switch covers all eight and uses a `never` default guard so adding a new variant without a renderer fails typecheck.
 
 ## Surfaces that must render stimuli
 
-| Surface                                                              | Status                 |
-| -------------------------------------------------------------------- | ---------------------- |
-| `apps/web/src/app/kitchen/challenges/[slug]/page.tsx`                | wired                  |
-| `apps/web/src/app/(app)/learn/[courseId]/page.tsx` (teaching blocks) | **not wired — P2.2.2** |
-| Manager / instructor review surfaces (read-only block preview)       | not wired (future)     |
+| Surface                                                              | Status             |
+| -------------------------------------------------------------------- | ------------------ |
+| `apps/web/src/app/kitchen/challenges/[slug]/page.tsx`                | wired              |
+| `apps/web/src/app/(app)/learn/[courseId]/page.tsx` (teaching blocks) | wired              |
+| Manager / instructor review surfaces (read-only block preview)       | not wired (future) |
 
 When wiring a new surface:
 
@@ -55,7 +57,7 @@ When wiring a new surface:
 
 ## Adding a new stimulus kind
 
-If product asks for a 7th kind:
+If product asks for another kind:
 
 1. Add the Zod variant to `challengeStimulusSchema` in `packages/shared/src/schemas/content.schema.ts`. Use `.strict()`.
 2. Mirror the TS type in `packages/shared/src/types/`.

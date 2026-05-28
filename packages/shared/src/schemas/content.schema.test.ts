@@ -6,6 +6,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
+import kitchenImageManifest from '../../../../apps/web/public/kitchen/manifest.json';
 import {
   contentPackIdSchema,
   teachingBlockIdSchema,
@@ -14,6 +15,7 @@ import {
   difficultyLevelSchema,
   contentTagSchema,
   challengeStimulusSchema,
+  kitchenImageManifestSchema,
   minDeviceProfileSchema,
   surfaceVariantSchema,
   successCriteriaSchema,
@@ -251,6 +253,34 @@ describe('challengeStimulusSchema', () => {
     expect(result.success).toBe(true);
   });
 
+  it('accepts image variant', () => {
+    const result = challengeStimulusSchema.safeParse({
+      kind: 'image',
+      imageRef: 'EQ1-equipment/grill',
+      altText: 'Commercial grill at service temperature',
+      caption: 'Check the hot zone before service.',
+      focusRegions: [{ label: 'Hot zone', xPct: 10, yPct: 20, widthPct: 30, heightPct: 40 }],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects image variant without altText', () => {
+    const result = challengeStimulusSchema.safeParse({
+      kind: 'image',
+      imageRef: 'EQ1-equipment/grill',
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('rejects image variant with whitespace-only altText', () => {
+    const result = challengeStimulusSchema.safeParse({
+      kind: 'image',
+      imageRef: 'EQ1-equipment/grill',
+      altText: '    ',
+    });
+    expect(result.success).toBe(false);
+  });
+
   it('rejects ticket with empty items', () => {
     const result = challengeStimulusSchema.safeParse({
       kind: 'ticket',
@@ -264,6 +294,29 @@ describe('challengeStimulusSchema', () => {
     const result = challengeStimulusSchema.safeParse({
       kind: 'video',
       url: 'https://example.com',
+    });
+    expect(result.success).toBe(false);
+  });
+});
+
+describe('kitchenImageManifestSchema', () => {
+  it('validates the shipped kitchen image manifest', () => {
+    const result = kitchenImageManifestSchema.safeParse(kitchenImageManifest);
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects extension-based manifest keys', () => {
+    const result = kitchenImageManifestSchema.safeParse({
+      schemaVersion: '1.0.0',
+      entries: {
+        'EQ1-equipment/grill.webp': {
+          path: '/kitchen/_demo/EQ1-equipment/grill.svg',
+          altText: 'Commercial grill at service temperature',
+          sourceDataStatus: 'demo',
+          licenseRef: null,
+          tags: ['equipment'],
+        },
+      },
     });
     expect(result.success).toBe(false);
   });

@@ -68,6 +68,7 @@ Files touched by multiple agents. **Always check these before and after changes.
 **[2026-04-22]** Completed foundation sprint todos #2 and #3.
 
 **#2 — Migration validation (static analysis, no live DB required):**
+
 - `drizzle.config.ts` — points correctly to `./src/schema/index.ts` and `./drizzle` output dir; credentials loaded from root `.env` via `dotenv`.
 - All 3 migration files are well-formed and non-truncated.
 - Cross-check: all **21 tables** in `schema/index.ts` are covered by the migrations:
@@ -77,6 +78,7 @@ Files touched by multiple agents. **Always check these before and after changes.
 - No gaps found. Migrations are sequential and complete.
 
 **#3 — Seed script (`packages/database/scripts/seed.ts`):**
+
 - Rewrote existing stub into a full implementation.
 - Dynamically reads all non-template JSON from `content-packs/*.json` and all JSON from `content-packs/kitchen/*.json` via `readdirSync`.
 - Distinguishes pack types: regular packs have `teachingBlocks`; kitchen packs have `type` + `briefing` + `timeLimitSeconds`.
@@ -91,20 +93,27 @@ Files touched by multiple agents. **Always check these before and after changes.
 
 ### api-engineer
 
+- **[2026-05-26]** `api` `pedagogy` `internal-demo` Session start now seeds teaching mode through `PedagogyEngine.createContext` instead of persisting hardcoded L2. New/updated route tests cover new/low-mastery learner L4 tutorial start, existing non-novice L2 preservation, `recommendedMode` in teach responses, and fade after clean recent trials. Files: `packages/api-server/src/routes/learner.ts`, `packages/api-server/src/routes/learner.test.ts`. Verification: `pnpm --filter @topshelf/api-server test -- src/routes/learner.test.ts`, `pnpm --filter @topshelf/api-server typecheck`.
+
+- **[2026-05-25]** `api` `retention` Added direct HTTP route coverage for `GET /learner/retention/queue`. Files: `packages/api-server/src/routes/learner.test.ts`. Tests now pin empty-queue behavior, aggregation across multiple learner states, oldest-first due ordering, `nextDueAt`, and the retention-history-only query shape. Verification: rebuilt `@topshelf/engine` so API tests resolve current runtime exports, then `pnpm --filter @topshelf/api-server test -- src/routes/learner.test.ts` passed (312/312 due package-level Vitest matching).
+
 - **[2026-05-23]** `api` `auth` `contracts` Completed P1.2/P1.3 validation pass for walking skeleton auth/session isolation. Files: `packages/api-server/src/middleware/auth.test.ts`, `packages/api-server/src/routes/learner.test.ts`. Downstream: no API response or route contract changes; tests now pin custom JWT auth to an unrevoked, unexpired persisted session and verify one completed learner block is recorded only through the current user's active session/learner state.
 
 **[2026-04-25] Instructor routes**
 
 **Created `packages/api-server/src/routes/instructor.ts`:**
+
 - `GET /instructor/courses` — lists content packs authored by the requester with `enrolledCount` aggregate (count distinct learnerState.userId). Requires `instructor`, `school_admin`, `district_admin`, or `system_admin` role.
 - `GET /instructor/students?packId=<uuid>` — returns students across the instructor's packs with `lastSessionAt`, `totalSessions`, `masteryScore`, and resolved `displayName`. `packId` is optional UUID filter validated via Zod.
 
 **Schema discrepancies worked around:**
+
 - Task spec referred to `learnerStates.packId` — actual column is `contentPackId`.
 - Task spec referred to `learnerStates.currentMastery` — actual column is `overallMastery`.
 - `learningSessions` has no direct `packId`; joined via `learnerStateId`.
 
 **Wired into `packages/api-server/src/index.ts`:**
+
 - Added `import { createInstructorRoutes }` and `protectedApi.route('/instructor', createInstructorRoutes())`.
 
 **Typecheck:** clean ✓
@@ -112,17 +121,20 @@ Files touched by multiple agents. **Always check these before and after changes.
 **[2026-04-25] change-password endpoint + audit log infrastructure**
 
 **POST /auth/change-password:**
+
 - Added to `packages/api-server/src/routes/auth.ts` before `return router`.
 - Schema: `{ currentPassword: z.string().min(1), newPassword: z.string().min(8) }`.
 - Auth-gated via `authMiddleware()`. Verifies current password with `verifyPassword()`, validates strength with `validatePasswordStrength()`, hashes new password, updates `users.passwordHash + updatedAt`, revokes all active sessions for the user in a transaction.
 - Returns `{ message: 'Password changed successfully.' }`.
 
 **Audit log helper:**
+
 - Created `packages/api-server/src/lib/audit.ts` — exports `insertAuditLog(params: AuditParams)` (fire-and-forget safe).
 - Uses `auditLogs` table from `@topshelf/database` (already exported via `export * from './schema/index.js'`).
 - `AuditParams` optional fields typed as `string | undefined` to satisfy `exactOptionalPropertyTypes`.
 
 **Audit log calls wired into auth.ts (all fire-and-forget via `void`):**
+
 - `auth.login` — after successful login
 - `auth.register` — after successful register
 - `auth.logout` — inside try block after session revocation
@@ -131,21 +143,20 @@ Files touched by multiple agents. **Always check these before and after changes.
 
 **Typecheck:** clean ✓
 
-
-
 **Item 16 — `GET /metrics` endpoint:**
-- `packages/api-server/src/routes/metrics.ts` *(new)* — `createMetricsRoutes()` mounts `GET /` handler that calls `metrics.export()` from `@topshelf/observability` and returns Prometheus-format text with content-type `text/plain; version=0.0.4; charset=utf-8`.
-- `packages/api-server/src/routes/metrics.test.ts` *(new)* — 4 tests: returns 200, correct content-type, HELP/TYPE lines in body, no auth required. All 4 pass.
+
+- `packages/api-server/src/routes/metrics.ts` _(new)_ — `createMetricsRoutes()` mounts `GET /` handler that calls `metrics.export()` from `@topshelf/observability` and returns Prometheus-format text with content-type `text/plain; version=0.0.4; charset=utf-8`.
+- `packages/api-server/src/routes/metrics.test.ts` _(new)_ — 4 tests: returns 200, correct content-type, HELP/TYPE lines in body, no auth required. All 4 pass.
 - `packages/api-server/src/index.ts` — imported `createMetricsRoutes`, mounted at `api.route('/metrics', ...)` as a **public** route (no auth middleware).
 
 **Item 17 — `requestId` in route log calls:**
+
 - Audit of all route files (`packages/api-server/src/routes/*.ts`) found **zero** existing logger calls. The `no-change` rule ("only add requestId to existing log call objects") means there is nothing to modify. All log calls are in `index.ts` server startup code where there is no request context (`c`). No changes made.
 
 **Test results:** metrics tests 4/4 ✓ | api-server total 265 tests (261 pre-existing pass, 4 pre-existing `rate-limiter.test.ts` failures unrelated to this batch) | typecheck: clean ✓
 
-
-
 **Files fixed:**
+
 - `packages/api-server/src/routes/content.ts` — added `: Hono` return type to `createContentRoutes()`, fixed strict-boolean on nullable string (`certification !== undefined`), replaced all `||` with `??` for nullable string/number coalescing, added `: string` return type to inner `norm` arrow fn, removed unnecessary `?? 0` on non-nullable `blocksCompleted`.
 - `packages/api-server/src/routes/content.test.ts` — added `import { createMiddleware } from 'hono/factory'` at top, replaced `require('hono/factory')` with top-level import, added explicit return types to all mock factory functions (`getDatabase`, `eq`, `and`, `desc`, `asc`, `getConfig`, `requireRole`).
 - `packages/database/scripts/seed.ts` — removed `!= null` conditional on non-nullable `timeBudgetSeconds` (was `no-unnecessary-condition` + `eqeqeq` error), replaced with direct `timeBudgetSeconds: block.timeBudgetSeconds`.
@@ -157,6 +168,7 @@ Files touched by multiple agents. **Always check these before and after changes.
 **[2026-04-22T02:15]** Completed foundation sprint todos #5 and #6.
 
 **#5 — POST /content/packs (content pack creation):**
+
 - Added `CreatePackSchema` (slug regex-validated, version, title, optional description/certTarget/status/metadata).
 - Pre-insert conflict check via `findFirst` on `(slug, version)` — throws `ConflictError` (409) if pack already exists.
 - Returns 201 with the full created pack row via Drizzle `.returning()`.
@@ -164,20 +176,22 @@ Files touched by multiple agents. **Always check these before and after changes.
 - `content.test.ts`: added `insert` mock to `mockDb`, extended `contentPacks` mock with `slug`/`version` fields, added 4 test cases (201 create, 409 conflict, 400 invalid slug, 400 missing required fields).
 
 **#6 — Billing routes (`/billing`):**
+
 - `packages/config/src/index.ts` — added `BillingConfigSchema` (flat env-var-friendly: `stripeSecretKey`, `stripeWebhookSecret`, `trialDays`, `taxEnabled`, flat `priceIds` sub-object per tier/interval). Added `billing` to `AppConfigSchema` with `.default({})`. Wired all `STRIPE_*` env vars in the config loader.
 - `.env.example` — added `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_TRIAL_DAYS`, `STRIPE_TAX_ENABLED`, and all 8 `STRIPE_PRICE_*` vars with empty defaults.
 - `packages/api-server/package.json` — added `"@topshelf/billing": "workspace:*"`.
-- `packages/api-server/src/routes/billing.ts` *(new)* — `createBillingRoutes()` with 4 endpoints:
+- `packages/api-server/src/routes/billing.ts` _(new)_ — `createBillingRoutes()` with 4 endpoints:
   - `POST /billing/webhook` — **public** (no JWT), reads raw body via `c.req.text()`, verifies Stripe signature via `BillingService.constructWebhookEvent`, acknowledges known event types.
   - `POST /billing/checkout` — auth-gated via per-route `authMiddleware()`; Zod-validated body; calls `BillingService.createCheckoutSession`; returns `{ url, sessionId }`.
   - `GET /billing/portal` — auth-gated; looks up user → org → subscription.stripeCustomerId; calls `BillingService.createPortalSession`; returns `{ url }`.
   - `GET /billing/subscription` — auth-gated; looks up org subscription from DB; returns subscription shape or `{ subscription: null }`.
 - `packages/api-server/src/index.ts` — mounted `createBillingRoutes()` under `api.route('/billing', ...)` (outside `protectedApi`) so webhook bypasses global JWT middleware.
-- `packages/api-server/src/routes/billing.test.ts` *(new)* — 12 test cases covering checkout (valid, seats, bad plan, missing fields), portal (valid, no org, no sub, bad URL), subscription (active, no org, no sub), and webhook (missing sig, bad sig, valid).
+- `packages/api-server/src/routes/billing.test.ts` _(new)_ — 12 test cases covering checkout (valid, seats, bad plan, missing fields), portal (valid, no org, no sub, bad URL), subscription (active, no org, no sub), and webhook (missing sig, bad sig, valid).
 
 **Test results:** 261 tests passing (was 243 before this sprint). Typecheck clean.
 
 **What frontend-engineer needs to know:**
+
 - `POST /api/v1/billing/checkout` → `{ url, sessionId }` — redirect user to `url` for Stripe checkout.
 - `GET /api/v1/billing/portal?returnUrl=<url>` → `{ url }` — redirect user to `url` for billing portal.
 - `GET /api/v1/billing/subscription` → `{ subscription: { plan, interval, status, seats, usedSeats, currentPeriodStart, currentPeriodEnd, cancelAtPeriodEnd, trialEnd } | null }`.
@@ -186,7 +200,8 @@ Files touched by multiple agents. **Always check these before and after changes.
 **[2026-04-22T01:26]** Completed foundation sprint todo #4 — Redis-backed rate limiter.
 
 **Files changed:**
-- `packages/api-server/src/lib/redis-client.ts` *(new)* — lazy-initialized ioredis singleton; reads config from `@topshelf/config` (`redis.host/port/db/password/tls/keyPrefix`); exports `getRedisClient()` and `closeRedisClient()`; logs errors via `@topshelf/observability` `getLogger()`.
+
+- `packages/api-server/src/lib/redis-client.ts` _(new)_ — lazy-initialized ioredis singleton; reads config from `@topshelf/config` (`redis.host/port/db/password/tls/keyPrefix`); exports `getRedisClient()` and `closeRedisClient()`; logs errors via `@topshelf/observability` `getLogger()`.
 - `packages/api-server/src/middleware/rate-limiter.ts` — replaced in-memory Map with Redis INCR + PEXPIRE pattern; health-check bypass and userId-or-IP key logic preserved; fails open (allows request through + logs warning) if Redis is unreachable.
 - `packages/api-server/src/middleware/rate-limiter.test.ts` — added `vi.mock('../lib/redis-client.js')` with an in-memory Redis mock; `beforeEach` clears the mock store so tests are fully isolated.
 - `packages/api-server/src/index.ts` — `closeRedisClient()` called in the graceful shutdown handler before `disconnectDatabase()`.
@@ -199,15 +214,25 @@ Files touched by multiple agents. **Always check these before and after changes.
 
 ### engine-engineer
 
+- **[2026-05-26]** `engine` `pedagogy` `internal-demo` Confirmed existing `PedagogyEngine.createContext` precedence is the correct API for session-start seeding: explicit override, initial exposure to L4, block mode, then default. No trigger thresholds changed. Verification: `pnpm --filter @topshelf/engine test` passed.
+
 **[2026-05-22]** `parallel-sweep` `engine` `bench` Completed a broad multi-agent review across engine, test, quality, API, DB, frontend, infra, and content concerns. Consensus findings: L0 silent-mode now clears triggers before detection, which may be a contract change for direct engine consumers; benchmark fixtures and labels need tightening because mutable contexts can bleed between cases and one HELP_REQUESTED label is not actually driven by detectTriggers; missing regression tests remain for L0 fast-path call-skipping, exact size boundary, and large-asset keyword rejection. Files reviewed: `packages/engine/src/pedagogy-engine.ts`, `packages/engine/src/constraint-engine.ts`, `packages/engine/src/engine.bench.ts`, `packages/engine/src/engine.test.ts`. Downstream: engine/test owners should decide whether to preserve trigger telemetry in silent mode and add the missing fast-path tests before treating the benchmark numbers as fully locked.
 
 _No updates yet._
 
 ### test-engineer
 
+- **[2026-05-26]** `test` `internal-demo` Added focused coverage for the demo-readiness changes: `ReviewNowCard` healthy/watch/urgent/null-date rendering, retention-queue API client contract, session-start seed/fade API behavior, missing-stimulus warning vs release error, and neutral image-stimulus manifest path. Verification includes web, API, engine, shared, and content-authoring targeted suites.
+
+- **[2026-05-25]** `test` `stimulus-synthesis` Added heuristic and CLI coverage for the stimulus authoring pipeline. Files: `packages/content-authoring/src/heuristics/stimulus-synth.test.ts`, `packages/content-authoring/src/cli/synth-stimulus.test.ts`. Coverage now includes `menu_board`, `plain_text`, intentional image no-synthesis without `imageRef`, `--dry-run` non-mutation, `--write` mutation plus `_authorReview`, and recursive directory `--backfill`. Verification: `pnpm --filter @topshelf/content-authoring test -- stimulus-synth.test.ts synth-stimulus.test.ts` passed (72/72).
+
 - **[2026-05-23]** `test` `stimulus` `P2.2.1` Added exhaustive-switch and per-renderer render tests. Files: `apps/web/src/components/kitchen/stimuli/__tests__/stimulus-renderers.test.tsx`, `apps/web/vitest.config.ts` (added `@vitejs/plugin-react` plugin to enable automatic JSX transform in Vitest — renderer files don't import React directly, relying on Next.js transform). 20 tests added (7 exhaustive-switch, 13 per-renderer). All web tests pass: 211/211.
 
 ### frontend-engineer
+
+- **[2026-05-26]** `frontend` `retention` `pwa` `internal-demo` Extracted dashboard retention affordance into `ReviewNowCard` with minimal props (`affordance`, `href`, optional `className`), preserving healthy omission, watch/urgent styling, and `Open review` copy. Added client test for `learnerApi.getRetentionQueue()`. PWA/mobile fixes include icon precache, fixed theme color, accessible `/kitchen` main target, normal viewport scaling, improved contrast/touch target issues, and quick-action link markup cleanup. Files: `apps/web/src/components/dashboard/ReviewNowCard.tsx`, `apps/web/src/components/dashboard/ReviewNowCard.test.tsx`, `apps/web/src/app/(app)/dashboard/page.tsx`, `apps/web/src/lib/api/learner.test.ts`, `apps/web/public/sw.js`, `apps/web/src/app/layout.tsx`, `apps/web/src/app/kitchen/**`. Verification: web tests/typecheck/build, phone e2e, Lighthouse/viewport/service-worker smoke recorded in `docs/validation/pwa-2026-05-26.md`.
+
+- **[2026-05-26]** `frontend` `api` `pedagogy` `P3.1-followup` Multi-agent review (frontend/engine/api/db/test/quality/infra/content/coordinator) drove a HIGH+MED fix pass. **Server (`packages/api-server/src/routes/learner.ts`)**: seed `TriggerType.HELP_REQUESTED` into `teachingContext.triggers` when a `hint_used` event carries `responseData.helpRequested|helpUsed=true` so L1_MINIMAL learners get `shouldTeach=true`; merge with `detectTriggers` output before `suggestModeElevation`. Retention scheduler also treats prior `hint_used` events in the session as help-aided when client doesn't set `helpUsed` on the `completed` event (defense against client trust gap flagged by quality-reviewer). Tightened `ProgressEventSchema` with `ProgressResponseDataSchema` (helpRequested/helpUsed booleans, `source: 'help_button'|'stuck_timer'`). Two new tests pin the seeding (positive + negative). **Client (`apps/web/src/app/(app)/learn/[courseId]/page.tsx`)**: `STUCK_PROMPT_SECONDS` replaced with `stuckPromptSeconds(estimatedTimeMinutes)` scaling to 40% of block budget (min 180s) — fixes the 15%-of-thinking-time interruption flagged by content-engineer on UJ blocks. Stuck timer gated on `blockAttempts > 0` (requires actual struggle, matches engine STUCK_DETECTED contract). `handleShowHint` + `requestGuidance` wrapped in `useCallback` (stable effect deps). `applyFallback` helper extracted from try/catch duplication. `blockHelpUsedRef` tracks help-used per block and propagates `helpUsed:true` onto the `completed` event for Leitner scheduler. Guidance container gains `role="status" aria-live="polite"`. Attempt badge starts at 1 (not 2), timer moved to `aria-hidden` outside live region. Breakdown panel switched from destructive→warning tokens (breakdown is supportive, not error). All action buttons `size="lg"` (44px touch targets per CLAUDE.md). `handleRetry` now clears guidance. Tests: web 226/226, api-server 318/318 (+2 new), typecheck+lint clean. Tracker P3.1.1-3 → done. Downstream: engine-engineer should evaluate exposing `TriggerThresholds` via block payload so client stops hardcoding (deferred — large refactor).
 
 - **[2026-05-25]** `frontend` `pedagogy` `P3.1` Wired client-side trigger UI on `apps/web/src/app/(app)/learn/[courseId]/page.tsx`. **P3.1.1 stuck_time**: per-block timer + auto-fire at 180s (`STUCK_PROMPT_SECONDS`) when no guidance shown and not submitted; one-shot via `stuckPromptFiredRef`. **P3.1.2 repeated_errors**: `blockAttempts` counter (reset per block) increments on incorrect submit; after ≥2, `requestGuidance` returns `kind: 'breakdown'` (destructive-tinted panel, forces explanation visible). Attempt counter rendered above action buttons with `aria-live="polite"`. **P3.1.3 help_requested**: existing hint button renamed to "I need help"; `handleShowHint` tags `responseData: { helpRequested: true, source: 'help_button' | 'stuck_timer' }` so the server retention scheduler treats the trial as help-aided. Tests: 221/221 web pass, typecheck + lint clean. Downstream: api-server already accepts `responseData.helpRequested` (line 521 of `learner.ts`); no API/contract change needed. Server-side detectTriggers does NOT currently seed HELP_REQUESTED from this flag — future improvement to push it onto `teachingContext.triggers` before elevation if behavior gap shows up in pilot.
 
@@ -221,11 +246,15 @@ _No updates yet._
 
 ### content-engineer
 
+- **[2026-05-26]** `content` `stimulus` `internal-demo` Cleaned stimulus/content contracts for the 8-kind system. `stimulus-synthesis-from-prompts` now documents recursive `--backfill <dir>` behavior and no glob support; content authoring docs clarify missing-stimulus findings warn for demo/internal packs and error for release-mode packs. Validator implements that policy and tests keep image release checks strict: missing manifest image fails, release demo image fails, release authorized image passes. Files: `.agents/skills/stimulus-synthesis-from-prompts/SKILL.md`, `.agents/skills/topshelf-content-pack-authoring/SKILL.md`, `packages/content-authoring/src/validation/content-validator.ts`, `packages/content-authoring/src/index.test.ts`.
+
 _No updates yet._
 
 - **[2026-05-23]** `content` `uj` `validation` Completed X1 content gate audit. No local v0.1.2 Uncle Julio's source artifact/branch was found; current teaching manifest remains `content-packs/content_pack_uncle_julios_v1.json` at `version: "0.1.1"` and the only local UJ source artifact is `zip/uj-pack-v0.1` with `version: "0.1.0"`. Added a unit regression that keeps the six shipped UJ kitchen challenge files registered consistently by filename, slug, id, and recipe linkage. Files changed: `packages/tests/src/unit/content-pack-json-validation.test.ts`, `.github/state/blockers.md`. Downstream: coordinator must provide authorized v0.1.2 source before content-engineer can apply pack updates; current UJ manifests validate cleanly.
 
 ### infra-engineer
+
+- **[2026-05-26]** `infra` `pwa` `internal-demo` Ran local production PWA/mobile validation for `/kitchen`. Evidence recorded in `docs/validation/pwa-2026-05-26.md`: `pnpm --filter @topshelf/web build` passed, production server served `/kitchen`, Lighthouse 12 mobile scored 99 performance / 100 accessibility / 100 best practices, service-worker cache smoke confirmed controlled client plus `/kitchen` and `/offline` cached with no private/API paths cached, viewport smoke passed at 320, 375, 768, and 1366x768, and Pixel 7 phone e2e passed 2/2. Remaining blocker: real-device install prompt requires deployed HTTPS URL or tunnel.
 
 - **[2026-05-23]** `infra` `deploy` P1.5.1 deploy checklist at `docs/deploy-checklist.md`. Blocker filed for Patrick to execute.
 - **[2026-05-23]** `infra` `demo-ops` Completed P5.5 runbook and tracker gate support. Files: `RUNBOOK.md`, `docs/decisions/sun-holdings-auth-decision.md`, `package.json`. Downstream: demo ops gate is `pnpm run demo:ops:check`; Sun Holdings/UJ authorization remains pending and must block any real external pilot/onboarding.
@@ -233,10 +262,12 @@ _No updates yet._
 **[2026-04-22]** `infra` Completed todos #1 and #7 from the foundation sprint.
 
 **#1 — Docker dev stack hardened:**
+
 - `infrastructure/docker/init-db.sql` — removed `CREATE DATABASE topshelf` and `CREATE USER topshelf` which conflicted with `POSTGRES_DB`/`POSTGRES_USER` Docker env vars (would fail on first-run in PG 15+). Script now only handles schema grants and default privilege grants that the env-var path doesn't apply.
 - `infrastructure/docker/docker-compose.yml` — Redis service was missing a host port binding. Added `${REDIS_PORT:-6379}:6379` so the API server running on the host via `pnpm dev` can reach Redis at `localhost:6379`. All three services (postgres, redis, api) have health checks; postgres and redis expose ports to the host; volumes are named.
 
 **#7 — Email config vars added:**
+
 - `packages/config/src/index.ts` — added `EmailConfigSchema` (provider: sendgrid|smtp, sendgridApiKey, smtp.{host,port,user,pass}, fromAddress) and wired it into `AppConfigSchema` and the `rawConfig` loader via `EMAIL_PROVIDER`, `SENDGRID_API_KEY`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `EMAIL_FROM_ADDRESS`. Typechecks clean.
 - `.env.example` — added `# EMAIL` section with all six vars and placeholder values.
 
@@ -263,15 +294,15 @@ _No updates yet._
 
 **Result: ✅ Config is correct. Both packages have dev scripts, Turbo runs them in parallel.**
 
-| Check | Status | Detail |
-|---|---|---|
-| `packages/api-server` has `dev` script | ✅ | `"dev": "tsx watch src/index.ts"` — hot-reloads Hono on port 3000 |
-| `apps/web` has `dev` script | ✅ | `"dev": "next dev -p 3001"` — Next.js on port 3001 |
-| Root `pnpm dev` calls Turbo | ✅ | `"dev": "turbo run dev --filter=!@topshelf/tests"` |
-| Turbo `dev` task is persistent and parallel | ✅ | `"persistent": true`, `"dependsOn": ["^build"]` in `turbo.json` |
-| Port conflict between API and web | ✅ None | API=3000, Web=3001 |
-| Web `NEXT_PUBLIC_API_URL` has a fallback | ✅ | `|| 'http://localhost:3000/api/v1'` hardcoded in `client.ts` |
-| Root `.env.example` covers all required vars | ✅ | All vars documented; `DB_*`, `JWT_SECRET`, `SESSION_SECRET` have placeholder values |
+| Check                                        | Status  | Detail                                                                              |
+| -------------------------------------------- | ------- | ----------------------------------------------------------------------------------- | --- | ------------------------------------------------------ |
+| `packages/api-server` has `dev` script       | ✅      | `"dev": "tsx watch src/index.ts"` — hot-reloads Hono on port 3000                   |
+| `apps/web` has `dev` script                  | ✅      | `"dev": "next dev -p 3001"` — Next.js on port 3001                                  |
+| Root `pnpm dev` calls Turbo                  | ✅      | `"dev": "turbo run dev --filter=!@topshelf/tests"`                                  |
+| Turbo `dev` task is persistent and parallel  | ✅      | `"persistent": true`, `"dependsOn": ["^build"]` in `turbo.json`                     |
+| Port conflict between API and web            | ✅ None | API=3000, Web=3001                                                                  |
+| Web `NEXT_PUBLIC_API_URL` has a fallback     | ✅      | `                                                                                   |     | 'http://localhost:3000/api/v1'`hardcoded in`client.ts` |
+| Root `.env.example` covers all required vars | ✅      | All vars documented; `DB_*`, `JWT_SECRET`, `SESSION_SECRET` have placeholder values |
 
 **⚠️ One misconfiguration found:** `apps/web/.env.example` has `NEXT_PUBLIC_SUPABASE_URL=` and `NEXT_PUBLIC_SUPABASE_ANON_KEY=` left **blank**. The auth login page will throw `"Missing Supabase environment variables"` at runtime if these are not set. A dev following only the root `.env.example` will miss this because `apps/web/.env.example` is separate and not linked from the root. Added blocker to `blockers.md`.
 
@@ -281,50 +312,51 @@ _No updates yet._
 
 **Phase 0: Pre-Pilot Preparation — Infrastructure**
 
-| Checklist Item | Status | Evidence |
-|---|---|---|
-| MCP server deployed to staging | ❌ MISSING | `implementations/mcp-server/` is a prototype only; no deployment or Docker config |
-| Database provisioned and configured | ✅ DONE | Drizzle migrations (3 files, 21 tables), `docker-compose.yml` postgres service with health check |
-| KMS/HSM keys generated and secured | ❌ MISSING | `content-signer.ts` explicitly notes "In production, use actual cryptographic signing with KMS/HSM" — current impl is HMAC-SHA256 placeholder |
-| CDN configured for content pack delivery | ❌ MISSING | No CDN config exists; `STORAGE_PROVIDER` supports S3 but no CDN layer |
-| Monitoring and alerting configured | ⚠️ PARTIAL | Prometheus `GET /metrics` endpoint exists; no alerting rules or dashboards defined |
-| Backup and recovery procedures tested | ❌ MISSING | No backup scripts; `docs/incident_runbooks.md` exists but is a template |
+| Checklist Item                           | Status     | Evidence                                                                                                                                      |
+| ---------------------------------------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| MCP server deployed to staging           | ❌ MISSING | `implementations/mcp-server/` is a prototype only; no deployment or Docker config                                                             |
+| Database provisioned and configured      | ✅ DONE    | Drizzle migrations (3 files, 21 tables), `docker-compose.yml` postgres service with health check                                              |
+| KMS/HSM keys generated and secured       | ❌ MISSING | `content-signer.ts` explicitly notes "In production, use actual cryptographic signing with KMS/HSM" — current impl is HMAC-SHA256 placeholder |
+| CDN configured for content pack delivery | ❌ MISSING | No CDN config exists; `STORAGE_PROVIDER` supports S3 but no CDN layer                                                                         |
+| Monitoring and alerting configured       | ⚠️ PARTIAL | Prometheus `GET /metrics` endpoint exists; no alerting rules or dashboards defined                                                            |
+| Backup and recovery procedures tested    | ❌ MISSING | No backup scripts; `docs/incident_runbooks.md` exists but is a template                                                                       |
 
 **Phase 0: Pre-Pilot Preparation — Content**
 
-| Checklist Item | Status | Evidence |
-|---|---|---|
-| Minimum 3 content packs validated and signed | ⚠️ PARTIAL | 2 regular packs + 8 kitchen packs exist; all signatures are `"sig-v1-ECDSA-P256-SHA256-placeholder"` (not real crypto) |
-| All teaching blocks have 2+ surface variants | ⚠️ PARTIAL | `CONTENT_PACK_CONSTRAINTS.minSurfaceVariants = 2` enforced in schema; packs exist but surface variant compliance unverified |
-| Parity tests passing for all content | ⚠️ PARTIAL | `packages/deterministic-formatter` + `ParityTestRunner` implemented; CI `ci-parity-playwright.yml` exists; placeholder signatures may affect parity |
-| Role mappings configured for target badges | ✅ DONE | `governance/policies/promotion_policy_config.json` has `employerRequirements.requiredBadges` |
-| Content review completed by SME | ❌ MISSING | Human/process task; no evidence in repo |
+| Checklist Item                               | Status     | Evidence                                                                                                                                            |
+| -------------------------------------------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Minimum 3 content packs validated and signed | ⚠️ PARTIAL | 2 regular packs + 8 kitchen packs exist; all signatures are `"sig-v1-ECDSA-P256-SHA256-placeholder"` (not real crypto)                              |
+| All teaching blocks have 2+ surface variants | ⚠️ PARTIAL | `CONTENT_PACK_CONSTRAINTS.minSurfaceVariants = 2` enforced in schema; packs exist but surface variant compliance unverified                         |
+| Parity tests passing for all content         | ⚠️ PARTIAL | `packages/deterministic-formatter` + `ParityTestRunner` implemented; CI `ci-parity-playwright.yml` exists; placeholder signatures may affect parity |
+| Role mappings configured for target badges   | ✅ DONE    | `governance/policies/promotion_policy_config.json` has `employerRequirements.requiredBadges`                                                        |
+| Content review completed by SME              | ❌ MISSING | Human/process task; no evidence in repo                                                                                                             |
 
 **Phase 0: Pre-Pilot Preparation — Platform**
 
-| Checklist Item | Status | Evidence |
-|---|---|---|
-| Policy configuration reviewed and approved | ⚠️ PARTIAL | `governance/policies/promotion_policy_config.json` exists with structured thresholds; no formal approval record |
+| Checklist Item                                   | Status     | Evidence                                                                                                                   |
+| ------------------------------------------------ | ---------- | -------------------------------------------------------------------------------------------------------------------------- |
+| Policy configuration reviewed and approved       | ⚠️ PARTIAL | `governance/policies/promotion_policy_config.json` exists with structured thresholds; no formal approval record            |
 | Promotion thresholds calibrated for pilot cohort | ⚠️ PARTIAL | Thresholds present (defaults from design: `transferThreshold: 0.75`, `consecutivePasses: 3`); not calibrated on pilot data |
-| Calibration probe tested across device matrix | ❌ MISSING | `CALIBRATION_CONFIG` schema in `@topshelf/shared` exists; no cross-device test evidence |
-| Offline mode tested on baseline devices | ❌ MISSING | `FEATURE_OFFLINE_MODE=true` in `.env.example` but no service worker in `apps/web/`; offline is marketing copy only |
-| Service worker caching verified | ❌ MISSING | No service worker files in `apps/web/`; no PWA manifest |
+| Calibration probe tested across device matrix    | ❌ MISSING | `CALIBRATION_CONFIG` schema in `@topshelf/shared` exists; no cross-device test evidence                                    |
+| Offline mode tested on baseline devices          | ❌ MISSING | `FEATURE_OFFLINE_MODE=true` in `.env.example` but no service worker in `apps/web/`; offline is marketing copy only         |
+| Service worker caching verified                  | ❌ MISSING | No service worker files in `apps/web/`; no PWA manifest                                                                    |
 
 **Phase 0: Pre-Pilot Preparation — Security**
 
-| Checklist Item | Status | Evidence |
-|---|---|---|
-| Security audit completed | ❌ MISSING | No audit report found |
-| Penetration testing performed | ❌ MISSING | No evidence |
+| Checklist Item                     | Status     | Evidence                                                                                                                                           |
+| ---------------------------------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Security audit completed           | ❌ MISSING | No audit report found                                                                                                                              |
+| Penetration testing performed      | ❌ MISSING | No evidence                                                                                                                                        |
 | PII handling reviewed and approved | ⚠️ PARTIAL | `LOG_REDACT_PII=true`, `data_export_requests` GDPR table exists, Privacy Policy at `governance/legal/PRIVACY_POLICY.md`; no formal approval record |
-| Audit logging verified | ⚠️ PARTIAL | `audit_logs` table defined in schema and migrations; no API route or service actively writes to it |
-| Rate limiting configured | ✅ DONE | Redis-backed rate limiter in `packages/api-server/src/middleware/rate-limiter.ts`; configurable via `RATE_LIMIT_*` env vars |
+| Audit logging verified             | ⚠️ PARTIAL | `audit_logs` table defined in schema and migrations; no API route or service actively writes to it                                                 |
+| Rate limiting configured           | ✅ DONE    | Redis-backed rate limiter in `packages/api-server/src/middleware/rate-limiter.ts`; configurable via `RATE_LIMIT_*` env vars                        |
 
 **Phase 1 & 2 items** — all operational/human tasks; no code to audit. Skipped.
 
 **Summary counts:** ✅ DONE: 5 | ⚠️ PARTIAL: 9 | ❌ MISSING: 10
 
 **Critical items blocking pilot launch (added to `blockers.md`):**
+
 1. Supabase env vars blank in `apps/web/.env.example` — local dev auth broken
 2. Content pack signing uses placeholder HMAC, not real KMS/ECDSA — pilot content is not cryptographically signed
 3. Offline mode (`FEATURE_OFFLINE_MODE=true`) has zero implementation — no service worker
@@ -332,18 +364,20 @@ _No updates yet._
 
 ### quality-reviewer
 
+- **[2026-05-26]** `quality` `internal-demo` Read-only final audit queued after implementation gates. Current known residual risks: real-device PWA install prompt not verified without HTTPS/tunnel; dashboard review CTA intentionally targets the active pack until task-to-pack routing exists; retention remains JSON-backed for internal demo. No release-image guard regression observed in targeted tests.
+
 - **[2026-05-23]** `quality-gate` `P1` Completed: Static review of Batch A P1 items. SW logic and manifest icons PASS. Auth middleware tests PASS (persisted-session checks, revocation, expiry). Learner route session isolation tests PASS (cross-user 404 guards present). Kitchen home + stimuli PASS. ONE HIGH blocker: service worker `PRIVATE_OR_DYNAMIC_PREFIXES` is missing nine protected `(app)` route prefixes (`/learn`, `/content`, `/analytics`, `/achievements`, `/onboarding`, `/ingredients`, `/library`, `/machines`, `/manager`, `/notifications`, `/tools`). A navigation to any of these while offline would cache the auth-gated response (or the login redirect) under that URL key. Type-check and build results unavailable (Bash permission denied); those must be confirmed before P2 dispatch. Files reviewed: `apps/web/public/sw.js`, `apps/web/public/manifest.json`, `apps/web/src/app/layout.tsx`, `apps/web/src/app/offline/page.tsx`, `apps/web/src/components/providers/pwa-registrar.tsx`, `packages/api-server/src/middleware/auth.test.ts`, `packages/api-server/src/routes/learner.test.ts`, `apps/web/src/lib/kitchen-packs.ts`, `apps/web/src/lib/kitchen-stimuli.ts`, `apps/web/src/app/kitchen/page.tsx`, `apps/web/src/app/kitchen/recipes/page.tsx`, `apps/web/src/app/kitchen/preview/page.tsx`. Downstream: frontend-engineer must patch `PRIVATE_OR_DYNAMIC_PREFIXES` in `sw.js` before Batch B; coordinator must confirm typecheck + build green before P2 dispatch.
 
-| # | Severity | File | Finding | Recommendation |
-|---|----------|------|---------|----------------|
-| 1 | HIGH | `apps/web/public/sw.js` | `PRIVATE_OR_DYNAMIC_PREFIXES` missing `/learn`, `/content`, `/analytics`, `/achievements`, `/onboarding`, `/ingredients`, `/library`, `/machines`, `/manager`, `/notifications`, `/tools` — all are `(app)` auth-protected routes | Add all nine prefixes before Batch B; a failed nav to these offline will cache the 401/redirect response at that URL key |
-| 2 | MEDIUM | `apps/web/src/components/providers/pwa-registrar.tsx` | SW registration is gated to `NODE_ENV === 'production'` — SW cannot be exercised in local dev or Vitest at all | Acceptable for v0.1.x if demo runs in prod; document as known limitation in RUNBOOK |
-| 3 | MEDIUM | `apps/web/public/manifest.json` | `apple-touch-icon.png` referenced in `layout.tsx` metadata (180×180) is present in `icons/` directory but absent from `manifest.json` icons array — iOS add-to-home-screen will miss it in non-Safari browsers that rely on the manifest | Add `{ src: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" }` to manifest `icons` |
-| 4 | MEDIUM | N/A | Typecheck and test run results unavailable due to Bash permission gate; cannot confirm `pnpm --filter @topshelf/web typecheck`, `pnpm --filter @topshelf/api-server typecheck`, `pnpm --filter @topshelf/web test`, or `pnpm --filter @topshelf/api-server test` pass | Coordinator or frontend-engineer must run and confirm before P2 dispatch |
-| 5 | LOW | `packages/api-server/src/routes/learner.test.ts` | Session isolation tests mock `findFirst` returning `null` (simulates DB-level user filter) but the test label says "not owned by current user" — the actual isolation is verified only at the mock boundary, not through a real userId filter assertion | Acceptable at unit level; integration test with two real users would be stronger |
-| 6 | LOW | `apps/web/src/lib/kitchen-packs.ts` | 14 packs registered (8 generic + 6 UJ) vs 8 packs seeded by db-engineer seed script for generic kitchen; UJ pack slugs differ between registry and seed (`uj-fajita-rush` vs `pack.slug` in seed) — may cause 404s if API is queried by slug at runtime | Static bundle path is fine for v0.1.x; flag for P2 API integration pass |
-| 7 | INFO | `apps/web/public/sw.js` | Precache of `/kitchen` will attempt to cache the page at install time; if the kitchen page requires client-side auth check on load, a cached unauthenticated shell is harmless but could be confusing | Acceptable; offline page copy is just the app shell |
-| 8 | INFO | `apps/web/src/app/offline/page.tsx` | No network fetches — pure static render. `Link` to `/kitchen` satisfies offline fallback requirement | PASS |
+| #   | Severity | File                                                  | Finding                                                                                                                                                                                                                                                               | Recommendation                                                                                                           |
+| --- | -------- | ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| 1   | HIGH     | `apps/web/public/sw.js`                               | `PRIVATE_OR_DYNAMIC_PREFIXES` missing `/learn`, `/content`, `/analytics`, `/achievements`, `/onboarding`, `/ingredients`, `/library`, `/machines`, `/manager`, `/notifications`, `/tools` — all are `(app)` auth-protected routes                                     | Add all nine prefixes before Batch B; a failed nav to these offline will cache the 401/redirect response at that URL key |
+| 2   | MEDIUM   | `apps/web/src/components/providers/pwa-registrar.tsx` | SW registration is gated to `NODE_ENV === 'production'` — SW cannot be exercised in local dev or Vitest at all                                                                                                                                                        | Acceptable for v0.1.x if demo runs in prod; document as known limitation in RUNBOOK                                      |
+| 3   | MEDIUM   | `apps/web/public/manifest.json`                       | `apple-touch-icon.png` referenced in `layout.tsx` metadata (180×180) is present in `icons/` directory but absent from `manifest.json` icons array — iOS add-to-home-screen will miss it in non-Safari browsers that rely on the manifest                              | Add `{ src: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" }` to manifest `icons`                    |
+| 4   | MEDIUM   | N/A                                                   | Typecheck and test run results unavailable due to Bash permission gate; cannot confirm `pnpm --filter @topshelf/web typecheck`, `pnpm --filter @topshelf/api-server typecheck`, `pnpm --filter @topshelf/web test`, or `pnpm --filter @topshelf/api-server test` pass | Coordinator or frontend-engineer must run and confirm before P2 dispatch                                                 |
+| 5   | LOW      | `packages/api-server/src/routes/learner.test.ts`      | Session isolation tests mock `findFirst` returning `null` (simulates DB-level user filter) but the test label says "not owned by current user" — the actual isolation is verified only at the mock boundary, not through a real userId filter assertion               | Acceptable at unit level; integration test with two real users would be stronger                                         |
+| 6   | LOW      | `apps/web/src/lib/kitchen-packs.ts`                   | 14 packs registered (8 generic + 6 UJ) vs 8 packs seeded by db-engineer seed script for generic kitchen; UJ pack slugs differ between registry and seed (`uj-fajita-rush` vs `pack.slug` in seed) — may cause 404s if API is queried by slug at runtime               | Static bundle path is fine for v0.1.x; flag for P2 API integration pass                                                  |
+| 7   | INFO     | `apps/web/public/sw.js`                               | Precache of `/kitchen` will attempt to cache the page at install time; if the kitchen page requires client-side auth check on load, a cached unauthenticated shell is harmless but could be confusing                                                                 | Acceptable; offline page copy is just the app shell                                                                      |
+| 8   | INFO     | `apps/web/src/app/offline/page.tsx`                   | No network fetches — pure static render. `Link` to `/kitchen` satisfies offline fallback requirement                                                                                                                                                                  | PASS                                                                                                                     |
 
 - **[2026-05-22]** `parallel-protocol` `engine` `bench` Completed: Ran parallel agent sweep (`engine-engineer`, `test-engineer`, `quality-reviewer`) on benchmark-related engine changes. Findings converged on one high-risk contract concern (L0 silent-mode trigger telemetry/state now cleared before detection) and test gaps for new fast paths/regex checks. Files reviewed: `packages/engine/src/pedagogy-engine.ts`, `packages/engine/src/constraint-engine.ts`, `packages/engine/src/engine.test.ts`, `packages/engine/src/engine.bench.ts`. Downstream: engine/test owners should decide whether L0 trigger clearing is intentional contract change and add regression tests for no-call fast paths.
 
@@ -351,6 +385,10 @@ _No updates yet._
 
 ### coordinator
 
+- **[2026-05-26]** `coordinator` `internal-demo` Implemented the internal demo readiness plan across dashboard retention UX, PWA/mobile evidence, worked-example session seeding, stimulus/content contract cleanup, and agent state reconciliation. Evidence is recorded in `.agents/progress.md`, `.github/state/queue.md`, `.github/state/decisions.md`, `.github/state/blockers.md`, and `docs/validation/pwa-2026-05-26.md`. Final gates passed: targeted package checks, `pnpm run workflow:lint`, `git diff --check`, and `pnpm validate`.
+
 - **[2026-05-23]** `pedagogy` `stimulus` `implementation` Batches D + E shipped in a single execution round. Final counts: engine 87/87 tests, api-server 310/310, shared 354/354, content-authoring 62/62, web 221/221. Workspace typecheck + build green. **D1 worked-example-first**: `TeachingContext.initialExposure`, `CreateContextOptions` precedence (override > initialExposure → L4 > blockMode > default), `TriggerDetector.suggestModeFade` (3-pass fade window, L1 floor), `learnerApi.getTeachingGuidance` returns `recommendedMode` driven by recent-event fade derivation. **D2 spaced retrieval**: `retention-scheduler.ts` with Leitner ladder 1/3/7/14/30/60/120d, `GET /learner/retention/queue` aggregating across packs, `recordEvent` advances/resets per-task stage; dashboard "Review now" card rendered via existing `computeDecayAffordance`. **D3 trigger-noise fix**: STUCK_DETECTED now requires `errorsEncountered > 0`; per-block `triggerRules` honored via new `TriggerThresholds` context field; TIME_THRESHOLD documented as non-severe. **E1 recipe stimulus**: added `RecipeStimulus` + `recipeStimulusSchema`, renderer wired into router + learn-page type guard. **E2 image stimulus + asset pipeline**: added `ImageStimulus` + `imageStimulusSchema` with focusRegions + altText guard, `apps/web/public/kitchen/manifest.json` cataloging 35 placeholders, 35 demo SVGs generated under `_demo/` with TS branding + "Demo" badge, `kitchen-image-manifest.ts` resolver. **E3 stimulus synthesis**: heuristic library + `synth-stimulus` CLI (`--dry-run` / `--write` / `--backfill`), 10 heuristic tests, every draft validates against `challengeStimulusSchema`. Skill files referenced throughout: `worked-example-fading`, `spaced-retrieval-scheduler`, `image-stimulus-asset-pipeline`, `stimulus-synthesis-from-prompts`. Open items: B-IMG-01 (licensed image swap, demo SVGs cover ship); UJ pack stimulus backfill via E3 CLI (held for Patrick review). Batch C (P3) now unblocked.
 
 - **[2026-05-23]** `pedagogy` `stimulus` Planning batch: ran a web-research audit comparing the TopShelf teaching strategy (Solve First, L0–L4 modes, multi-signal mastery promotion, kitchen stimuli) against 2024–2025 instructional-science literature (expertise reversal effect, spaced retrieval, intervention timing, situated learning). Three high-priority gaps identified: (1) novices start at L2 instead of L4 worked-example — contradicts cognitive load theory for first exposure; (2) mastery decay is modeled but no scheduler populates the retention queue, leaving the most-replicated learning enhancement (spaced retrieval) unused; (3) `TIME_THRESHOLD` + `STUCK_DETECTED` co-fire after 5 min regardless of error history, interrupting productive struggle. Two stimulus-completeness gaps: no `recipe` or `image` kind in the discriminated union despite `RecipeCard` component and 30+ placeholder webp's under `apps/web/public/kitchen/`; no authoring CLI to draft stimuli from existing Q/R block fields. Updated `.github/state/queue.md` with Batches D (pedagogy correctness), E (stimulus completeness), F (interleaving + metacognition, deferred). Authored 4 new skill files: `worked-example-fading`, `spaced-retrieval-scheduler`, `image-stimulus-asset-pipeline`, `stimulus-synthesis-from-prompts`. E2 ships demo-SVG placeholders so image-stimulus infrastructure lands without waiting on licensed assets (B-IMG-01 reframed as future swap, not blocker). Downstream: engine-engineer owns D1+D3 first; db-engineer + api-engineer own D2; content-engineer + frontend-engineer own E1/E2/E3 in parallel after D1 lands.
+
+- **[2026-05-25]** `coordinator` `protocol` `agents` Completed combined `.agents` + `.github/agents` audit and low-conflict protocol repair. Files changed: `.agents/progress.md`, `.github/state/queue.md`, `.github/state/blockers.md`, `.github/state/decisions.md`, `.github/workflows/ci.yml`, `.github/checklists/TODO_PHASE_1.md`, `.agents/skills/stimulus-renderer-integration/SKILL.md`, `.agents/skills/topshelf-content-pack-authoring/SKILL.md`, `.agents/skills/top-shelf-ui/SKILL.md`, `.agents/evals/image-stimulus-asset-pipeline/tasks/*.yaml`, `docs/validation/pwa-2026-05-25.md`. Downstream: agents should read `.agents/progress.md` for the latest cross-system status; the blackboard files expected by `agent-comms.instructions.md` now exist; Markdown/protocol changes now trigger primary CI instead of being ignored.

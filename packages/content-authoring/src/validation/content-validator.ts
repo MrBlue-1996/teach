@@ -8,8 +8,10 @@
 import { ParityValidator, type LLMFormattedOutput } from '@topshelf/deterministic-formatter';
 import {
   contentPackManifestSchema,
+  kitchenImageManifestSchema,
   type ContentPackManifest,
   type ContentPackValidationResult,
+  type KitchenImageManifestSchema,
   type ValidationError,
   type ValidationWarning,
 } from '@topshelf/shared';
@@ -28,6 +30,8 @@ export interface ValidationOptions {
   readonly strict?: boolean;
   /** Source file path used for filename-to-id consistency checks */
   readonly sourcePath?: string;
+  /** Kitchen image manifest used to resolve image stimulus references */
+  readonly kitchenImageManifest?: KitchenImageManifestSchema;
 }
 
 const OFFICIAL_CLAIM_PATTERN = /official\s+uncle\s+julio[\u2019']?s/i;
@@ -84,6 +88,32 @@ const STIMULUS_KEYWORDS = [
   /\bexpo fires\b/i,
 ];
 
+function reportMissingStimulus(
+  pack: ContentPackManifest,
+  blockId: string,
+  message: string,
+  errors: ValidationError[],
+  warnings: ValidationWarning[]
+): void {
+  const issue = {
+    code: 'STIMULUS_REQUIRED',
+    path: `teachingBlocks.${blockId}.stimulus`,
+    message,
+  };
+
+  if (pack.integrity?.releaseMode === 'release') {
+    errors.push({
+      ...issue,
+      severity: 'error',
+    });
+  } else {
+    warnings.push({
+      ...issue,
+      severity: 'warning',
+    });
+  }
+}
+
 function expectedPackIdFromSourcePath(sourcePath: string): string | null {
   const normalizedPath = sourcePath.replace(/\\/g, '/');
   const fileName = normalizedPath.split('/').at(-1);
@@ -119,6 +149,16 @@ function collectReferencedResponseStrings(value: unknown): string[] {
   }
 
   return [];
+}
+
+function getStimulusImageRef(
+  stimulus: ContentPackManifest['teachingBlocks'][number]['stimulus']
+): string | null {
+  if (stimulus?.kind !== 'image') {
+    return null;
+  }
+
+  return stimulus.imageRef;
 }
 
 function blockHasInlineAssessment(block: ContentPackManifest['teachingBlocks'][number]): boolean {
@@ -180,6 +220,14 @@ export class ContentPackValidator {
     }
 
     const validPack = pack as ContentPackManifest;
+    const manifestResult =
+      options.kitchenImageManifest === undefined
+        ? { valid: true as const, manifest: undefined }
+        : this.validateKitchenImageManifestOption(options.kitchenImageManifest);
+    if (!manifestResult.valid) {
+      errors.push(...manifestResult.errors);
+      return { valid: false, errors, warnings };
+    }
 
     // Step 2: Business rule validation
     const businessErrors = this.validateBusinessRules(validPack, options.sourcePath);
@@ -187,7 +235,7 @@ export class ContentPackValidator {
     warnings.push(...businessErrors.warnings);
 
     // Step 3: Content consistency validation
-    const contentErrors = this.validateContentConsistency(validPack);
+    const contentErrors = this.validateContentConsistency(validPack, manifestResult.manifest);
     errors.push(...contentErrors.errors);
     warnings.push(...contentErrors.warnings);
 
@@ -259,6 +307,27 @@ export class ContentPackValidator {
       });
       return { valid: false, errors };
     }
+  }
+
+  private validateKitchenImageManifestOption(
+    manifest: unknown
+  ):
+    | { valid: true; manifest: KitchenImageManifestSchema }
+    | { valid: false; errors: ValidationError[] } {
+    const result = kitchenImageManifestSchema.safeParse(manifest);
+    if (result.success) {
+      return { valid: true, manifest: result.data };
+    }
+
+    return {
+      valid: false,
+      errors: result.error.errors.map((issue) => ({
+        code: 'INVALID_KITCHEN_IMAGE_MANIFEST',
+        path: `kitchenImageManifest.${issue.path.join('.')}`,
+        message: issue.message,
+        severity: 'error' as const,
+      })),
+    };
   }
 
   /**
@@ -396,7 +465,10 @@ export class ContentPackValidator {
   /**
    * Validate content consistency
    */
-  private validateContentConsistency(pack: ContentPackManifest): {
+  private validateContentConsistency(
+    pack: ContentPackManifest,
+    kitchenImageManifest?: KitchenImageManifestSchema
+  ): {
     errors: ValidationError[];
     warnings: ValidationWarning[];
   } {
@@ -460,16 +532,48 @@ export class ContentPackValidator {
     }
 
     for (const block of pack.teachingBlocks) {
+      const stimulusImageRef = getStimulusImageRef(block.stimulus);
+      if (stimulusImageRef !== null) {
+        if (kitchenImageManifest === undefined) {
+          warnings.push({
+            code: 'KITCHEN_IMAGE_MANIFEST_NOT_PROVIDED',
+            path: `teachingBlocks.${block.id}.stimulus.imageRef`,
+            message: `Image stimulus ${stimulusImageRef} was not checked against a kitchen image manifest.`,
+            severity: 'warning',
+          });
+        } else {
+          const manifestEntry = kitchenImageManifest.entries[stimulusImageRef];
+          if (manifestEntry === undefined) {
+            errors.push({
+              code: 'MISSING_IMAGE_MANIFEST_REFERENCE',
+              path: `teachingBlocks.${block.id}.stimulus.imageRef`,
+              message: `Image stimulus references ${stimulusImageRef}, which is not defined in the kitchen image manifest.`,
+              severity: 'error',
+            });
+          } else if (
+            pack.integrity?.releaseMode === 'release' &&
+            manifestEntry.sourceDataStatus !== 'authorized'
+          ) {
+            errors.push({
+              code: 'RELEASE_IMAGE_NOT_AUTHORIZED',
+              path: `teachingBlocks.${block.id}.stimulus.imageRef`,
+              message: `Release-mode pack references ${manifestEntry.sourceDataStatus} image ${stimulusImageRef}; release images must be authorized.`,
+              severity: 'error',
+            });
+          }
+        }
+      }
+
       const requiredStimulusForPack = PER_PACK_REQUIRED_STIMULUS[pack.id];
       if (requiredStimulusForPack?.has(block.id) === true) {
         if (block.stimulus === undefined) {
-          errors.push({
-            code: 'STIMULUS_REQUIRED',
-            path: `teachingBlocks.${block.id}.stimulus`,
-            message:
-              'Challenge prompt references an external artifact, but no stimulus is attached.',
-            severity: 'error',
-          });
+          reportMissingStimulus(
+            pack,
+            block.id,
+            'Challenge prompt references an external artifact, but no stimulus is attached.',
+            errors,
+            warnings
+          );
         }
       } else if (block.stimulus === undefined) {
         const isExempt = Array.from(GENERIC_STIMULUS_EXEMPT).some((fragment) =>
@@ -497,13 +601,13 @@ export class ContentPackValidator {
             ...surfacePrompts,
           ].join(' ');
           if (STIMULUS_KEYWORDS.some((pattern) => pattern.test(promptText))) {
-            errors.push({
-              code: 'STIMULUS_REQUIRED',
-              path: `teachingBlocks.${block.id}.stimulus`,
-              message:
-                'Prompt appears to reference ticket/station/huddle/menu artifacts but no stimulus is attached.',
-              severity: 'error',
-            });
+            reportMissingStimulus(
+              pack,
+              block.id,
+              'Prompt appears to reference ticket/station/huddle/menu artifacts but no stimulus is attached.',
+              errors,
+              warnings
+            );
           }
         }
       }

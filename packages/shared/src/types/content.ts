@@ -176,6 +176,66 @@ export interface PlainTextStimulus {
   readonly lines: readonly string[];
 }
 
+/** Recipe ingredient row shown in a recipe stimulus */
+export interface RecipeIngredient {
+  /** Quantity text, including unit */
+  readonly quantity: string;
+  /** Ingredient name */
+  readonly item: string;
+  /** Optional preparation or state note */
+  readonly modifier?: string;
+}
+
+/** Recipe-card challenge stimulus */
+export interface RecipeStimulus {
+  /** Discriminator */
+  readonly kind: 'recipe';
+  /** Recipe title */
+  readonly title: string;
+  /** Optional yield text */
+  readonly yields?: string;
+  /** Optional prep time in minutes */
+  readonly prepTimeMinutes?: number;
+  /** Optional cook time in minutes */
+  readonly cookTimeMinutes?: number;
+  /** Ingredient rows */
+  readonly ingredients: readonly RecipeIngredient[];
+  /** Ordered preparation steps */
+  readonly steps: readonly string[];
+  /** Optional recipe note */
+  readonly notes?: string;
+  /** Optional kitchen image manifest reference */
+  readonly imageRef?: string;
+}
+
+/** Percent-positioned visual focus region for an image stimulus */
+export interface ImageFocusRegion {
+  /** Visible label for the highlighted region */
+  readonly label: string;
+  /** Left offset as a percentage of image width */
+  readonly xPct: number;
+  /** Top offset as a percentage of image height */
+  readonly yPct: number;
+  /** Region width as a percentage of image width */
+  readonly widthPct: number;
+  /** Region height as a percentage of image height */
+  readonly heightPct: number;
+}
+
+/** Manifest-backed image challenge stimulus */
+export interface ImageStimulus {
+  /** Discriminator */
+  readonly kind: 'image';
+  /** Kitchen image manifest reference, without file extension */
+  readonly imageRef: string;
+  /** Required accessible description */
+  readonly altText: string;
+  /** Optional visible caption */
+  readonly caption?: string;
+  /** Optional visual-only regions to call attention to parts of the image */
+  readonly focusRegions?: readonly ImageFocusRegion[];
+}
+
 /** Structured stimulus for challenge prompts */
 export type ChallengeStimulus =
   | TicketStimulus
@@ -183,7 +243,36 @@ export type ChallengeStimulus =
   | HuddleNotesStimulus
   | MenuBoardStimulus
   | StepBankStimulus
-  | PlainTextStimulus;
+  | PlainTextStimulus
+  | RecipeStimulus
+  | ImageStimulus;
+
+/** Manifest entry for kitchen imagery served from /public/kitchen */
+export interface KitchenImageManifestEntry {
+  /** Browser-visible image path */
+  readonly path: string;
+  /** Default accessible description for the asset */
+  readonly altText: string;
+  /** Licensing/source readiness status */
+  readonly sourceDataStatus: SourceDataStatus;
+  /** Optional license/source reference */
+  readonly licenseRef?: string | null;
+  /** Search and grouping tags */
+  readonly tags?: readonly string[];
+}
+
+/** Catalog of kitchen imagery addressable by imageRef */
+export interface KitchenImageManifest {
+  /** Manifest schema version */
+  readonly schemaVersion: string;
+  /** Optional default dimensions for entries that do not override sizing */
+  readonly defaultDimensions?: {
+    readonly widthPx: number;
+    readonly heightPx: number;
+  };
+  /** Entries keyed by imageRef */
+  readonly entries: Record<string, KitchenImageManifestEntry>;
+}
 
 /** Structured module links for semantic pack validation */
 export interface ModuleLinks {

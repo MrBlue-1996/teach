@@ -1,0 +1,19 @@
+id: positive-functional-manifest-validation
+name: Functional Manifest Validation
+description: Image stimulus work should validate manifest entries and asset references, not only mention trigger keywords.
+tags:
+  - positive-trigger
+  - functional
+inputs:
+  prompt: 'Add an image stimulus that references EQ1-equipment/grill and make sure the kitchen image manifest validation catches missing refs.'
+expected:
+  should_trigger: true
+graders:
+  - type: text
+    name: contains-functional-keywords
+    config:
+      contains:
+        - 'manifest'
+        - 'imageRef'
+        - 'validation'
+        - 'image'

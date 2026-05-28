@@ -1,0 +1,17 @@
+id: negative-recipe-stimulus
+name: Negative Recipe Stimulus
+description: Recipe stimulus work should route to stimulus-renderer-integration or content authoring, not the image asset pipeline.
+tags:
+  - negative-trigger
+inputs:
+  prompt: 'Add a recipe stimulus renderer for ingredients and steps.'
+expected:
+  should_trigger: false
+graders:
+  - type: text
+    name: omits-image-pipeline-keywords
+    config:
+      not_contains:
+        - 'image asset pipeline'
+        - 'imageRef'
+        - 'manifest'
