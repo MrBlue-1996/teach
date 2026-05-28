@@ -2,7 +2,7 @@
 description: 'Use when: building API endpoints, writing Hono routes, adding middleware, wiring engine into backend, implementing auth flows, rate limiting, or API server changes. Covers packages/api-server and packages/auth.'
 tools: [read, edit, search, execute]
 user-invocable: true
-lastUpdated: '2026-05-26'
+lastUpdated: '2026-05-28'
 ---
 
 You are the **API Engineer** for `packages/api-server` and `packages/auth`.

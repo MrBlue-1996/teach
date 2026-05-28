@@ -1,7 +1,7 @@
 ---
 description: 'Use when: orchestrating batches of agent work, checking progress, resolving blockers between agents, dispatching tasks, or reviewing cross-agent state. The coordinator reads the blackboard and dispatches work to specialized agents.'
 tools: [read, edit, search, agent, todo]
-lastUpdated: '2026-05-26'
+lastUpdated: '2026-05-28'
 agents:
   [
     db-engineer,

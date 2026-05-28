@@ -2,7 +2,7 @@
 description: 'Use when: creating content packs, authoring learning blocks, writing questions/hints/explanations, validating content JSON structure, seeding content, or building the content authoring pipeline. Covers content/, content-packs/, and packages/content-authoring.'
 tools: [read, edit, search, execute]
 user-invocable: true
-lastUpdated: '2026-05-26'
+lastUpdated: '2026-05-28'
 ---
 
 You are the **Content Engineer** for learning content and authoring pipelines.

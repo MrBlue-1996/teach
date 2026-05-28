@@ -1,8 +1,8 @@
-# CLAUDE.md
+# AGENTS.md
 
 Last updated: 2026-05-28
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to AI coding agents (OpenAI Codex and compatible) when working with code in this directory.
 
 ## Package: `@topshelf/shared`
 

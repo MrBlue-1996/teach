@@ -1,8 +1,8 @@
-# CLAUDE.md
+# AGENTS.md
 
 Last updated: 2026-05-28
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to AI coding agents (OpenAI Codex and compatible) when working with code in this directory.
 
 ## App: `apps/web`
 
@@ -91,6 +91,16 @@ src/components/kitchen/
 ```
 
 These components receive data from `challenge-store` and render kitchen domain state. They do not call the API directly — the kitchen route pages orchestrate data flow.
+
+## Brand Requirements
+
+Before any UI work, read:
+
+- `governance/standards/brand/tokens/design-tokens.md`
+- `governance/standards/brand/voice/voice-and-tone.md`
+- `governance/standards/brand/doctrine/brand-doctrine.md`
+
+Key rules: semantic tokens only, Montserrat headings, Inter body, `lucide-react` icons, 44×44px touch targets minimum, dark-first palette.
 
 ## Environment Variables
 

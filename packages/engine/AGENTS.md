@@ -1,8 +1,8 @@
-# CLAUDE.md
+# AGENTS.md
 
 Last updated: 2026-05-28
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to AI coding agents (OpenAI Codex and compatible) when working with code in this directory.
 
 ## Package: `@topshelf/engine`
 
@@ -92,3 +92,10 @@ All types are re-exported through `src/index.ts`. Defining new types: put them i
 `TeachingMode` is a numeric enum (0–4). When persisted to DB it's stored as an integer. Cast with `as TeachingMode` when reading back.
 
 `DeviceProfile` is a string enum. `ConstraintEngine.inferProfile` is the canonical mapping function — don't duplicate UA-sniffing logic elsewhere.
+
+## Rules
+
+- Keep engine logic pure and stateless
+- Do not add runtime dependencies
+- Preserve public API contracts unless explicitly requested
+- Respect strict TypeScript and optional property patterns

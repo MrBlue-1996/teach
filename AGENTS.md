@@ -1,8 +1,8 @@
-# CLAUDE.md
+# AGENTS.md
 
 Last updated: 2026-05-28
 
-This file is the primary operating guide for coding agents working in this repository.
+This file is the primary operating guide for AI coding agents (OpenAI Codex and compatible) working in this repository.
 
 ## Product Vision
 
@@ -176,3 +176,15 @@ docker compose -f infrastructure/docker/docker-compose.yml up -d
 ```
 
 Web app env needs include `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+
+## Copyright Header
+
+All source files must include:
+
+```typescript
+/**
+ * TopShelf Service LLC
+ * PROPRIETARY AND CONFIDENTIAL
+ * Copyright (c) 2026 TopShelf Service LLC. All Rights Reserved.
+ */
+```
