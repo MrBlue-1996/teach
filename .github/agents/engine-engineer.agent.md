@@ -2,7 +2,7 @@
 description: 'Use when: modifying teaching engine logic, trigger detection thresholds, constraint filtering, device profiles, pedagogy rules, mode elevation, or policy evaluation. Covers packages/engine and governance/policies.'
 tools: [read, edit, search, execute]
 user-invocable: true
-lastUpdated: '2026-05-11'
+lastUpdated: '2026-05-26'
 ---
 
 You are the **Teaching Engine Engineer** for `packages/engine` and related pedagogy policy files.

@@ -6,6 +6,39 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [0.1.3] — 2026-05-26
+
+### Added
+
+#### Web App
+
+- **PWA shell** (`apps/web/`): Service worker, web app manifest, and offline fallback page — app is now installable on Chromebook-class devices and handles network loss gracefully.
+- **P3.1 client-side trigger UI** (`apps/web/src/app/learn/`): Trigger detection is now wired into the learn surface; stuck-time and repeated-error triggers surface in-session affordances without requiring a page reload.
+- **Decay affordance + retention queue** fully wired end-to-end: `DecayStatusPanel` now reads live `retentionQueue` data returned by the API (retention scheduling shipped in v0.1.2 is now fully connected to the frontend).
+
+#### Infrastructure / Config
+
+- **Hybrid-only env mode**: New `HYBRID_ONLY` flag and `DATABASE_URL` config fallback allow the server to run against Supabase-only, local Postgres, or a hybrid setup without code changes.
+- **Demo-to-pilot project controls** (`#40`): UJ Pack gates, governance files, and repo controls that gate progression from demo to pilot deployment.
+
+#### Docs / Agents
+
+- **Agent scope guides**: Specialized agent `.md` files added under `.github/agents/` to document each agent's domain boundaries.
+
+### Changed
+
+- **Auth flow stabilized**: Supabase-first DB config is now the default; onboarding auth redirect fixed (`Fix onboarding auth flow`).
+- **Kitchen golden path selector**: UJ challenge link selector corrected so the golden-path E2E test reliably targets the right element.
+- **Next.js bumped** 15.5.15 → 15.5.18 (`#36`).
+- **Dependency updates** (patch/minor): hono, supabase, next-themes, react, turbo.
+- **Code structure refactor**: Internal module organisation improved for readability and maintainability — no behaviour changes.
+
+### Fixed
+
+- **44 pre-existing lint warnings resolved** across the monorepo (`fix: resolve all 44 pre-existing lint warnings`).
+
+---
+
 ## [0.1.2] — 2026-05-10
 
 ### Added

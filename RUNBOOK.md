@@ -1,5 +1,7 @@
 # TopShelf Demo Operations Runbook
 
+Last updated: 2026-05-26
+
 ## Purpose
 
 This runbook is the operating checklist for demo readiness. It covers the current v0.1.x path: a Next.js web app deployed first on Vercel, an API backed by Postgres and Redis, static-bundled Uncle Julio's kitchen content, and tracker gates that keep pilot work honest.
@@ -14,6 +16,7 @@ Do not use this runbook to imply Sun Holdings or Uncle Julio's authorization. Au
 - Cache/rate limiter: Redis, default local port `6379`; API fails open for rate limiting if Redis is unavailable.
 - Content: kitchen challenge packs remain static-bundled for v0.1.x.
 - Tracker: `tools/uj-tracker/tasks.yaml` is the demo-roadmap source of truth.
+- PWA: the web app is installable and offline-tolerant; a service worker and manifest are live. UJ Pack P1/P2/P3 phases are complete; demo-to-pilot gates are tracked in `tools/uj-tracker/tasks.yaml`.
 
 ## Demo Readiness Gate
 
@@ -25,6 +28,11 @@ pnpm run validate:content-packs
 pnpm --filter @topshelf/web run build
 pnpm run test:e2e
 ```
+
+Additional manual checks before marking a demo build ready:
+
+- PWA manifest and service worker present (verify in browser DevTools → Application tab).
+- UJ Pack demo-to-pilot gates passing in `tools/uj-tracker/tasks.yaml` (run `pnpm run track:status:md` to confirm).
 
 For a deeper repo gate, run:
 

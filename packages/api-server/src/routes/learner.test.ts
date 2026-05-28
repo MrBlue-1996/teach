@@ -1781,6 +1781,28 @@ describe('Learner Routes', () => {
       expect(body.currentMode).toBe(4);
       expect(body.recommendedMode).toBe(4);
     });
+
+    it('seeds persisted HELP_REQUESTED trigger into teach context for L1 sessions', async () => {
+      mockDb.query.learningSessions.findFirst.mockResolvedValue({
+        ...mockSession,
+        teachingMode: 1, // L1_MINIMAL — shouldTeach only fires on HELP_REQUESTED
+        errorsEncountered: 0,
+        problemsSolved: 0,
+        startedAt: new Date(),
+        triggersFired: ['help_requested'],
+        learnerState: { contentPackId: 'pack-1' },
+      });
+
+      const res = await app.request('/learner/session/session-1/teach', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: 'Here is a hint.' }),
+      });
+
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.shouldTeach).toBe(true);
+    });
   });
 
   // ---------------------------------------------------------------------------

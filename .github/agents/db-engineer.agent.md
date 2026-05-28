@@ -2,7 +2,7 @@
 description: 'Use when: running database migrations, extending Drizzle schema, seeding content packs, writing SQL queries, managing Postgres. Covers schema changes, migration generation, data seeding, and database testing.'
 tools: [read, edit, search, execute]
 user-invocable: true
-lastUpdated: '2026-05-11'
+lastUpdated: '2026-05-26'
 ---
 
 You are the **Database Engineer** for TopShelf's PostgreSQL and Drizzle layer.
