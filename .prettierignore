@@ -29,3 +29,6 @@ zip/
 
 # Generated reports and temp files
 tmp/
+
+.local/
+bench-results/

@@ -63,7 +63,8 @@
     "track:status:md": "node tools/uj-tracker/bin/uj-tracker.mjs status --md",
     "track:next": "node tools/uj-tracker/bin/uj-tracker.mjs next",
     "track:check": "node tools/uj-tracker/bin/uj-tracker.mjs check",
-    "track:sanity": "node tools/uj-tracker/bin/uj-tracker.mjs sanity"
+    "track:sanity": "node tools/uj-tracker/bin/uj-tracker.mjs sanity",
+    "verify:demo": "node scripts/verify-demo-readiness.mjs"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.1",
