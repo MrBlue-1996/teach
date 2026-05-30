@@ -271,6 +271,7 @@ async function syncSubscriptionEvent(db: Database, event: WebhookEvent): Promise
     trialEnd: unixToDate(subscription.trial_end),
     ...(seats !== null ? { seats } : {}),
     metadata: {
+      ...(stored?.metadata && typeof stored.metadata === 'object' ? stored.metadata : {}),
       ...metadata,
       lastStripeEventId: event.id ?? '',
       lastStripeEventType: event.type,
