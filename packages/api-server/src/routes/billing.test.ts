@@ -53,6 +53,31 @@ const mockSubscription = {
   trialEnd: null,
 };
 
+const {
+  mockInsert,
+  mockInsertValues,
+  mockOnConflictDoUpdate,
+  mockUpdate,
+  mockUpdateSet,
+  mockUpdateWhere,
+} = vi.hoisted(() => {
+  const mockOnConflictDoUpdate = vi.fn().mockResolvedValue(undefined);
+  const mockInsertValues = vi.fn().mockReturnValue({ onConflictDoUpdate: mockOnConflictDoUpdate });
+  const mockInsert = vi.fn().mockReturnValue({ values: mockInsertValues });
+  const mockUpdateWhere = vi.fn().mockResolvedValue(undefined);
+  const mockUpdateSet = vi.fn().mockReturnValue({ where: mockUpdateWhere });
+  const mockUpdate = vi.fn().mockReturnValue({ set: mockUpdateSet });
+
+  return {
+    mockInsert,
+    mockInsertValues,
+    mockOnConflictDoUpdate,
+    mockUpdate,
+    mockUpdateSet,
+    mockUpdateWhere,
+  };
+});
+
 const mockDb = {
   query: {
     users: {
@@ -62,13 +87,34 @@ const mockDb = {
       findFirst: vi.fn().mockResolvedValue(mockSubscription),
     },
   },
+  insert: mockInsert,
+  update: mockUpdate,
 };
 
 vi.mock('@topshelf/database', () => ({
   getDatabase: (): typeof mockDb => mockDb,
   users: { id: 'id', organizationId: 'organizationId' },
-  subscriptions: { organizationId: 'organizationId' },
+  subscriptions: {
+    id: 'id',
+    organizationId: 'organizationId',
+    stripeCustomerId: 'stripeCustomerId',
+    stripeSubscriptionId: 'stripeSubscriptionId',
+  },
+  invoices: {
+    stripeInvoiceId: 'stripeInvoiceId',
+  },
   eq: (...args: unknown[]): unknown[] => args,
+}));
+
+vi.mock('@topshelf/observability', () => ({
+  getLogger: (): Record<string, unknown> => ({
+    child: (): Record<string, unknown> => ({
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
+      debug: vi.fn(),
+    }),
+  }),
 }));
 
 vi.mock('@topshelf/config', () => ({
@@ -132,6 +178,13 @@ describe('Billing Routes', () => {
     mockDb.query.subscriptions.findFirst.mockResolvedValue(mockSubscription);
     mockBillingService.createCheckoutSession.mockResolvedValue(mockCheckoutSession);
     mockBillingService.createPortalSession.mockResolvedValue(mockPortalSession);
+    mockBillingService.constructWebhookEvent.mockReturnValue({ type: 'test.event', data: {} });
+    mockInsert.mockReturnValue({ values: mockInsertValues });
+    mockInsertValues.mockReturnValue({ onConflictDoUpdate: mockOnConflictDoUpdate });
+    mockUpdate.mockReturnValue({ set: mockUpdateSet });
+    mockUpdateSet.mockReturnValue({ where: mockUpdateWhere });
+    mockOnConflictDoUpdate.mockResolvedValue(undefined);
+    mockUpdateWhere.mockResolvedValue(undefined);
   });
 
   // ---------------------------------------------------------------------------
@@ -330,6 +383,170 @@ describe('Billing Routes', () => {
       expect(res.status).toBe(200);
       const body = await res.json();
       expect(body.received).toBe(true);
+      expect(body.processed).toBe(true);
+    });
+
+    it('should persist a paid invoice and mark subscription active', async () => {
+      mockBillingService.constructWebhookEvent.mockReturnValue({
+        id: 'evt_paid_1',
+        type: 'invoice.payment_succeeded',
+        data: {
+          object: {
+            id: 'in_123',
+            customer: 'cus_test_789',
+            subscription: 'sub_stripe_123',
+            amount_paid: 49900,
+            currency: 'usd',
+            status: 'paid',
+            status_transitions: { paid_at: 1_767_225_600 },
+            invoice_pdf: 'https://stripe.test/invoice.pdf',
+            lines: {
+              data: [
+                {
+                  description: 'School plan',
+                  quantity: 1,
+                  amount: 49900,
+                  price: { unit_amount: 49900 },
+                },
+              ],
+            },
+          },
+        },
+      });
+
+      const res = await app.request('/billing/webhook', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'stripe-signature': 'valid_sig',
+        },
+        body: JSON.stringify({ type: 'invoice.payment_succeeded' }),
+      });
+
+      expect(res.status).toBe(200);
+      expect(mockInsertValues).toHaveBeenCalledWith(
+        expect.objectContaining({
+          organizationId: 'org-1',
+          subscriptionId: 'sub-1',
+          stripeInvoiceId: 'in_123',
+          amount: 49900,
+          status: 'paid',
+        })
+      );
+      expect(mockOnConflictDoUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          target: 'stripeInvoiceId',
+        })
+      );
+      expect(mockUpdateSet).toHaveBeenCalledWith(
+        expect.objectContaining({
+          status: 'active',
+        })
+      );
+    });
+
+    it('should persist a failed invoice and mark subscription past_due', async () => {
+      mockBillingService.constructWebhookEvent.mockReturnValue({
+        id: 'evt_failed_1',
+        type: 'invoice.payment_failed',
+        data: {
+          object: {
+            id: 'in_failed_123',
+            customer: 'cus_test_789',
+            subscription: 'sub_stripe_123',
+            amount_due: 49900,
+            currency: 'usd',
+            status: 'open',
+            due_date: 1_767_312_000,
+          },
+        },
+      });
+
+      const res = await app.request('/billing/webhook', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'stripe-signature': 'valid_sig',
+        },
+        body: JSON.stringify({ type: 'invoice.payment_failed' }),
+      });
+
+      expect(res.status).toBe(200);
+      expect(mockInsertValues).toHaveBeenCalledWith(
+        expect.objectContaining({
+          stripeInvoiceId: 'in_failed_123',
+          amount: 49900,
+          status: 'open',
+        })
+      );
+      expect(mockUpdateSet).toHaveBeenCalledWith(
+        expect.objectContaining({
+          status: 'past_due',
+        })
+      );
+    });
+
+    it('should sync subscription update events to the local subscription row', async () => {
+      mockBillingService.constructWebhookEvent.mockReturnValue({
+        id: 'evt_sub_1',
+        type: 'customer.subscription.updated',
+        data: {
+          object: {
+            id: 'sub_stripe_123',
+            customer: 'cus_test_789',
+            status: 'active',
+            current_period_start: 1_767_225_600,
+            current_period_end: 1_769_817_600,
+            cancel_at_period_end: false,
+            trial_end: null,
+            metadata: { plan: 'school', interval: 'monthly' },
+            items: { data: [{ quantity: 100 }] },
+          },
+        },
+      });
+
+      const res = await app.request('/billing/webhook', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'stripe-signature': 'valid_sig',
+        },
+        body: JSON.stringify({ type: 'customer.subscription.updated' }),
+      });
+
+      expect(res.status).toBe(200);
+      expect(mockUpdateSet).toHaveBeenCalledWith(
+        expect.objectContaining({
+          stripeSubscriptionId: 'sub_stripe_123',
+          stripeCustomerId: 'cus_test_789',
+          status: 'active',
+          seats: 100,
+        })
+      );
+    });
+
+    it('should acknowledge unhandled webhook events without DB writes', async () => {
+      mockBillingService.constructWebhookEvent.mockReturnValue({
+        id: 'evt_unhandled',
+        type: 'payment_intent.succeeded',
+        data: { object: {} },
+      });
+
+      const res = await app.request('/billing/webhook', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'stripe-signature': 'valid_sig',
+        },
+        body: JSON.stringify({ type: 'payment_intent.succeeded' }),
+      });
+
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.received).toBe(true);
+      expect(body.processed).toBe(false);
+      expect(mockInsert).not.toHaveBeenCalled();
+      expect(mockUpdate).not.toHaveBeenCalled();
     });
   });
 });
