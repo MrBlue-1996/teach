@@ -94,6 +94,7 @@ interface StripeInvoiceLike {
 interface StoredSubscription {
   id: string;
   organizationId: string;
+  metadata?: Record<string, unknown> | null;
 }
 
 const log = getLogger().child({ route: 'billing' });
