@@ -327,7 +327,7 @@ async function syncSubscriptionEvent(db: Database, event: WebhookEvent): Promise
 }
 
 function invoiceAmount(invoice: StripeInvoiceLike): number {
-  return invoice.amount_paid ?? invoice.amount_due ?? invoice.total ?? 0;
+  return invoice.total ?? invoice.amount_due ?? invoice.amount_paid ?? 0;
 }
 
 function invoiceLineItems(invoice: StripeInvoiceLike): Array<{
