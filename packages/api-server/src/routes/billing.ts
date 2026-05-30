@@ -209,7 +209,7 @@ async function findStoredSubscription(
   if (params.stripeSubscriptionId !== undefined && params.stripeSubscriptionId !== null) {
     const bySubscription = await db.query.subscriptions.findFirst({
       where: eq(subscriptions.stripeSubscriptionId, params.stripeSubscriptionId),
-      columns: { id: true, organizationId: true },
+      columns: { id: true, organizationId: true, metadata: true },
     });
 
     if (bySubscription !== undefined) {
@@ -220,7 +220,7 @@ async function findStoredSubscription(
   if (params.stripeCustomerId !== undefined && params.stripeCustomerId !== null) {
     const byCustomer = await db.query.subscriptions.findFirst({
       where: eq(subscriptions.stripeCustomerId, params.stripeCustomerId),
-      columns: { id: true, organizationId: true },
+      columns: { id: true, organizationId: true, metadata: true },
     });
 
     if (byCustomer !== undefined) {
